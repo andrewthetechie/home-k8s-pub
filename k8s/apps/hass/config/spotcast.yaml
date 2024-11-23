@@ -1,0 +1,2 @@
+sp_dc: !env_var spotcast_sp_dc
+sp_key: !env_var spotcast_sp_key

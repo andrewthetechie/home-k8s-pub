@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: external-dns
+  namespace: "external-dns"
+  labels:
+    app.kubernetes.io/instance: external-dns
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: external-dns
+    helm.sh/chart: external-dns-6.24.3
+spec:
+  type: ClusterIP
+  sessionAffinity: None
+  ports:
+    - name: http
+      port: 7979
+      protocol: TCP
+      targetPort: http
+  selector:
+    app.kubernetes.io/instance: external-dns
+    app.kubernetes.io/name: external-dns

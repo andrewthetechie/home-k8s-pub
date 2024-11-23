@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ersatztv-http
+  labels:
+    app: ersatztv
+spec:
+  ports:
+    - name: ersatztv-http
+      port: 80
+      targetPort: 8409
+  selector:
+    app: ersatztv

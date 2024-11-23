@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: spotifystats
+
+resources:
+  - namespace.yaml
+  - pvc.yaml
+  - sealedsecret.yaml
+  - deployment-apiweb.yaml
+  - statefulset-mongodb.yaml
+  - service-apiweb.yaml
+  - service-mongo.yaml
+  - ingress.yaml

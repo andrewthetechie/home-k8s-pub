@@ -1,0 +1,15 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: jellyseer
+  namespace: jellyfin
+  labels:
+    app.kubernetes.io/name: jellyseer
+    app.kubernetes.io/instance: jellyseer
+spec:
+  accessModes:
+    - "ReadWriteOnce"
+  resources:
+    requests:
+      storage: "1Gi"
+  storageClassName: "freenas-iscsi-ssd-csi"

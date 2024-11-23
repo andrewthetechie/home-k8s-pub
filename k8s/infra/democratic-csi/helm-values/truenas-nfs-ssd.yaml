@@ -1,0 +1,96 @@
+csiDriver:
+  # should be globally unique for a given cluster
+  name: "org.democratic-csi.nfs-ssd"
+
+# add note here about volume expansion requirements
+storageClasses:
+  - name: freenas-nfs-ssd-csi
+    defaultClass: false
+    reclaimPolicy: Delete
+    volumeBindingMode: Immediate
+    allowVolumeExpansion: true
+    parameters:
+      # for block-based storage can be ext3, ext4, xfs
+      # for nfs should be nfs
+      fsType: nfs
+
+      # if true, volumes created from other snapshots will be
+      # zfs send/received instead of zfs cloned
+      # detachedVolumesFromSnapshots: "false"
+
+      # if true, volumes created from other volumes will be
+      # zfs send/received instead of zfs cloned
+      # detachedVolumesFromVolumes: "false"
+
+    mountOptions:
+      - noatime
+      - nfsvers=3
+    secrets:
+      provisioner-secret:
+      controller-publish-secret:
+      node-stage-secret:
+      node-publish-secret:
+      controller-expand-secret:
+
+# if your cluster supports snapshots you may enable below
+volumeSnapshotClasses: []
+#- name: freenas-nfs-csi
+#  parameters:
+#  # if true, snapshots will be created with zfs send/receive
+#  # detachedSnapshots: "false"
+#  secrets:
+#    snapshotter-secret:
+
+driver:
+  config:
+    driver: freenas-nfs
+    instance_id:
+    httpConnection:
+      protocol: https
+      host: chrisjen.herrington.services
+      port: 443
+      apiKey: 3-vTSlP4C8yYcGi179r5c7Wju29dSeN9KtbM4UwJ28P05Vsa3g1okTA0kTczMuq07O
+    sshConnection:
+      host: chrisjen.herrington.services
+      port: 22
+      username: root
+      password: AJHsvaco06
+    zfs:
+      datasetParentName: ssd_pool/k8s/nfs/vols
+      # do NOT make datasetParentName and detachedSnapshotsDatasetParentName overlap
+      # they may be siblings, but neither should be nested in the other
+      detachedSnapshotsDatasetParentName: ssd_pool/k8s/nfs/snaps
+      datasetEnableQuotas: true
+      datasetEnableReservation: false
+      datasetPermissionsMode: "0777"
+      datasetPermissionsUser: 0
+      datasetPermissionsGroup: 0
+    nfs:
+      shareHost: chrisjen.herrington.services
+      shareAlldirs: false
+      shareAllowedHosts: []
+      shareAllowedNetworks: []
+      shareMaprootUser: root
+      shareMaprootGroup: wheel
+      shareMapallUser: ""
+      shareMapallGroup: ""
+# talos config
+# https://github.com/democratic-csi/democratic-csi#talos
+controller:
+  rbac:
+    enabled: true
+  enabled: true
+
+node:
+  rbac:
+    enabled: true
+  enabled: true
+  hostPID: true
+  driver:
+    extraEnv:
+      - name: ISCSIADM_HOST_STRATEGY
+        value: nsenter
+      - name: ISCSIADM_HOST_PATH
+        value: /usr/local/sbin/iscsiadm
+    iscsiDirHostPath: /usr/local/etc/iscsi
+    iscsiDirHostPathType: ""

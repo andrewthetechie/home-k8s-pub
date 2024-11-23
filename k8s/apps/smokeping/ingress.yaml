@@ -1,0 +1,36 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: smokeping
+  namespace: smokeping
+  labels:
+    app: smokeping
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    gethomepage.dev/description: Network Latency Checks
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/group: Monitoring
+    gethomepage.dev/icon: si-icinga
+    gethomepage.dev/name: SmokePing
+    uptimekuma.io/monitor: "true"
+    uptimekuma.io/name: "SmokePing"
+    uptimekuma.io/type: "http"
+    uptimekuma.io/interval: "120"
+spec:
+  tls:
+    - hosts:
+        - smokeping.herrington.services
+      secretName: smokeping-ui-tls-cert
+  rules:
+    - host: smokeping.herrington.services
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: smokeping
+                port:
+                  number: 80

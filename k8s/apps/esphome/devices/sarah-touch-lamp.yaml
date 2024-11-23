@@ -1,0 +1,64 @@
+# Basic Config
+esphome:
+  name: sarah-touch-lamp
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+
+wifi:
+  ssid: !secret iot_wifi_ssid
+  password: !secret iot_wifi_password
+  use_address: 10.10.5.76
+
+api:
+
+ota:
+  platform: esphome
+
+web_server:
+  port: 80
+
+logger:
+
+esp32_touch:
+  iir_filter: 10ms
+  low_voltage_reference: 0.7V
+  voltage_attenuation: 0.5V
+
+switch:
+  - platform: gpio
+    pin: GPIO16
+    name: "ac_relay"
+    id: ac_relay
+    restore_mode: ALWAYS_OFF
+
+binary_sensor:
+  - platform: esp32_touch
+    name: "Touch Pad"
+    pin: GPIO27
+    threshold: 700
+    on_click:
+      - min_length: 15ms
+        max_length: 1000ms
+        then:
+          - logger.log: "Short click"
+          - switch.toggle: ac_relay
+      - min_length: 1000ms
+        max_length: 3000ms
+        then:
+          - logger.log: "Medium click"
+          - homeassistant.service: 
+              service: automation.trigger
+              data:
+                entity_id: automation.sarah_bedside_lamp_medium_press
+      - min_length: 3000ms
+        max_length: 5000ms
+        then:
+          - logger.log: "Long Click"
+          - homeassistant.service: 
+              service: automation.trigger
+              data:
+                entity_id: automation.sarah_bedside_lamp_long_press

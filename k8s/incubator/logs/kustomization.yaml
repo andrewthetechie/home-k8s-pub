@@ -1,0 +1,28 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: logs
+
+resources:
+  - namespace.yaml
+
+helmCharts:
+  - name: fluent-bit
+    releaseName: fluent-bit-ds
+    namespace: logs
+    version: 0.38.0
+    repo: https://fluent.github.io/helm-charts
+    valuesFile: helm-values/ds-values.yaml
+  - name: fluent-bit
+    releaseName: syslog
+    namespace: logs
+    version: 0.38.0
+    repo: https://fluent.github.io/helm-charts
+    valuesFile: helm-values/syslog-values.yaml
+patches:
+  - target:
+      kind: Service
+      name: syslog-fluent-bit
+    patch: |-
+      - op: replace
+        path: /spec/externalTrafficPolicy
+        value: Local

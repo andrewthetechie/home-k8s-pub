@@ -1,0 +1,8 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: logs
+  labels:
+    name: logs
+    pod-security.kubernetes.io/enforce: privileged

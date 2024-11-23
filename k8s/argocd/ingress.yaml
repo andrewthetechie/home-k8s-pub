@@ -1,0 +1,62 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd-server-http-ingress
+  namespace: argocd
+  annotations:
+    gethomepage.dev/description: Manages K8S resources
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/group: Infra
+    gethomepage.dev/icon: argocd
+    gethomepage.dev/name: ArgoCD
+    uptimekuma.io/monitor: "true"
+    uptimekuma.io/name: "ArgoCD"
+    uptimekuma.io/type: "http"
+    uptimekuma.io/interval: "120"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: argocd-server
+                port:
+                  name: http
+      host: argocd.herrington.services
+  tls:
+    - hosts:
+        - argocd.herrington.services
+      secretName: argocd-ingress-http
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd-server-grpc-ingress
+  namespace: argocd
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: argocd-server
+                port:
+                  name: https
+      host: grpc.argocd.herrington.services
+  tls:
+    - hosts:
+        - grpc.argocd.herrington.services
+      secretName: argocd-ingress-grpc

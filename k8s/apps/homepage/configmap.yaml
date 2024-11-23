@@ -1,0 +1,127 @@
+# helm chart's management of the configmap sucks, make our own
+apiVersion: v1
+data:
+  bookmarks.yaml: ""
+  docker.yaml: ""
+  kubernetes.yaml: |
+    mode: cluster
+  services.yaml: |
+    - Infra:
+      - Pihole Primary:
+          href: https://1.pihole.herrington.services/admin
+          icon: si-pihole
+          description: Primary DNS Server
+          widget:
+            type: pihole
+            url: https://1.pihole.herrington.services/
+            key: 9af8ae6dd4e73aeb2ed2fb522adc5629d32ce531edba501b7cf677e53cbe674a # optional
+      - Pihole Backup:
+          href: http://10.10.99.2/admin
+          icon: si-pihole
+          description: Backup DNS Server
+          widget:
+            type: pihole
+            url: http://10.10.99.2/
+            key: 9af8ae6dd4e73aeb2ed2fb522adc5629d32ce531edba501b7cf677e53cbe674a # optional
+      - NAS:
+          href: https://chrisjen.herrington.services
+          icon: si-truenas
+          description: Storage Server
+          widget:
+              type: truenas
+              url: https://chrisjen.herrington.services
+              key: 2-ANYDsi0sykHKNS58vpIQ6ddaEpAk9YVPHkaHGcdIi9lu0GBy8rsFVvWjtDjOfg0D
+      - Minio:
+          href: https://chrisjen.herrington.services:9001
+          icon: si-amazons3
+          description: Block Storage
+    - Piracy:
+      - SABnzbd:
+          href: https://andrewthetechie.lyra.usbx.me/sabnzbd/
+          description: Newsreader Client
+          icon: sabnzbd
+          widget:
+            type: sabnzbd
+            url: https://andrewthetechie.lyra.usbx.me/sabnzbd/
+            key: 523e4ffaee964dec93b4d6bd06922ce0
+      - ruTorrent:
+          href: https://andrewthetechie.lyra.usbx.me/rutorrent/
+          description: Torrent client
+          icon: rutorrent
+          weight: 0
+          widget:
+            type: rutorrent
+            url: https://andrewthetechie.lyra.usbx.me/rutorrent/
+            username: andrewthetechie
+            password: h5Awzp7x6WSD722A!
+      - ultra.cc Control Panel:
+          href: https://cp.ultra.cc/#/
+          description: Control panel for Seedbox
+          icon: https://avatars.githubusercontent.com/u/25888645?s=280&v=4
+      - ultra.cc Client Area:
+          href: https://my.ultra.cc/
+          description: Billing and support for Seedbox
+          icon: https://avatars.githubusercontent.com/u/25888645?s=280&v=4
+    - Monitoring:
+      - UptimeKuma Fred:
+          href: http://10.10.0.35:3001
+          icon: si-uptimekuma
+          description: Off-k8s Monitoring
+          widget:
+            type: uptimekuma
+            url: http://10.10.0.35:3001
+            slug: all
+    - SmartHome:
+      - Zigbee Coordinator:
+          href: http://zigbee1.iot.herrington.services/
+          icon: https://static-00.iconduck.com/assets.00/zigbee-icon-512x512-3txmp44z.png
+          description: Zigbee Coordinator
+  settings.yaml: |
+    title: "Herrington Home"
+    hideVersion: true
+    statusStyle: 'dot'
+    layout:
+      - Media:
+          style: row
+          columns: 4
+      - SmartHome:
+          style: row
+          columns: 4
+      - Misc:
+          style: row
+          columns: 4
+      - Piracy:
+          style: row
+          columns: 4
+      - Monitoring:
+          style: row
+          columns: 4
+      - Infra:
+          style: row
+          columns: 4
+  widgets.yaml: |
+    - search:
+        provider: google
+        target: _blank
+        weight: 10
+    - kubernetes:
+        weight: 1
+        cluster:
+          cpu: true
+          label: cluster
+          memory: true
+          show: true
+          showLabel: true
+        nodes:
+          cpu: true
+          memory: true
+          show: true
+          showLabel: true
+kind: ConfigMap
+metadata:
+  annotations:
+    configmap.reloader.stakater.com/reload: "homepage"
+  labels:
+    app.kubernetes.io/name: homepage
+  name: custom-homepage
+  namespace: homepage

@@ -1,0 +1,84 @@
+- id: "1731468651677"
+  alias: Coffee Pot Auto Off
+  description: ""
+  triggers:
+    - type: turned_on
+      device_id: 9f33284c5bf24e3ddd321ed6cdaf0ab6
+      entity_id: 8fb0d306483d9b68fb27f05e8019bdd0
+      domain: switch
+      trigger: device
+      for:
+        hours: 7
+        minutes: 0
+        seconds: 0
+  conditions: []
+  actions:
+    - if:
+        - condition: device
+          type: is_on
+          device_id: 9f33284c5bf24e3ddd321ed6cdaf0ab6
+          entity_id: 8fb0d306483d9b68fb27f05e8019bdd0
+          domain: switch
+      then:
+        - type: turn_off
+          device_id: 9f33284c5bf24e3ddd321ed6cdaf0ab6
+          entity_id: 8fb0d306483d9b68fb27f05e8019bdd0
+          domain: switch
+  mode: single
+- id: "1731468512695"
+  alias: Coffee Pot Weekday Turn On
+  description: ""
+  triggers:
+    - trigger: time
+      at: "06:20:00"
+  conditions:
+    - condition: not
+      conditions:
+        - condition: state
+          entity_id: alarm_control_panel.home_alarm
+          state: armed_vacation
+    - condition: device
+      type: is_off
+      device_id: 9f33284c5bf24e3ddd321ed6cdaf0ab6
+      entity_id: 8fb0d306483d9b68fb27f05e8019bdd0
+      domain: switch
+    - condition: time
+      weekday:
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+      after: "06:00:00"
+      before: "07:00:00"
+  mode: single
+  actions:
+    - action: script.turn_on_coffee_pot
+      data: {}
+- id: "1731468829098"
+  alias: Coffee Pot Weekend Turn On
+  description: ""
+  triggers:
+    - trigger: time
+      at: "08:00:00"
+  conditions:
+    - condition: not
+      conditions:
+        - condition: state
+          entity_id: alarm_control_panel.home_alarm
+          state: armed_vacation
+    - condition: device
+      type: is_off
+      device_id: 9f33284c5bf24e3ddd321ed6cdaf0ab6
+      entity_id: 8fb0d306483d9b68fb27f05e8019bdd0
+      domain: switch
+    - condition: time
+      weekday:
+        - sun
+        - sat
+      after: "07:00:00"
+      before: "09:00:00"
+  mode: single
+  actions:
+    - action: script.turn_on_coffee_pot
+      data: {}

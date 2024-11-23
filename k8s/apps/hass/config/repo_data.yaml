@@ -1,0 +1,92 @@
+# works with scripts/git-download.py to download resources from git on pod startup
+
+# Example lines
+# - url:
+#   src:
+#   dest:
+#   tag:
+# - url:
+#   src:
+#   dest:
+#   tag: release_
+#   md5:
+# releases
+- url: https://github.com/jcwillox/lovelace-paper-buttons-row/releases/
+  src: paper-buttons-row.js
+  dest: /config/www/paper-buttons-row.js
+  tag: release_v2.2.0
+  md5: f9c3c3fbacec52ed8ff86be8cf2759fe
+- url: https://github.com/piitaya/lovelace-mushroom/releases/tag/
+  src: mushroom.js
+  dest: /config/www/mushroom.js
+  tag: release_v4.1.1
+  md5: f1f18e26b19ab9d7a82b7170084fb904
+- url: https://github.com/custom-cards/canvas-gauge-card/releases/tag/
+  src: canvas-gauge-card.js
+  dest: /config/www/canvas-gauge-card.js
+  tag: release_0.91
+  md5: 3c874adeb3af1294c903aec45a099c43
+- url: https://github.com/ljmerza/light-entity-card/releases/tag/
+  src: light-entity-card.js
+  dest: /config/www/light-entity-card.js
+  tag: release_6.1.3
+  md5: d16cbc43bdd8160275d970bc5314ffcf
+- url: https://github.com/denysdovhan/vacuum-card/releases/tag/
+  src: vacuum-card.js
+  dest: /config/www/vacuum-card.js
+  tag: release_v2.10.1
+  md5: eccf0ade5968c1d00d7b424779850f93
+- url: https://github.com/custom-cards/bar-card/releases/tag/
+  src: bar-card.js
+  dest: /config/www/bar-card.js
+  tag: release_3.2.0
+  md5: f1a31aa28814fdc969c04c8b01020759
+- url: https://github.com/custom-cards/button-card/releases/tag
+  src: button-card.js
+  dest: /config/www/button-card.js
+  tag: release_v4.1.2
+  md5: f539ddcd3b42457dfc2c6427a4d65866
+- url: https://github.com/kalkih/mini-graph-card/releases/
+  src: mini-graph-card-bundle.js
+  dest: /config/www/mini-graph-card-bundle.js
+  tag: release_v0.12.1
+  md5: d1ba6764d610802320ac4182658466ce
+- url: https://github.com/kalkih/mini-media-player/releases/
+  src: mini-media-player-bundle.js
+  dest: /config/www/mini-media-player-bundle.js
+  tag: release_v1.16.9
+  md5: b9bb4d175e121b20c3fdeb4b825223d7
+# git clones
+- url: https://github.com/custom-cards/spotify-card.git
+  src: dist/spotify-card.js
+  dest: /config/www/spotify-card.js
+  tag: v2.4.0
+- url: https://github.com/custom-cards/surveillance-card.git
+  src: surveillance-card.js
+  dest: /config/www/surveillance-card.js
+  tag: "0.0.7"
+- url: https://github.com/custom-cards/gauge-card.git
+  src: gauge-card.js
+  dest: /config/www/gauge-card.js
+  tag: "0.2.3"
+- url: https://github.com/thomasloven/lovelace-auto-entities.git
+  src: auto-entities.js
+  dest: /config/www/auto-entities.js
+  tag: v1.13.0
+- url: https://github.com/Clooos/Bubble-Card.git
+  src: dist/
+  dest: /config/www/
+  tag: v2.2.4
+  copy_contents: True
+- url: https://github.com/thomasloven/lovelace-more-info-card.git
+  src: more-info-card.js
+  dest: /config/www/more-info-card.js
+  tag: c0a9c942851c1c5370e8de102eb96597fb845d85
+- url: https://github.com/thomasloven/lovelace-slider-entity-row.git
+  src: slider-entity-row.js
+  dest: /config/www/slider-entity-row.js
+  tag: 708202148519ffb2b6ffdc8ffb1e3be7526b03c1
+- url: https://github.com/thomasloven/lovelace-card-mod.git
+  src: card-mod.js
+  dest: /config/www/card-mod.js
+  tag: v3.4.3

@@ -1,0 +1,184 @@
+kind: DaemonSet
+image:
+  repository: fluent/fluent-bit
+podAnnotations:
+  fluentbit.io/exclude: 'true'
+
+labels:
+  app: fluent-bit
+
+hostNetwork: true
+extraPorts:
+  - port: 51000
+    containerPort: 51000
+    protocol: TCP
+    name: talos
+    nodePort: 51000
+  - port: 51001
+    containerPort: 51001
+    nodePort: 51001
+    protocol: TCP
+    name: talos-kernel
+
+daemonSetVolumes:
+  - name: varlog
+    hostPath:
+      path: /var/log
+daemonSetVolumeMounts:
+  - name: varlog
+    mountPath: /var/log
+
+env:
+  - name: NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
+config:
+  customParsers: |
+    [PARSER]
+      Name severity
+      Format regex
+      Regex .*(?<severity>(?i)PANIC|ERROR|WARNING|WARN|INFO|DEBUG|TRACE).*
+
+    [PARSER]
+      Name docker_no_time
+      Format json
+      Time_Keep Off
+      Time_Key time
+      Time_Format %Y-%m-%dT%H:%M:%S.%L
+
+    [PARSER]
+      Name          audit
+      Format        json
+      Time_Key      requestReceivedTimestamp
+      Time_Format   %Y-%m-%dT%H:%M:%S.%L%z
+
+    [PARSER]
+      Name          containerd
+      Format        regex
+      Regex         ^(?<time>[^ ]+) (?<stream>stdout|stderr) (?<logtag>[^ ]*) (?<log>.*)$
+      Time_Key      time
+      Time_Format   %Y-%m-%dT%H:%M:%S.%L%z   
+
+  service: |
+    [SERVICE]
+      Flush         5
+      Daemon        Off
+      Log_Level     info
+      Parsers_File /fluent-bit/etc/parsers.conf
+      Parsers_File  custom_parsers.conf    
+      HTTP_Server On
+      HTTP_Listen 0.0.0.0
+      HTTP_Port 2020
+      Health_Check On
+
+  inputs: |
+    [INPUT]
+      Name          tail
+      Alias         kubernetes
+      Path          /var/log/containers/*.log
+      Parser        containerd
+      Tag           kubernetes.*
+
+    [INPUT]
+      Name          tail
+      Alias         audit
+      Path          /var/log/audit/kube/*.log
+      Parser        audit
+      Tag           audit.*    
+
+    [INPUT]
+      Name          tcp
+      Listen        0.0.0.0
+      Port          51000
+      Format        json
+      Tag           talos.*
+
+    [INPUT]
+      Name          tcp
+      Listen        0.0.0.0
+      Port          51001
+      Format        json
+      Tag           talos-kernel.*
+  filters: |
+    [FILTER]
+      Name modify
+      Match *
+      Add host ${NODE_NAME}
+
+    [FILTER]
+      Name                kubernetes
+      Alias               kubernetes
+      Match               kubernetes.*
+      Kube_Tag_Prefix     kubernetes.var.log.containers.
+      Use_Kubelet         Off
+      Merge_Log           On
+      Merge_Log_Trim      On
+      Keep_Log            Off
+      K8S-Logging.Parser  Off
+      K8S-Logging.Exclude On
+      Annotations         Off
+      Labels              On
+      Kube_URL            https://localhost:7445  
+
+    [FILTER]
+      Name          nest
+      Match         kubernetes.*
+      Operation     nest
+      Wildcard      kubernetes_*
+      Nest_under    kubernetes
+      Remove_prefix kubernetes_
+
+    [FILTER]
+      Name          nest
+      Match         kubernetes.*
+      Operation     lift
+      Nested_under  kubernetes
+
+    [FILTER]
+      Name          modify
+      Match         kubernetes.*
+      Add           source kubernetes
+      Remove        logtag
+      Rename        namespace_name namespace
+      Rename        pod_name pod
+      Rename        labels.app app
+      Remove        labels
+      Remove        docker_id
+
+    [FILTER]
+      Name modify
+      Match audit.*
+      Add source audit
+
+    [FILTER]
+      Name modify
+      Match talos.*
+      Add source talos
+      Remove talos_time
+      Rename talos_level severity
+
+    [FILTER]
+      Name modify
+      Match talos-kernel.*
+      Add component kernel
+      Add source talos
+
+  outputs: |
+    # [OUTPUT]
+    #   Name stdout
+    #   Match kubernetes.*
+    #   Format json_lines
+    [OUTPUT]
+      Name http
+      Match *
+      URI /api/default/default/_json
+      Host oo.herrington.services
+      Port 443
+      tls On
+      Format json
+      Json_date_key    _timestamp
+      Json_date_format iso8601
+      HTTP_User andrew.the.techie@gmail.com
+      HTTP_Passwd PHczpOL72nk7Q8aj
+      compress gzip

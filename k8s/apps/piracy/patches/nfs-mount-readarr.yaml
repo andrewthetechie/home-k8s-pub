@@ -1,0 +1,12 @@
+- op: add
+  path: /spec/template/spec/volumes/-
+  value:
+    name: media
+    nfs:
+      server: chrisjen.herrington.services
+      path: /mnt/disk_pool/Media/Books
+- op: add
+  path: /spec/template/spec/containers/0/volumeMounts/-
+  value:
+    mountPath: /books
+    name: media

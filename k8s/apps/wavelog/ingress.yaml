@@ -1,0 +1,37 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: wavelog
+  labels:
+    app: wavelog
+  annotations:
+    nginx.org/websocket-services: wavelog
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    gethomepage.dev/description: ESP Home
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/group: Misc
+    gethomepage.dev/icon: wavelog
+    gethomepage.dev/name: wavelog
+    gethomepage.dev/weight: "10" # put it at the end of the list
+    uptimekuma.io/monitor: "true"
+    uptimekuma.io/name: "wavelog"
+    uptimekuma.io/type: "http"
+    uptimekuma.io/interval: "120"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - wavelog.herrington.services
+      secretName: wavelog-tls-cert
+  rules:
+    - host: wavelog.herrington.services
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: wavelog
+                port:
+                  number: 8086

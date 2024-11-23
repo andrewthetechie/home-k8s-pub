@@ -1,0 +1,9 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: rtl
+  labels:
+    name: rtl
+    app.kubernetes.io/instance: rtl
+    pod-security.kubernetes.io/enforce: privileged

@@ -1,0 +1,45 @@
+homeassistant:
+  name: Herrington Home
+  latitude: 28.979480
+  longitude: -98.513290
+  elevation: 400
+  unit_system: us_customary
+  currency: USD
+  country: US
+  time_zone: "America/Chicago"
+  internal_url: https://ha.herrington.services
+  external_url: https://ha.herrington.services
+http:
+  server_host: "0.0.0.0"
+  server_port: 8123
+  ip_ban_enabled: false
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 10.0.0.0/8
+    - 127.0.0.1
+    - ::1
+
+# Example configuration.yaml entry
+alarm_control_panel: !include alarm.yaml
+
+
+# Load frontend themes from the themes folder
+frontend:
+  themes: !include_dir_merge_named themes
+
+automation ui: !include automations.yaml
+automation defined: !include_dir_merge_list automations/
+script: !include scripts.yaml
+scene: !include scenes.yaml
+mqtt: !include mqtt.yaml
+recorder: !include recorder.yaml
+spotcast: !include spotcast.yaml
+rest_command: !include rest_commands.yaml
+climate: !include climate.yaml
+input_boolean: !include input_boolean.yaml
+cloud:
+history:
+logger:
+  default: warning
+# Loads default set of integrations. Do not remove.
+default_config:

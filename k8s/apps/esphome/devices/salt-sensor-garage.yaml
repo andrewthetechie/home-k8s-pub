@@ -1,0 +1,32 @@
+# Basic Config
+esphome:
+  name: garage-salt-sensor
+  platform: ESP8266
+  board: nodemcuv2
+
+wifi:
+  ssid: !secret iot_wifi_ssid
+  password: !secret iot_wifi_password
+  use_address: 10.10.5.74
+
+api:
+
+ota:
+  platform: esphome
+
+web_server:
+  port: 80
+time:
+  - platform: sntp
+    id: the_time
+logger:
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO14
+      mode:
+        input: true
+        pullup: true
+    device_class: moisture
+    name: "Salt Low"

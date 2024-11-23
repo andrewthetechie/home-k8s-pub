@@ -1,0 +1,642 @@
+- id: "f722179171314"
+  alias: Andrew Desk Scene Light
+  description: Toggle overhead light
+  trigger:
+    - platform: device
+      domain: mqtt
+      device_id: d35f08e32a05bb5ae505e6b603c5ffc0
+      type: action
+      subtype: single
+      discovery_id: 0xa4c13847cfcadf5a action_single
+  condition: []
+  action:
+    - type: toggle
+      device_id: 11e91d0311357f1ddf76ee2534f0032f
+      entity_id: 4dee304cb01dd92521221fa7c99d6aab
+      domain: switch
+  mode: single
+- id: "1720238653234"
+  alias: Andrew Office - Closet Light - Turn Off
+  description: ""
+  trigger:
+    - type: not_opened
+      platform: device
+      device_id: 4472bcf23fbcb63dc44c2d74236324bf
+      entity_id: 60c5d8b5b2706f6932bda00679d76f94
+      domain: binary_sensor
+      for:
+        hours: 0
+        minutes: 3
+        seconds: 0
+  condition: []
+  action:
+    - type: turn_off
+      device_id: 18d12bca4bbc78ef7251b06af873e30c
+      entity_id: 3efca776d0eb43194d64e809d77273f5
+      domain: switch
+  mode: single
+- id: "1720238411435"
+  alias: Andrew Office - Closet Light - Turn On
+  description: ""
+  trigger:
+    - type: opened
+      platform: device
+      device_id: 4472bcf23fbcb63dc44c2d74236324bf
+      entity_id: 60c5d8b5b2706f6932bda00679d76f94
+      domain: binary_sensor
+  condition: []
+  action:
+    - type: turn_on
+      device_id: 18d12bca4bbc78ef7251b06af873e30c
+      entity_id: 3efca776d0eb43194d64e809d77273f5
+      domain: switch
+  mode: single
+- id: "1720e27457241"
+  alias: Garage - Motion Detected Lights Off
+  description: ""
+  trigger:
+    - type: no_motion
+      platform: device
+      device_id: 8c0115137048df13e4becc930eead8e9
+      entity_id: 5a89660da26772c48a5904f0220a4ab8
+      domain: binary_sensor
+      for:
+        hours: 0
+        minutes: 8
+        seconds: 0
+  condition: []
+  action:
+    - service: switch.turn_off
+      data: {}
+      target:
+        device_id: 9bb558f103cdb50f6ccc9f3e22b7565b
+  mode: single
+- id: "172031747201e"
+  alias: Garage - Motion Detected Lights On
+  description: ""
+  trigger:
+    - type: motion
+      platform: device
+      device_id: 8c0115137048df13e4becc930eead8e9
+      entity_id: 5a89660da26772c48a5904f0220a4ab8
+      domain: binary_sensor
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 1
+  condition: []
+  action:
+    - service: switch.turn_on
+      data: {}
+      target:
+        device_id: 9bb558f103cdb50f6ccc9f3e22b7565b
+  mode: single
+- id: "1702170482832"
+  alias: Front Door Outside Light Switch
+  description: Turns on Garage Outside lights when front lights are turned on
+  trigger:
+    - platform: device
+      type: turned_on
+      device_id: 9c44d400c001402e0b9594c3bfe35f0f
+      entity_id: 46b3ac95efbc03f7857a6e1233a68b0d
+      domain: switch
+  condition: []
+  action:
+    - service: switch.turn_on
+      data: {}
+      target:
+        device_id: c5e27b8ae4f14d94dd4639eb65da4bf3
+  mode: single
+- id: "1702170644129"
+  alias: Front Door Outside Lights Off
+  description: Turns off all outside lights when the front door siwtch is turned off
+  trigger:
+    - platform: device
+      type: turned_off
+      device_id: 3eba65c05e61fef83bfa0547f1956962
+      entity_id: 21ff95cb2cac1c4ca2ead2adfc71eb56
+      domain: switch
+  condition: []
+  action:
+    - service: switch.turn_off
+      data: {}
+      target:
+        device_id: c5e27b8ae4f14d94dd4639eb65da4bf3
+  mode: single
+- id: "1702171178637"
+  alias: Front Door Outside Light On
+  description: Turn on the outside lights with the front door switch
+  trigger:
+    - platform: device
+      type: turned_on
+      device_id: 3eba65c05e61fef83bfa0547f1956962
+      entity_id: 21ff95cb2cac1c4ca2ead2adfc71eb56
+      domain: switch
+  condition: []
+  action:
+    - service: switch.turn_on
+      data: {}
+      target:
+        device_id: c5e27b8ae4f14d94dd4639eb65da4bf3
+  mode: single
+- id: "1702178730678"
+  alias: Garage - Lights Off 2 hours
+  description: Turn off Inside Garage Lights after 2 hours
+  trigger:
+    - platform: device
+      type: turned_on
+      device_id: 9bb558f103cdb50f6ccc9f3e22b7565b
+      entity_id: 86277647f06485a0662d348a5fc9e3b7
+      domain: switch
+      for:
+        hours: 2
+        minutes: 0
+        seconds: 0
+  condition: []
+  action:
+    - service: switch.turn_off
+      data: {}
+      target:
+        device_id: 9bb558f103cdb50f6ccc9f3e22b7565b
+  mode: single
+- id: "1702178907322"
+  alias: Turn off Outside Lights after 3am
+  description: Outside lights will get turns off after 3am when they've been on 30 minutes
+  trigger:
+    - platform: device
+      type: turned_on
+      device_id: c5e27b8ae4f14d94dd4639eb65da4bf3
+      entity_id: a6fd7ba9a4db35a32ff9975a17b02cab
+      domain: switch
+      for:
+        hours: 0
+        minutes: 30
+        seconds: 0
+    - platform: device
+      type: turned_on
+      device_id: 3eba65c05e61fef83bfa0547f1956962
+      entity_id: 21ff95cb2cac1c4ca2ead2adfc71eb56
+      domain: switch
+      for:
+        hours: 0
+        minutes: 30
+        seconds: 0
+  condition:
+    - condition: time
+      after: "03:30:00"
+      weekday:
+        - sun
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+        - sat
+  action:
+    - service: switch.turn_off
+      data: {}
+      target:
+        device_id:
+          - c5e27b8ae4f14d94dd4639eb65da4bf3
+    - service: switch.turn_off
+      data: {}
+      target:
+        device_id: 3eba65c05e61fef83bfa0547f1956962
+  mode: single
+- id: "1723679348519"
+  alias: Laundry Hall Light Motion
+  description: ""
+  trigger:
+    - type: occupied
+      platform: device
+      device_id: deba1160a5b4471cde16d7184102b6c1
+      entity_id: 2e47e595cce2ab15407be58d7f7ed766
+      domain: binary_sensor
+  condition:
+    - condition: and
+      conditions:
+        - condition: sun
+          before: sunrise
+          after: sunset
+        - condition: device
+          type: is_off
+          device_id: ddb7def683e80924aab3cdb71cd8ed9a
+          entity_id: 603706d81b7011e6058117fa73520fcf
+          domain: switch
+        - condition: device
+          type: is_off
+          device_id: e435d4107048faee192e3dd667f5d4ca
+          entity_id: e9cbc3bc7c0faf74053aa8b27683bf3c
+          domain: light
+        - condition: device
+          type: is_off
+          device_id: 6152020e0378864c4a20113579228fc7
+          entity_id: 523ea3f7acdbc9ba1dea2502aa888eb2
+          domain: light
+        - condition: state
+          entity_id: input_boolean.bedtime
+          state: "off"
+  action:
+    - service: switch.turn_on
+      data: {}
+      target:
+        device_id: ddb7def683e80924aab3cdb71cd8ed9a
+    - delay:
+        hours: 0
+        minutes: 1
+        seconds: 45
+        milliseconds: 0
+    - service: switch.turn_off
+      data: {}
+      target:
+        device_id: ddb7def683e80924aab3cdb71cd8ed9a
+  mode: single
+- id: "1723686531707"
+  alias: Hall Light Motion
+  description: ""
+  trigger:
+    - type: motion
+      platform: device
+      device_id: 574df819d6ed51ff801ac0954fdae326
+      entity_id: 46f85b6131675fb66c4bea4c410b1e78
+      domain: binary_sensor
+  condition:
+    - condition: and
+      conditions:
+        - condition: sun
+          before: sunrise
+          after: sunset
+        - condition: device
+          type: is_off
+          device_id: a7631bf2bc83f8cf76bbabd030fb3a21
+          entity_id: 28a033ea7c11c781f7741428046400dc
+          domain: switch
+  action:
+    - service: switch.turn_on
+      data: {}
+      target:
+        device_id: a7631bf2bc83f8cf76bbabd030fb3a21
+    - delay:
+        hours: 0
+        minutes: 1
+        seconds: 30
+        milliseconds: 0
+    - service: switch.turn_off
+      data: {}
+      target:
+        device_id: a7631bf2bc83f8cf76bbabd030fb3a21
+  mode: single
+- id: "1723763654328"
+  alias: Hall Closet Door - Closed
+  description: ""
+  trigger:
+    - type: not_opened
+      platform: device
+      device_id: 0750e2972daec5c817cd3aa29826386b
+      entity_id: c7a84d202c74784446b389ec2a002313
+      domain: binary_sensor
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 4
+  condition: []
+  action:
+    - service: script.unmute_googles
+      data: {}
+    - service: switch.turn_off
+      data: {}
+      target:
+        device_id: a7631bf2bc83f8cf76bbabd030fb3a21
+  mode: single
+- id: "1723763559728"
+  alias: Hall Closet Door - Open
+  description: ""
+  trigger:
+    - type: opened
+      platform: device
+      device_id: 0750e2972daec5c817cd3aa29826386b
+      entity_id: c7a84d202c74784446b389ec2a002313
+      domain: binary_sensor
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 0
+  condition:
+    - condition: device
+      type: is_off
+      device_id: a7631bf2bc83f8cf76bbabd030fb3a21
+      entity_id: 28a033ea7c11c781f7741428046400dc
+      domain: switch
+  action:
+    - service: switch.turn_on
+      data: {}
+      target:
+        device_id: a7631bf2bc83f8cf76bbabd030fb3a21
+  mode: single
+- id: "1724521847672"
+  alias: Hall Light Extra Switch
+  description: ""
+  trigger:
+    - platform: device
+      domain: mqtt
+      device_id: bc5764e2cd21b5acfd90133034a8c393
+      type: action
+      subtype: single
+      discovery_id: 0xa4c1388104b2413b action_single
+  condition: []
+  action:
+    - service: switch.toggle
+      data: {}
+      target:
+        entity_id: switch.hall_switch_hall_light
+  mode: single
+- id: "1724724800380"
+  alias: Andrew Bedside Lamp Long Press
+  description: ""
+  trigger: []
+  condition: []
+  action:
+    - service: input_boolean.turn_on
+      data: {}
+      target:
+        entity_id: input_boolean.bedtime
+  mode: single
+- id: "1724724786494"
+  alias: Andrew Bedside Lamp Medium Press
+  description: ""
+  trigger: []
+  condition: []
+  action:
+    - service: fan.toggle
+      data: {}
+      target:
+        device_id: 330f6e439343c2295b686a684b053a97
+  mode: single
+- id: "1724809420968"
+  alias: Sarah Bedside Lamp Medium Press
+  description: ""
+  trigger: []
+  condition: []
+  action:
+    - service: fan.toggle
+      data: {}
+      target:
+        device_id: ee9594b3fa11ae3b8339623c3f9bce79
+  mode: single
+- id: "1724809495511"
+  alias: Sarah Bedside Lamp Long Press
+  description: ""
+  trigger: []
+  condition: []
+  action:
+    - service: input_boolean.turn_on
+      data: {}
+      target:
+        entity_id: input_boolean.bedtime
+  mode: single
+- id: "1725208230621"
+  alias: Bedtime Routine
+  description: ""
+  trigger:
+    - platform: state
+      entity_id:
+        - input_boolean.bedtime
+      from: "off"
+      to: "on"
+  condition: []
+  action:
+    - service: script.goodnight
+      data: {}
+  mode: single
+- id: "1726286514731"
+  alias: Garage Door Triggers Outside Lights After Dark
+  description: ""
+  trigger:
+    - type: opened
+      platform: device
+      device_id: 7dae4a8d5cbcc4b29b8dbba9c82a69e1
+      entity_id: 32c87f38e5630da372418730c22cda75
+      domain: binary_sensor
+  condition:
+    - condition: sun
+      before: sunrise
+      after: sunset
+  action:
+    - service: switch.turn_on
+      data: {}
+      target:
+        device_id:
+          - c5e27b8ae4f14d94dd4639eb65da4bf3
+          - 3eba65c05e61fef83bfa0547f1956962
+    - delay:
+        hours: 0
+        minutes: 10
+        seconds: 0
+        milliseconds: 0
+    - service: switch.turn_off
+      data: {}
+      target:
+        device_id:
+          - c5e27b8ae4f14d94dd4639eb65da4bf3
+          - 3eba65c05e61fef83bfa0547f1956962
+  mode: single
+- id: "1729724161281"
+  alias: Server Room Light On
+  description: ""
+  triggers:
+    - type: opened
+      device_id: d5423a53609f06bd075fd8e6ae18103e
+      entity_id: 2f9fdb7cab4cf421759d8653a9f5e6f6
+      domain: binary_sensor
+      metadata:
+        secondary: false
+      trigger: device
+  conditions: []
+  actions:
+    - action: light.turn_on
+      metadata: {}
+      data:
+        brightness_pct: 75
+      target:
+        device_id: 13cbc704237cfb34fe7a26c390c5a7ac
+  mode: single
+- id: "1729724185477"
+  alias: Server Room Light Off
+  description: ""
+  triggers:
+    - type: not_occupied
+      device_id: a8c3209dc79fa853bf3f60d1778e1cca
+      entity_id: c788a9679e8779807f5cd84f17e60a64
+      domain: binary_sensor
+      trigger: device
+      for:
+        hours: 0
+        minutes: 1
+        seconds: 0
+  conditions: []
+  actions:
+    - action: light.turn_off
+      metadata: {}
+      data:
+        transition: 3
+      target:
+        device_id: 13cbc704237cfb34fe7a26c390c5a7ac
+  mode: single
+- id: "1731209750053"
+  alias: Bed Nightlight On
+  description: ""
+  triggers:
+    - type: not_occupied
+      device_id: 0941b8f3bf78435b2a97f8d973784972
+      entity_id: 0b09146668048009e088922fe70c0599
+      domain: binary_sensor
+      trigger: device
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 1.5
+    - type: not_occupied
+      device_id: 0941b8f3bf78435b2a97f8d973784972
+      entity_id: 581cced5ecffadeb990a2153920526ff
+      domain: binary_sensor
+      trigger: device
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 1.5
+  conditions:
+    - condition: and
+      conditions:
+        - condition: state
+          entity_id: input_boolean.bedtime
+          state: "on"
+        - condition: device
+          type: is_off
+          device_id: 1aff6d81460377c7c1b7a72e85f95156
+          entity_id: d9bbcfdb6db8922de0fd5fa4dbb9649a
+          domain: light
+        - condition: device
+          type: is_off
+          device_id: 2118e7b0cbcce48655cf4ab0ad0de12a
+          entity_id: 2653847a270920b2dde013dcc5936aef
+          domain: light
+        - condition: sun
+          before: sunrise
+          after: sunset
+  actions:
+    - action: light.turn_on
+      target:
+        device_id:
+          - 553a209d5c875a36d62352466f0705cf
+      data:
+        brightness_pct: 15
+        kelvin: 3500
+    - type: turn_on
+      device_id: 553a209d5c875a36d62352466f0705cf
+      entity_id: 6fb220d1b8aa9f2f47029e0bc559e4d5
+      domain: switch
+  mode: single
+- id: "1731209833945"
+  alias: Bed Nightlight Off
+  description: ""
+  triggers:
+    - type: occupied
+      device_id: 0941b8f3bf78435b2a97f8d973784972
+      entity_id: 097aee16ad16a91cff05625d30c3b7ce
+      domain: binary_sensor
+      trigger: device
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 10
+  conditions:
+    - condition: device
+      type: is_on
+      device_id: 553a209d5c875a36d62352466f0705cf
+      entity_id: 5c265e66f4ce4f820a31b1bf755a990c
+      domain: light
+  actions:
+    - action: light.turn_off
+      metadata: {}
+      data:
+        transition: 10
+      target:
+        device_id: 553a209d5c875a36d62352466f0705cf
+  mode: single
+- id: "1731720478003"
+  alias: Living Room Lights Toggle
+  description: ""
+  triggers:
+    - domain: mqtt
+      device_id: 6152020e0378864c4a20113579228fc7
+      type: action
+      subtype: down_single
+      trigger: device
+  conditions:
+    - condition: device
+      type: is_off
+      device_id: 6152020e0378864c4a20113579228fc7
+      entity_id: 523ea3f7acdbc9ba1dea2502aa888eb2
+      domain: light
+  actions:
+    - action: light.turn_on
+      metadata: {}
+      data: {}
+      target:
+        device_id: 6152020e0378864c4a20113579228fc7
+  mode: single
+- id: "1731720406983"
+  alias: Kitchen Lights Toggle On
+  description: ""
+  triggers:
+    - domain: mqtt
+      device_id: e435d4107048faee192e3dd667f5d4ca
+      type: action
+      subtype: down_single
+      trigger: device
+  conditions:
+    - condition: device
+      type: is_off
+      device_id: e435d4107048faee192e3dd667f5d4ca
+      entity_id: e9cbc3bc7c0faf74053aa8b27683bf3c
+      domain: light
+  actions:
+    - action: light.turn_on
+      metadata: {}
+      data: {}
+      target:
+        device_id: e435d4107048faee192e3dd667f5d4ca
+  mode: single
+- id: "1731806209519"
+  alias: Bed Light Toggle
+  description: >-
+    Toggles the under bed lighting and turns on its night light to turn it off in
+    8 minutes
+  triggers:
+    - domain: mqtt
+      device_id: 2717ee03c47a71d850620250e98f4769
+      type: action
+      subtype: single
+      metadata: {}
+      trigger: device
+  conditions: []
+  actions:
+    - action: light.toggle
+      target:
+        device_id:
+          - 553a209d5c875a36d62352466f0705cf
+      data:
+        brightness_pct: 15
+        kelvin: 3500
+    - if:
+        - condition: device
+          type: is_on
+          device_id: 553a209d5c875a36d62352466f0705cf
+          entity_id: 5c265e66f4ce4f820a31b1bf755a990c
+          domain: light
+      then:
+        - type: turn_on
+          device_id: 553a209d5c875a36d62352466f0705cf
+          entity_id: 6fb220d1b8aa9f2f47029e0bc559e4d5
+          domain: switch
+  mode: single

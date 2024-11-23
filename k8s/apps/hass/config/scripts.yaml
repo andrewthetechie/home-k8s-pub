@@ -1,0 +1,116 @@
+goodnight:
+  alias: Goodnight
+  sequence:
+    - service: fan.turn_on
+      data:
+        percentage: 90
+      target:
+        device_id:
+          - 330f6e439343c2295b686a684b053a97
+          - ee9594b3fa11ae3b8339623c3f9bce79
+    - service: switch.turn_on
+      data: {}
+      target:
+        entity_id:
+          - switch.sarah_dyson_fan_night_mode
+          - switch.andrew_dyson_fan_night_mode
+    - service: fan.set_percentage
+      data:
+        percentage: 90
+      target:
+        device_id:
+          - 330f6e439343c2295b686a684b053a97
+          - ee9594b3fa11ae3b8339623c3f9bce79
+    - service: light.turn_off
+      data: {}
+      target:
+        area_id:
+          - kitchen
+          - living_room
+    - service: switch.turn_off
+      data: {}
+      target:
+        area_id:
+          - living_room
+          - garage
+          - front_door
+          - hall
+          - laundry_room
+        device_id:
+          - 11e91d0311357f1ddf76ee2534f0032f
+          - 18d12bca4bbc78ef7251b06af873e30c
+    - service: cover.close_cover
+      data: {}
+      target:
+        device_id: c27ac01b203cccb25e7f4dfb7eb96385
+    - service: fan.turn_off
+      data: {}
+      target:
+        area_id:
+          - andrew_office
+          - living_room
+    - service: script.quiet_googles_for_bedtime
+      data: {}
+  mode: single
+  icon: mdi:sleep
+quiet_googles_for_bedtime:
+  alias: Quiet Googles for Bedtime
+  sequence:
+    - service: media_player.volume_mute
+      data:
+        is_volume_muted: true
+      target:
+        device_id:
+          - af2d482ac7daf9f6d6bb2840f3c4d6ab
+          - 2cae81ebcf38cf66aa9f6b7e81861d10
+  mode: single
+  icon: mdi:volume-mute
+unmute_googles:
+  alias: Unmute Googles
+  sequence:
+    - service: media_player.volume_mute
+      data:
+        is_volume_muted: false
+      target:
+        device_id:
+          - 2cae81ebcf38cf66aa9f6b7e81861d10
+          - af2d482ac7daf9f6d6bb2840f3c4d6ab
+  mode: single
+  icon: mdi:volume-high
+tv_watching:
+  alias: TV Watching
+  sequence:
+    - type: turn_on
+      device_id: 1655afd46b6b27096315ea7f35735a2c
+      entity_id: a5357c46a5f029acfe22a342ae0af256
+      domain: remote
+    - action: light.turn_on
+      metadata: {}
+      data:
+        brightness_pct: 75
+      target:
+        device_id: 6152020e0378864c4a20113579228fc7
+    - type: turn_on
+      device_id: 2526bb69f082e014611d2cf1d871b453
+      entity_id: 5a6cc7775d12b73edca0bbb289026cf2
+      domain: fan
+    - action: light.turn_off
+      target:
+        area_id: kitchen
+      data: {}
+  description: ""
+  icon: mdi:remote-tv
+turn_on_coffee_pot:
+  alias: Turn on Coffee Pot
+  sequence:
+    - type: turn_on
+      device_id: 9f33284c5bf24e3ddd321ed6cdaf0ab6
+      entity_id: 8fb0d306483d9b68fb27f05e8019bdd0
+      domain: switch
+    - action: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.coffee_pot_turned_on
+      data:
+        timestamp: "{{ now().timestamp() }}"
+  description: Turns on the coffee pot and sets the timestamp
+  icon: mdi:coffee-maker-check

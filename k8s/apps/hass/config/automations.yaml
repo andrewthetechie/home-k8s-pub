@@ -1,0 +1,92 @@
+- id: "1720226992842"
+  alias: Master Bedroom Curtains - Close
+  description: ""
+  trigger:
+    - platform: device
+      domain: mqtt
+      device_id: 93e7a52aecb2b286f8c540915b98d766
+      type: action
+      subtype: single
+      discovery_id: 0xa4c138bcbe69fd56 action_single
+  condition:
+    - condition: device
+      device_id: c27ac01b203cccb25e7f4dfb7eb96385
+      domain: cover
+      entity_id: fb07e764100d76f7d5e672cbb76f2b10
+      type: is_open
+  action:
+    - service: cover.close_cover
+      data: {}
+      target:
+        device_id: c27ac01b203cccb25e7f4dfb7eb96385
+  mode: single
+- id: "1720226951506"
+  alias: Master Bedroom Curtains - Open
+  description: ""
+  trigger:
+    - platform: device
+      domain: mqtt
+      device_id: 93e7a52aecb2b286f8c540915b98d766
+      type: action
+      subtype: single
+      discovery_id: 0xa4c138bcbe69fd56 action_single
+  condition:
+    - condition: device
+      device_id: c27ac01b203cccb25e7f4dfb7eb96385
+      domain: cover
+      entity_id: fb07e764100d76f7d5e672cbb76f2b10
+      type: is_closed
+  action:
+    - service: cover.open_cover
+      data: {}
+      target:
+        device_id: c27ac01b203cccb25e7f4dfb7eb96385
+  mode: single
+- id: "1723691016248"
+  alias: Turn off Bedtime every morning
+  description: ""
+  trigger:
+    - platform: time
+      at: "08:00:00"
+  condition: []
+  action:
+    - service: input_boolean.turn_off
+      data: {}
+      target:
+        entity_id: input_boolean.bedtime
+  mode: single
+- id: "1730426753612"
+  alias: Watching TV Trigger
+  description: ""
+  triggers:
+    - trigger: state
+      entity_id:
+        - input_boolean.watching_tv
+      from: "off"
+      to: "on"
+  conditions: []
+  actions:
+    - action: script.tv_watching
+      metadata: {}
+      data: {}
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.watching_tv
+      data: {}
+  mode: single
+- id: "1731718992507"
+  alias: Water Softener Plug Always On
+  description: ""
+  triggers:
+    - type: turned_off
+      device_id: 96da67373a6e8b756058ed6a488f88b8
+      entity_id: 8786725c5d003cda803fcf4eaf81e1b0
+      domain: switch
+      trigger: device
+  conditions: []
+  actions:
+    - type: turn_on
+      device_id: 96da67373a6e8b756058ed6a488f88b8
+      entity_id: 8786725c5d003cda803fcf4eaf81e1b0
+      domain: switch
+  mode: single

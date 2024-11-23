@@ -1,0 +1,12 @@
+bedtime:
+  name: Bedtime
+  icon: "mdi:sleep"
+  initial: false
+watching_tv:
+  name: Watching TV
+  icon: "mdi:television"
+  initial: false
+server_room_ac:
+  name: Server Room AC Switch
+  icon: "mdi:air-conditioner"
+  initial: false

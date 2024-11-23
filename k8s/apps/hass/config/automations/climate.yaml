@@ -1,0 +1,68 @@
+- id: "e722179262501"
+  alias: Andrew Desk Scene Fan
+  description: Toggle Ceiling Fan
+  trigger:
+    - platform: device
+      domain: mqtt
+      device_id: d35f08e32a05bb5ae505e6b603c5ffc0
+      type: action
+      subtype: double
+      discovery_id: 0xa4c13847cfcadf5a action_double
+  condition: []
+  action:
+    - type: toggle
+      device_id: 19deda7b6bdff19e9113c4c9e3b8d148
+      entity_id: b659ad2b1a3c69b27f333beb7dba15df
+      domain: fan
+  mode: single
+- id: "1723239436568"
+  alias: Server Room Humidity Control - On
+  description: ""
+  trigger:
+    - platform: numeric_state
+      entity_id:
+        - sensor.0xa4c13836f85acf7b_humidity
+      for:
+        hours: 0
+        minutes: 15
+        seconds: 0
+      attribute: humidity
+      above: 45
+  condition: []
+  action:
+    - service: humidifier.turn_on
+      data: {}
+      target:
+        device_id: 0f6eb3054c895780c1c9933885512c29
+    - service: humidifier.set_mode
+      data:
+        mode: Continuous
+      target:
+        device_id: 0f6eb3054c895780c1c9933885512c29
+  mode: single
+- id: "1723239596580"
+  alias: Server Room Humidity Control - Off
+  description: ""
+  trigger:
+    - platform: numeric_state
+      entity_id:
+        - sensor.0xa4c13836f85acf7b_humidity
+      for:
+        hours: 0
+        minutes: 15
+        seconds: 0
+      attribute: humidity
+      below: 40
+  condition: []
+  action:
+    - device_id: 0f6eb3054c895780c1c9933885512c29
+      domain: humidifier
+      entity_id: 51776371a6951a263aa1aa05516830dc
+      type: set_humidity
+      humidity: 60
+    - device_id: 0f6eb3054c895780c1c9933885512c29
+      domain: humidifier
+      entity_id: 51776371a6951a263aa1aa05516830dc
+      type: set_mode
+      mode: Set
+  mode: single

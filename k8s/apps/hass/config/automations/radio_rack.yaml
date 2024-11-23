@@ -1,0 +1,61 @@
+- id: "1723411785814"
+  alias: Radio Rack - Fans Off
+  description: ""
+  trigger:
+    - platform: numeric_state
+      entity_id:
+        - sensor.radio_rack_temp
+      for:
+        hours: 0
+        minutes: 5
+        seconds: 30
+      below: 80
+  condition: []
+  action:
+    - type: turn_off
+      device_id: c8cab263d0e7d8f10a603cc60f97a088
+      entity_id: 6fdf6bed6417229b0038a7a9c5afe061
+      domain: switch
+    - type: turn_off
+      device_id: 434f91d521fbfdb52e275a2d988ff932
+      entity_id: 337d8c942e41746c6bd91d6a7873a78d
+      domain: switch
+  mode: single
+- id: "1723411836257"
+  alias: Radio Rack - Large Fan On
+  description: ""
+  trigger:
+    - platform: numeric_state
+      entity_id:
+        - sensor.radio_rack_temp
+      for:
+        hours: 0
+        minutes: 1
+        seconds: 30
+      above: 85
+  condition: []
+  action:
+    - type: turn_on
+      device_id: 434f91d521fbfdb52e275a2d988ff932
+      entity_id: 76ef8d3bdb49bfde7621410e9242ab8e
+      domain: fan
+  mode: single
+- id: "1723411753463"
+  alias: Radio Rack - Small Fan On
+  description: ""
+  trigger:
+    - platform: numeric_state
+      entity_id:
+        - sensor.radio_rack_temp
+      for:
+        hours: 0
+        minutes: 1
+        seconds: 30
+      above: 80
+  condition: []
+  action:
+    - type: turn_on
+      device_id: c8cab263d0e7d8f10a603cc60f97a088
+      entity_id: 56e8b1cd31b14cbb22e602b676889326
+      domain: fan
+  mode: single

@@ -1,0 +1,46 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: hyperion
+
+resources:
+  - namespace.yaml
+
+helmCharts:
+  - name: hyperion-ng
+    releaseName: hyperion
+    namespace: hyperion
+    version: 5.4.2
+    repo: https://k8s-at-home.com/charts/
+    valuesInline:
+      image:
+        tag: 2.0.15
+      env:
+        TZ: 'America/Chicago'
+      persistence:
+        config:
+          enabled: true
+          storageClassName: freenas-iscsi-csi
+      ingress:
+        main:
+          enabled: true
+          annotations:
+            cert-manager.io/cluster-issuer: letsencrypt-prod
+            nginx.org/websocket-services: hyperion-hyperion-ng
+            gethomepage.dev/description: Ambient Lighting
+            gethomepage.dev/enabled: "true"
+            gethomepage.dev/group: Misc
+            gethomepage.dev/icon: hyperion
+            gethomepage.dev/name: Hyperion
+            uptimekuma.io/monitor: "true"
+            uptimekuma.io/name: "Hyperion"
+            uptimekuma.io/type: "http"
+            uptimekuma.io/interval: "120"
+          hosts:
+          - host: hyperion.herrington.services
+            paths:
+              - path: /
+                pathType: Prefix
+          tls:
+            - secretName: hyperion
+              hosts:
+                - hyperion.herrington.services

@@ -1,0 +1,13 @@
+provider: pihole
+domainFilters:
+  - nauvoo.herrington.services
+  - herrington.services
+txtOwnerId: nauvoo
+# Pihole only supports A/CNAME records so there is no mechanism to track ownership.
+# You don't need to set this flag, but if you leave it unset, you will receive warning
+# logs when ExternalDNS attempts to create TXT records.
+registry: noop
+extraArgs:
+  # Change this to the actual address of your Pi-hole web server
+  pihole-server: http://10.10.99.2
+extraEnvVarsSecret: pihole-password

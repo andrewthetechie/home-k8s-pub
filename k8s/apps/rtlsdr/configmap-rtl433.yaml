@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: ConfigMap
+data:
+  rtl433.conf: |
+    # Uncomment the following line to also enable the default "table" output to the
+    # addon logs.
+    # output kv
+    report_meta time:iso:tz:local
+
+    hop_interval  30
+    report_meta protocol
+    report_meta stats:3
+    frequency   433.92M
+    frequency   433.92M
+    frequency   433.92M
+    frequency   868M 
+    frequency   868M 
+
+    convert     si
+    report_meta newmodel
+
+    # acurite stuff
+    protocol 10
+    protocol 11
+    protocol 40
+    protocol 41
+    protocol 55
+    protocol 74
+    protocol 163
+    protocol 197
+
+    # thermalpro stuff
+    protocol 84
+    protocol 97
+    protocol 162
+    protocol 245
+
+    # inkbird pool sensor
+    protocol 194
+
+metadata:
+  labels:
+    app.kubernetes.io/instance: rtl433
+    app.kubernetes.io/name: rtl433
+  name: rtl433-conf
+  namespace: rtl

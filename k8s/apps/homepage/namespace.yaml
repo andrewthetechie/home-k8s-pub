@@ -1,0 +1,9 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: homepage
+  labels:
+    name: homepage
+    app: homepage
+    app.kubernetes.io/app: homepage

@@ -1,0 +1,51 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ersatztv
+  labels:
+    app: ersatztv
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: ersatztv
+  template:
+    metadata:
+      labels:
+        app: ersatztv
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: amd64
+        transcode: "true"
+      containers:
+        - name: ersatztv
+          image: jasongdove/ersatztv:v0.8.7-vaapi
+          env:
+            - name: TZ
+              value: "America/Chicago"
+            - name: LOG_LEVEL
+              value: DEBUG
+          ports:
+            - containerPort: 8409
+              name: ersatztv-http
+          resources:
+            limits:
+              gpu.intel.com/i915: "1"
+            requests:
+              gpu.intel.com/i915: "1"
+          volumeMounts:
+            - mountPath: /root/.local/share/ersatztv
+              name: config
+            - mountPath: /nas
+              name: media
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: ersatztv-config-pvc
+        - name: media
+          nfs:
+            server: chrisjen.herrington.services
+            path: /mnt/disk_pool/Media

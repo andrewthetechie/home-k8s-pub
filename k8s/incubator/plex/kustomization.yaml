@@ -1,0 +1,49 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: plex
+
+resources:
+  - namespace.yaml
+
+helmCharts:
+  - name: plex
+    releaseName: plex
+    namespace: plex
+    version: 6.4.3
+    repo: https://k8s-at-home.com/charts/
+    valuesInline:
+      image:
+        repository: plexinc/pms-docker
+        tag: 1.32.6.7557-1cf77d501
+      resources: 
+        requests: 
+            gpu.intel.com/i915: "1" 
+        limits: 
+            gpu.intel.com/i915: "1" 
+      env:
+        TZ: 'America/Chicago'
+        PLEX_CLAIM: "claim-yS1775aGb4rLAhY1hsyp"
+        PLEX_PREFERENCE_1: "FriendlyName=herrington-plex"
+        PLEX_PREFERENCE_2: "LanNetworksBandwidth=10.0.0.0/8"
+      persistence:
+        config:
+          enabled: true
+          mountPath: /config
+      ingress:
+        main:
+          enabled: true
+          annotations:
+            cert-manager.io/cluster-issuer: letsencrypt-prod
+          hosts:
+          - host: plex.herrington.services
+            paths:
+              - path: /
+                pathType: Prefix
+          tls:
+            - secretName: plex-tls
+              hosts:
+                - plex.herrington.services
+
+    
+
+          

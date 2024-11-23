@@ -1,0 +1,8 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: scanservjs
+  labels:
+    name: scanservjs
+

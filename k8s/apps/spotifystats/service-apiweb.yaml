@@ -1,0 +1,30 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spotifystats-api-http
+  namespace: spotifystats
+  labels:
+    app: spotifystats
+spec:
+  ports:
+    - name: spotifystats-api-http
+      port: 80
+      targetPort: 8080
+  selector:
+    app: spotifystats
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spotifystats-web-http
+  namespace: spotifystats
+  labels:
+    app: spotifystats
+spec:
+  ports:
+    - name: spotifystats-web-http
+      port: 80
+      targetPort: 3000
+  selector:
+    app: spotifystats

@@ -1,0 +1,8 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: eso
+  labels:
+    name: eso
+    app.kubernetes.io/instance: eso

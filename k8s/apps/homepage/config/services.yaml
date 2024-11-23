@@ -1,0 +1,64 @@
+- Infra:
+  - Pihole Primary:
+      href: https://1.pihole.herrington.services/admin
+      icon: si-pihole
+      description: Primary DNS Server
+      widget:
+        type: pihole
+        url: https://1.pihole.herrington.services/
+        key: 9af8ae6dd4e73aeb2ed2fb522adc5629d32ce531edba501b7cf677e53cbe674a # optional
+  - NAS:
+      href: https://chrisjen.herrington.services
+      icon: si-truenas
+      description: Storage Server
+      widget:
+          type: truenas
+          url: https://chrisjen.herrington.services
+          key: 2-ANYDsi0sykHKNS58vpIQ6ddaEpAk9YVPHkaHGcdIi9lu0GBy8rsFVvWjtDjOfg0D
+- Piracy:
+  - SABnzbd:
+      href: https://andrewthetechie.lyra.usbx.me/sabnzbd/
+      description: Newsreader Client
+      icon: sabnzbd
+      widget:
+        type: sabnzbd
+        url: https://andrewthetechie.lyra.usbx.me/sabnzbd/
+        key: 523e4ffaee964dec93b4d6bd06922ce0
+  - ruTorrent:
+      href: https://andrewthetechie.lyra.usbx.me/rutorrent/
+      description: Torrent client
+      icon: rutorrent
+      weight: 0
+      widget:
+        type: rutorrent
+        url: https://andrewthetechie.lyra.usbx.me/rutorrent/
+        username: andrewthetechie
+        password: h5Awzp7x6WSD722A!
+  - ultra.cc Control Panel:
+      href: https://cp.ultra.cc/#/
+      description: Control panel for Seedbox
+      icon: https://avatars.githubusercontent.com/u/25888645?s=280&v=4
+  - ultra.cc Client Area:
+      href: https://my.ultra.cc/
+      description: Billing and support for Seedbox
+      icon: https://avatars.githubusercontent.com/u/25888645?s=280&v=4
+- Monitoring:
+  - UptimeKuma Fred:
+      href: http://10.10.0.35:3001
+      icon: si-uptimekuma
+      description: Off-k8s Monitoring
+      widget:
+        type: uptimekuma
+        url: http://10.10.0.35:3001
+        slug: all
+- SmartHome:
+  - Zigbee Coordinator:
+      href: http://zigbee1.iot.herrington.services/
+      icon: https://static-00.iconduck.com/assets.00/zigbee-icon-512x512-3txmp44z.png
+      description: Zigbee Coordinator
+- Media:
+  - Jellyfin:
+      href: http://jf.herrington.services/
+      icon: si-jellyfin
+      description: Media Server
+      weight: 0

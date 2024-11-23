@@ -1,0 +1,65 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: uptime-kuma
+
+resources:
+  - namespace.yaml
+
+helmCharts:
+  - name: uptime-kuma
+    releaseName: uptime-kuma
+    namespace: uptime-kuma
+    version: 2.19.3
+    repo: https://helm.irsigler.cloud
+    valuesInline:
+      image:
+        tag: "1.23.15-alpine"
+      dnsConfig:
+        nameservers:
+          - 10.10.0.35
+          - 10.10.99.2
+      podLabels:
+        app: uptime-kuma
+      securityContext:
+        allowPrivilegeEscalation: false
+      ingress:
+        enabled: true
+        extraLabels:
+          app: uptime-kuma
+        annotations:
+          gethomepage.dev/description: Monitors services
+          gethomepage.dev/enabled: "true"
+          gethomepage.dev/group: Monitoring
+          gethomepage.dev/icon: si-uptimekuma
+          gethomepage.dev/name: UptimeKuma K8S
+          gethomepage.dev/widget.type: uptimekuma
+          gethomepage.dev/widget.url: https://uptime.herrington.services
+          gethomepage.dev/widget.slug: all
+          nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+          nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+          nginx.org/websocket-services: uptime-kuma
+          nginx.ingress.kubernetes.io/server-snippets: |
+            location / {
+              proxy_set_header Upgrade $http_upgrade;
+              proxy_http_version 1.1;
+              proxy_set_header X-Forwarded-Host $http_host;
+              proxy_set_header X-Forwarded-Proto $scheme;
+              proxy_set_header X-Forwarded-For $remote_addr;
+              proxy_set_header Host $host;
+              proxy_set_header Connection "upgrade";
+              proxy_set_header X-Real-IP $remote_addr;
+              proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+              proxy_set_header   Upgrade $http_upgrade;
+              proxy_cache_bypass $http_upgrade;
+            }
+          cert-manager.io/cluster-issuer: letsencrypt-prod
+        hosts:
+        - host: uptime.herrington.services
+          paths:
+            - path: /
+              pathType: Prefix
+        tls:
+          - secretName: uptime-tls
+            hosts:
+              - uptime.herrington.services
+          

@@ -1,0 +1,71 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: gitea
+
+resources:
+  - namespace.yaml
+  - secret-themes.yaml
+
+helmCharts:
+  - name: gitea
+    releaseName: gitea
+    version: 10.4.0
+    repo: https://dl.gitea.com/charts/
+    namespace: gitea
+    valuesInline:
+      # https://codeberg.org/pat-s/gitea-github-theme#helm-chart-instructions
+      extraVolumes:
+        - name: gitea-themes
+          secret:
+            secretName: gitea-themes
+      ingress:
+        enabled: true
+        apiVersion: networking.k8s.io/v1
+        className: nginx
+        annotations:
+          cert-manager.io/cluster-issuer: letsencrypt-prod
+          gethomepage.dev/description: Internal Source Code
+          gethomepage.dev/enabled: "true"
+          gethomepage.dev/group: Infra
+          gethomepage.dev/icon: gitea
+          gethomepage.dev/name: Gitea
+          uptimekuma.io/monitor: "true"
+          uptimekuma.io/name: "Gitea"
+          uptimekuma.io/type: "http"
+          uptimekuma.io/interval: "120"
+        hosts:
+          - host: gitea.herrington.services
+            paths:
+              - path: /
+                pathType: Prefix
+        tls:
+          - secretName: gitea-tls
+            hosts:
+              - gitea.herrington.services
+      redis-cluster:
+        enabled: false
+      redis:
+        enabled: true
+      postgresql-ha:
+        enabled: false
+      postgresql:
+        enabled: true
+        persistence:
+          enabled: true
+          storageClass: freenas-iscsi-ssd-csi
+      persistence:
+        enabled: true
+      service:
+        ssh:
+          type: LoadBalancer
+          annotations:
+            external-dns.alpha.kubernetes.io/hostname: ssh.gitea.herrington.services
+      gitea:
+        admin:
+          username: "andrew"
+          password: "password"
+          email: "andrew.the.techie@gmail.com"
+        config:
+          ui:
+            DEFAULT_THEME: github-auto
+            THEMES: auto,gitea,arc-green,github,github-dark,github-auto

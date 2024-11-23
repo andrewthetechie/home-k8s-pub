@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: lldap
+  name: ldap-service
+  namespace: lldap
+spec:
+  ports:
+    - name: ldaps
+      port: 389
+      protocol: TCP
+      targetPort: 3890
+  selector:
+    app: lldap

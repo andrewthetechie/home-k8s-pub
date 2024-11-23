@@ -1,0 +1,21 @@
+apiVersion: "acid.zalan.do/v1"
+kind: postgresql
+metadata:
+  name: lldap-db
+  namespace: lldap
+  labels:
+    app: lldap
+spec:
+  numberOfInstances: 2
+  teamId: lldap
+  postgresql:
+    version: "15"
+  volume:
+    size: 10Gi
+    storageClass: freenas-iscsi-ssd-csi
+  users:
+    lldap:
+      - superuser
+      - createdb
+  databases:
+    lldap: lldap

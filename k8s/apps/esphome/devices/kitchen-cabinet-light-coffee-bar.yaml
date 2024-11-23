@@ -1,0 +1,75 @@
+esphome:
+  name: coffee-bar-lighting
+  includes:
+    - touch-dimming.h
+  on_boot:
+    priority: 500
+    then:
+      # This line ties the dimming behaviour to the light and the touch
+      # sensor. You can copy it for every light+sensor combo you have.
+      # The name ("dimmer" in this case) is just for debug logging.
+      - lambda: new TouchDimmer("dimmer", coffee_bar_light, touch_pad);
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+wifi:
+  ssid: !secret iot_wifi_ssid
+  password: !secret iot_wifi_password
+  use_address: 10.10.5.77
+
+api:
+
+ota:
+  platform: esphome
+
+web_server:
+  port: 80
+
+logger:
+
+esp32_touch:
+  iir_filter: 10ms
+  low_voltage_reference: 0.7V
+  voltage_attenuation: 0.5V
+
+output:
+  - platform: ledc
+    pin: GPIO19
+    id: gpio_19
+
+light:
+  - platform: monochromatic
+    output: gpio_19
+    id: "coffee_bar_light"
+    name: "Coffee Bar Lighting"
+    default_transition_length: 200ms
+    restore_mode: ALWAYS_OFF
+
+binary_sensor:
+  - platform: esp32_touch
+    id: touch_pad
+    name: "Touch Pad"
+    pin: GPIO27
+    threshold: 700
+    # on_click:
+    #   - min_length: 15ms
+    #     max_length: 1000ms
+    #     then:
+    #       - logger.log: "Short click"
+    #       - light.toggle: coffee_bar_light
+    #   - min_length: 1000ms
+    #     max_length: 3000ms
+    #     then:
+    #       - logger.log: "Medium click"
+    #   - min_length: 3000ms
+    #     max_length: 5000ms
+    #     then:
+    #       - logger.log: "Long Click"
+
+script:
+  - id: dummy
+    mode: single
+    then:

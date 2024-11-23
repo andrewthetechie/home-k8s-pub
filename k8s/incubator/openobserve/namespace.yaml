@@ -1,0 +1,8 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: openobserve
+  labels:
+    name: openobserve
+    pod-security.kubernetes.io/enforce: privileged

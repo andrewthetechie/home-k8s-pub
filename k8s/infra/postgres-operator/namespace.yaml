@@ -1,0 +1,8 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: pg-operator
+  labels:
+    name: pg-operator
+    app.kubernetes.io/instance: pg-operator

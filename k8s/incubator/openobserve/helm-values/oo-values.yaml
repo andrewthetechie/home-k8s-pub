@@ -1,0 +1,52 @@
+auth:
+  ZO_S3_ACCESS_KEY: "FAKEAUTH"
+  ZO_S3_SECRET_KEY: "FAKEAUTH"
+config:
+  ZO_S3_SERVER_URL: "https://chrisjen.herrington.services:9000"
+  ZO_S3_BUCKET_NAME: "open-observe"
+  ZO_S3_REGION_NAME: "us-east-1"
+  ZO_S3_PROVIDER: "s3"
+  ZO_DATA_LIFECYCLE: "14"
+  RUST_LOG: info
+
+podAnnotations:
+  fluentbit.io/exclude: 'true'
+
+securityContext:
+  capabilities:
+    drop:
+    - ALL
+
+ingress:
+  enabled: true
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/connection-proxy-header: keep-alive
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: '900'
+    nginx.ingress.kubernetes.io/proxy-send-timeout: '900'
+    nginx.ingress.kubernetes.io/proxy-read-timeout: '900'
+    nginx.ingress.kubernetes.io/proxy-body-size: 32m
+    gethomepage.dev/description: Observability Platform
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/group: Monitoring
+    gethomepage.dev/icon: https://avatars.githubusercontent.com/u/95867656?s=280&v=4
+    gethomepage.dev/name: OpenObserve
+    uptimekuma.io/monitor: "true"
+    uptimekuma.io/name: "OpenObserve"
+    uptimekuma.io/type: "http"
+    uptimekuma.io/interval: "120"
+  hosts:
+  - host: oo.herrington.services
+    paths:
+      - path: /
+        pathType: Prefix
+  tls:
+    - secretName: oo-tls
+      hosts:
+        - oo.herrington.services
+
+etcd:
+  persistence:
+    size: 10Gi
+    storageClass: freenas-iscsi-ssd-csi

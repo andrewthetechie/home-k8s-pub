@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: hrconvert2
+
+resources:
+  - namespace.yaml
+
+helmCharts:
+  - name: app-template
+    releaseName: hrconvert2
+    namespace: hrconvert2
+    version: 3.3.2
+    repo: https://bjw-s.github.io/helm-charts
+    valuesFile: values.yaml

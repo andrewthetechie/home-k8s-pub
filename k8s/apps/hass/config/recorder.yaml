@@ -1,0 +1,37 @@
+db_url: !secret psql_string
+db_retry_wait: 15 # Wait 15 seconds before retrying
+# tried this to fix db issues. if we're still failing, change from postgres to sqlite
+commit_interval: 0
+auto_purge: true
+auto_repack: true
+purge_keep_days: 90
+exclude:
+  domains:
+    - automation
+    - updater
+    - device_tracker
+    - media_player
+    - uptime
+    - time_date
+    - worldclock
+  entity_globs:
+    - sensor.weather_*
+    - sensor.clock*
+    - sensor.date*
+    - sensor.glances*
+    - sensor.load_*m
+    - sensor.time*
+    - sensor.uptime*
+  entities:
+    - sun.sun # Don't record sun data
+    - sensor.last_boot # Comes from 'systemmonitor' sensor platform
+    - sensor.date
+    - camera.front_door
+    - sensor.home_assistant_v2_db
+    - sensor.memory_free
+    - sensor.memory_use
+    - sensor.memory_use_percent
+    - sensor.processor_use
+    - weather.openweathermap
+  event_types:
+    - call_service # Don't record service calls

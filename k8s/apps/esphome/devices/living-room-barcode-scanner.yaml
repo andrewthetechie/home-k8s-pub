@@ -1,0 +1,91 @@
+# Basic Config
+esphome:
+  name: lr-barcode-scanner
+
+external_components:
+  # use serial from ssieb's components
+  - source:
+      type: git
+      url: https://github.com/ssieb/esphome_components
+    components:
+      - serial
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+wifi:
+  ssid: !secret iot_wifi_ssid
+  password: !secret iot_wifi_password
+  use_address: 10.10.5.80
+
+api:
+
+ota:
+  platform: esphome
+
+web_server:
+  port: 80
+
+logger:
+  level: VERBOSE
+
+uart:
+  id: uart_bus
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+  baud_rate: 9600
+  debug:
+    direction: BOTH
+    after:
+      delimiter: "\n"
+
+# Define a text sensor for the ASCII output
+text_sensor:
+  - platform: serial
+    uart_id: uart_bus
+    name: Album Barcode
+    id: album_barcode
+    # reset the barcode back to "blank" after 10 seconds
+    on_value:
+      then:
+        - delay: 10s
+        - lambda: |-
+            if (id(album_barcode).state != "blank") {
+              id(album_barcode).publish_state("blank");
+            }
+  - platform: version
+    name: ${name} ESPHome Version
+  - platform: wifi_info
+    ip_address:
+      name: ${name} IP Address
+    ssid:
+      name: ${name} SSID
+    bssid:
+      name: ${name} BSSID
+
+sensor:
+  - platform: wifi_signal
+    name: ${name} WiFi Signal
+    update_interval: 300s
+  - platform: uptime
+    name: ${name} Uptime
+    unit_of_measurement: h
+    filters:
+      - lambda: return int((x + 1800.0) / 3600.0);
+
+binary_sensor:
+  - platform: status
+    name: ${name} status
+
+switch:
+  - platform: restart
+    name: ${name} Restart
+# Not using the keydown sensor right now
+#   - platform: gpio
+#     name: "Barcode Scanner Keydown"
+#     pin:
+#       number: D2
+#       mode:
+#         input: true

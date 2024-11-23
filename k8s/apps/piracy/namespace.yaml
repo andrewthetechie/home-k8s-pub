@@ -1,0 +1,9 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: piracy
+  labels:
+    name: piracy
+    app.kubernetes.io/instance: piracy
+    pod-security.kubernetes.io/enforce: privileged

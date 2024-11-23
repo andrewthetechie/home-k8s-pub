@@ -1,0 +1,44 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: wavelog
+
+resources:
+  - namespace.yaml
+  - sealed-secret.yaml
+  - secret-store.yaml
+  - templated-secret.yaml
+  - db-secret.yaml
+  - pvc-uploads.yaml
+  - pvc-userdata.yaml
+  - deployment.yaml
+  - service.yaml
+  - ingress.yaml
+
+helmCharts:
+  - name: mariadb
+    releaseName: wavelogdb
+    namespace: wavelog
+    version: 3.1.1
+    repo: https://groundhog2k.githAub.io/helm-charts/
+    valuesInline:
+      storage:
+        requestedSize: 25Gi
+        className: freenas-iscsi-csi
+      settings:
+        existingSecret: db-config
+        secretKey: ROOT_PASSWORD
+      userDatabase:
+        existingSecret: db-config
+        name:
+          secretKey: MARIADB_DATABASE
+        user:
+          secretKey: MARIADB_USER
+        password:
+          secretKey: MARIADB_PASSWORD
+configMapGenerator:
+  - name: wavelog-config-tmpl
+    files:
+      - config/config.php
+      - config/database.php
+    options:
+      disableNameSuffixHash: true

@@ -1,0 +1,24 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: cert-manager
+
+resources:
+  - namespace.yaml
+  - crds.yaml
+  - sealed-secret-cf-api.yaml
+  - sealed-secret-zerossl.yaml
+
+helmCharts:
+  - name: cert-manager
+    releaseName: cert-manager
+    namespace: cert-manager
+    version: 1.15.2
+    repo: https://charts.jetstack.io
+    valuesInline:
+      global:
+        leaderElection:
+          namespace: cert-manager
+      dns01RecursiveNameservers: 8.8.8.8:53,1.1.1.1:53
+      dns01RecursiveNameserversOnly: true
+      ingressShim:
+        defaultIssuerName: letsencrypt-prod

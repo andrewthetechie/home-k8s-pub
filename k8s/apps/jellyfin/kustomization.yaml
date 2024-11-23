@@ -1,0 +1,106 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: jellyfin
+
+resources:
+  - namespace.yaml
+  - pvc-jellyseer.yaml
+  - deployment-jellyseer.yaml
+  - service-jellyseer.yaml
+  - ingress-jellyseer.yaml
+
+helmCharts:
+  - name: jellyfin
+    releaseName: jellyfin
+    namespace: jellyfin
+    version: 9.5.3
+    repo: https://k8s-at-home.com/charts/
+    valuesInline:
+      image:
+        tag: 10.10.0
+      resources:
+        requests:
+          cpu: 3
+          gpu.intel.com/i915: "1"
+        limits:
+          gpu.intel.com/i915: "1"
+      env:
+        TZ: "America/Chicago"
+      persistence:
+        config:
+          enabled: true
+          mountPath: /config
+          storageClassName: freenas-iscsi-ssd-csi
+      ingress:
+        main:
+          enabled: true
+          annotations:
+            cert-manager.io/cluster-issuer: letsencrypt-prod
+            gethomepage.dev/description: Watch movies, shows, or listen to music
+            gethomepage.dev/enabled: "true"
+            gethomepage.dev/group: Media
+            gethomepage.dev/icon: jellyfin
+            gethomepage.dev/name: Jellyfin
+            uptimekuma.io/monitor: "true"
+            uptimekuma.io/name: "Jellyfin"
+            uptimekuma.io/type: "http"
+            uptimekuma.io/interval: "120"
+            nginx.org/proxy-buffering: "false"
+            nginx.org/client-max-body-size: "0"
+            nginx.org/proxy-connect-timeout: "180"
+            nginx.org/proxy-read-timeout: "180"
+            nginx.org/proxy-send-timeout: "180"
+            nginx.org/websocket-services: jellyfin
+          hosts:
+            - host: jf.herrington.services
+              paths:
+                - path: /
+                  pathType: Prefix
+          tls:
+            - secretName: jf-tls
+              hosts:
+                - jf.herrington.services
+patches:
+  - target:
+      kind: Deployment
+      name: jellyfin
+    patch: |-
+      - op: add
+        path: /spec/template/spec/volumes/-
+        value:
+          name: media
+          nfs:
+            server: chrisjen.herrington.services
+            path: /mnt/disk_pool/Media
+  - target:
+      kind: Deployment
+      name: jellyfin
+    patch: |-
+      - op: add
+        path: /spec/template/spec/nodeSelector
+        value:
+          kubernetes.io/arch: amd64
+          transcode: "true"
+  - target:
+      kind: Deployment
+      name: jellyfin
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/volumeMounts/-
+        value:
+          mountPath: /nas
+          name: media
+  - target:
+      kind: PersistentVolumeClaim
+      name: jellyfin-config
+    patch: |-
+      - op: add
+        path: /spec/storageClassName
+        value: 'freenas-iscsi-ssd-csi'
+  - target:
+      kind: PersistentVolumeClaim
+      name: jellyfin-config
+    patch: |-
+      - op: replace
+        path: /spec/resources/requests/storage
+        value: 50Gi

@@ -1,0 +1,155 @@
+sensor:
+- name: Andrew Office Shelly HT - Temp
+  state_topic: shellies/shelly-6BB04A/info
+  value_template: "{{ value_json.tmp.tC }}"
+  device_class: temperature
+  icon: "mdi:thermometer"
+  unique_id: F65F46UVR7Q3R
+  unit_of_measurement: "°C"
+  device:
+    identifiers: 
+      - shelly-6BB04a
+    manufacturer: Shelly
+    suggested_area: Andrew Office
+- name: Andrew Office Shelly HT - Humidity
+  state_topic: shellies/shelly-6BB04A/info
+  value_template: "{{ value_json.hum.value }}"
+  device_class: humidity
+  icon: "mdi:water-percent"
+  unique_id: F74F96pXR7TUA
+  unit_of_measurement: "%"
+  device:
+    identifiers: 
+      - shelly-6BB04a
+    manufacturer: Shelly
+    suggested_area: Andrew Office
+- name: Side Yard Temp
+  state_topic: rtl_433/Acurite-Tower/13929
+  value_template: "{{ value_json.temperature_C }}"
+  device_class: temperature
+  icon: "mdi:thermometer"
+  unique_id: H55F46pVR7Q2J
+  unit_of_measurement: "°C"
+  device:
+    identifiers: 
+      - tower-13929
+    manufacturer: Acurite
+    suggested_area: Side Yard
+    via_device: rtl_433
+- name: Side Yard Humidity
+  state_topic: rtl_433/Acurite-Tower/13929
+  value_template: "{{ value_json.humidity }}"
+  device_class: humidity
+  icon: "mdi:water-percent"
+  unique_id: H55F46pVR7Q3J
+  unit_of_measurement: "%"
+  device:
+    identifiers: 
+      - tower-13929
+    manufacturer: Acurite
+    suggested_area: Side Yard
+    via_device: rtl_433
+- name: Front Porch Temp
+  state_topic: rtl_433/Acurite-Tower/5930
+  value_template: "{{ value_json.temperature_C }}"
+  device_class: temperature
+  icon: "mdi:thermometer"
+  unique_id: 0wj7gAxS8QECx
+  unit_of_measurement: "°C"
+  device:
+    identifiers: 
+      - tower-5930
+    manufacturer: Acurite
+    suggested_area: Front Porch
+    via_device: rtl_433
+- name: Front Porch Humidity
+  state_topic: rtl_433/Acurite-Tower/5930
+  value_template: "{{ value_json.humidity }}"
+  device_class: humidity
+  icon: "mdi:water-percent"
+  unique_id: H65F46pVR7Q4J
+  unit_of_measurement: "%"
+  device:
+    identifiers: 
+      - tower-5930
+    manufacturer: Acurite
+    suggested_area: Front Porch
+    via_device: rtl_433
+- name: Back Porch Temp
+  state_topic: rtl_433/Acurite-Tower/2063
+  value_template: "{{ value_json.temperature_C }}"
+  device_class: temperature
+  icon: "mdi:thermometer"
+  unique_id: tOLO1H53QeZn1
+  unit_of_measurement: "°C"
+  device:
+    identifiers: 
+      - tower-2063
+    manufacturer: Acurite
+    suggested_area: Back Porch
+    via_device: rtl_433
+- name: Back Porch Humidity
+  state_topic: rtl_433/Acurite-Tower/2063
+  value_template: "{{ value_json.humidity }}"
+  device_class: humidity
+  icon: "mdi:water-percent"
+  unique_id: tOLO1H53QeZn2
+  unit_of_measurement: "%"
+  device:
+    identifiers: 
+      - tower-2063
+    manufacturer: Acurite
+    suggested_area: Back Porch
+    via_device: rtl_433
+- name: Server Room Temp
+  state_topic: rtl_433/Acurite-606TX/76
+  device_class: temperature
+  value_template: "{{ value_json.temperature_C }}"
+  unit_of_measurement: "°C"
+  icon: "mdi:thermometer"
+  unique_id: tOLO1H53QeZn3
+  device:
+    identifiers:
+      - 606TX-76
+    manufacturer: Acurite
+    suggested_area: Server Room
+    via_device: rtl_433
+- name: Fridge Temp
+  state_topic: rtl_433/Acurite-986/53969
+  device_class: temperature
+  icon: "mdi:thermometer"
+  value_template: "{{ value_json.temperature_F }}"
+  unique_id: tOLO1H53QeZn4
+  unit_of_measurement: "°F"
+  device:
+    identifiers:
+      - 986-53969
+    manufacturer: Acurite
+    suggested_area: Kitchen
+    via_device: rtl_433
+- name: Deep Freeze Temp
+  state_topic: rtl_433/Acurite-986/54383
+  device_class: temperature
+  icon: "mdi:thermometer"
+  value_template: "{{ value_json.temperature_F }}"
+  unique_id: tOLO1H53QeZn5
+  unit_of_measurement: "°F"
+  device:
+    identifiers:
+      - 986-54383
+    manufacturer: Acurite
+    suggested_area: Laundry Room
+    via_device: rtl_433
+- name: Pool Temp
+  state_topic: rtl_433/Inkbird-ITH20R/35182
+  device_class: temperature
+  icon: "mdi:thermometer"
+  value_template: "{{ value_json.temperature_C }}"
+  unique_id: z1L81J53TeZn9
+  unit_of_measurement: "°C"
+  device:
+    identifiers:
+      - ITH20R-35182
+    manufacturer: Inkbird
+    suggested_area: Pool
+    via_device: rtl_433
