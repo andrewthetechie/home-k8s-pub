@@ -1,0 +1,75 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    lldap: https://github.com/nitnelave/lldap
+    k8s: https://github.com/Evantage-WS/lldap-kubernetes
+  labels:
+    app: lldap
+  name: lldap
+  namespace: lldap
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lldap
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        lldap: https://github.com/nitnelave/lldap
+        k8s: https://github.com/Evantage-WS/lldap-kubernetes
+      labels:
+        app: lldap
+    spec:
+      containers:
+        - env:
+            - name: GID
+              value: "1001"
+            - name: LLDAP_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: lldap-credentials
+                  key: lldap-jwt-secret
+            - name: LLDAP_LDAP_USER_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: lldap-credentials
+                  key: lldap-ldap-user-pass
+            - name: LLDAP_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: lldap.lldap-db.credentials.postgresql.acid.zalan.do
+                  key: username
+            - name: LLDAP_DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: lldap.lldap-db.credentials.postgresql.acid.zalan.do
+                  key: password
+            - name: LLDAP_DATABASE_URL
+              value: postgres://$(LLDAP_DB_USER):$(LLDAP_DB_PASS)@lldap-db.lldap/lldap
+
+          envFrom:
+            - configMapRef:
+                name: lldap-config
+          image: nitnelave/lldap:stable
+          name: lldap
+          ports:
+            - containerPort: 3890
+            - containerPort: 17170
+          volumeMounts:
+            - mountPath: /data
+              name: lldap-data
+            - mountPath: /etc/cert
+              name: cert-mount
+              readOnly: true
+      restartPolicy: Always
+      volumes:
+        - name: lldap-data
+          persistentVolumeClaim:
+            claimName: lldap-data
+        - name: cert-mount
+          secret:
+            secretName: lldap-crt-secret

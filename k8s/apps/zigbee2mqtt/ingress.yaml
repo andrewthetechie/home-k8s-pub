@@ -1,0 +1,40 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.org/websocket-services: zigbee2mqtt
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    gethomepage.dev/description: Zigbee Device Management
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/group: SmartHome
+    gethomepage.dev/icon: zigbee2mqtt
+    gethomepage.dev/name: Zigbee2MQTT
+    uptimekuma.io/monitor: "true"
+    uptimekuma.io/name: "Zigbee2MQTT"
+    uptimekuma.io/type: "http"
+    uptimekuma.io/interval: "120"
+  labels:
+    app.kubernetes.io/instance: zigbee2mqtt
+    app.kubernetes.io/name: zigbee2mqtt
+  name: zigbee2mqtt
+  namespace: zigbee2mqtt
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: zigbee2mqtt.iot.herrington.services
+    http:
+      paths:
+      - backend:
+          service:
+            name: zigbee2mqtt
+            port:
+              number: 8080
+        path: /
+        pathType: Prefix
+  tls:
+    - hosts:
+        - zigbee2mqtt.iot.herrington.services
+      secretName: crt-secret
+

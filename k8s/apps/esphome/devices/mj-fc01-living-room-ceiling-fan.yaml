@@ -1,0 +1,36 @@
+# Basic Config
+esphome:
+  name: living_room_ceiling_fan
+  friendly_name: Living Room Ceiling Fan
+  platform: ESP8266
+  board: esp01_1m
+
+substitutions:
+  friendly_name: Living Room Ceiling Fan
+
+wifi:
+  ssid: !secret iot_wifi_ssid
+  password: !secret iot_wifi_password
+  use_address: 10.10.5.72
+
+api:
+
+ota:
+  platform: esphome
+
+logger:
+  baud_rate: 0
+
+uart:
+  rx_pin: GPIO3
+  tx_pin: GPIO1
+  baud_rate: 9600
+
+tuya:
+
+fan:
+  - platform: "tuya"
+    name: MJ FC01 Fan Speed
+    switch_datapoint: 1
+    speed_datapoint: 3
+    speed_count: 4

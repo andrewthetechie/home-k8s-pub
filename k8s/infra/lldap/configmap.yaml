@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lldap-config
+  namespace: lldap
+data:
+  LLDAP_LDAP_BASE_DN: "dc=herrington,dc=services"
+  LLDAP_LDAPS_OPTIONS__ENABLED: "true"
+  LLDAP_LDAPS_OPTIONS__CERT_FILE: /etc/cert/tls.crt
+  LLDAP_LDAPS_OPTIONS__KEY_FILE: /etc/cert/tls.key
+  TZ: CST
+  UID: "1001"

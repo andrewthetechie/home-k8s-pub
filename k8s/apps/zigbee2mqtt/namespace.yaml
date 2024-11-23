@@ -1,0 +1,8 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: zigbee2mqtt
+  labels:
+    name: zigbee2mqtt
+    app.kubernetes.io/instance: zigbee2mqtt

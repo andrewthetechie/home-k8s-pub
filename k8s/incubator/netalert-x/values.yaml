@@ -1,0 +1,67 @@
+controllers:
+  netalertx:
+    strategy: RollingUpdate
+    containers:
+      app:
+        image:
+          repository: jokobsk/netalertx
+          tag: 24
+          pullPolicy: IfNotPresent
+        env:
+          TZ: America/Chicago
+    # pod:
+    #   securityContext:
+    #     runAsNonRoot: true
+    #     runAsUser: 1000
+    #     runAsGroup: 1000
+    #     fsGroup: 1000
+    #     fsGroupChangePolicy: OnRootMismatch
+persistence:
+  config:
+    enabled: true
+    type: persistentVolumeClaim
+    accessMode: ReadWriteOnce
+    size: 500Mi
+    globalMounts:
+      - path: /app/config
+  db:
+    enabled: true
+    type: persistentVolumeClaim
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    globalMounts:
+      - path: /app/db
+
+service:
+  netalertx:
+    controller: netalertx
+    ports:
+      http:
+        port: 20211
+
+ingress:
+  netalertx:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/description: Network Monitoring
+      gethomepage.dev/enabled: "true"
+      gethomepage.dev/group: Monitoring
+      gethomepage.dev/icon: mdi-ip-network-outline
+      gethomepage.dev/name: NetAlertX
+      uptimekuma.io/monitor: "true"
+      uptimekuma.io/name: "NetAlertX"
+      uptimekuma.io/type: "http"
+      uptimekuma.io/interval: "120"
+    hosts:
+      - host: netalertx.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: netalertx
+              port: http
+    tls:
+      - secretName: netalertx
+        hosts:
+          - netalertx.herrington.services

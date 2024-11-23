@@ -1,0 +1,11 @@
+  - platform: generic_thermostat
+    name: Server Room
+    heater: input_boolean.server_room_ac
+    target_sensor: sensor.server_room_temp
+    min_temp: 68
+    max_temp: 82
+    ac_mode: true
+    target_temp: 75
+    min_cycle_duration:
+      seconds: 300
+    initial_hvac_mode: "off"

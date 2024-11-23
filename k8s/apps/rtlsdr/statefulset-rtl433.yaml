@@ -1,0 +1,54 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: rtl433
+  namespace: rtl
+spec:
+  serviceName: rtl433
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rtl433
+  template:
+    metadata:
+      labels:
+        app: rtl433
+        selector: rtl433
+        app.kubernetes.io/instance: rtl433
+        app.kubernetes.io/name: rtl433
+    spec:
+      containers:
+        - name: rtl433
+          image: ghcr.io/andrewthetechie/rtl_sdr_static:librtlsdr86c6f8f
+          command: 
+            - rtl_433
+            - -F
+            - json
+            - -M
+            - UTC
+            - -F
+            - mqtt://mosquitto.mqtt.svc.cluster.local:1883,retain=0,events=rtl_433[/model][/id]
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: rtlsdr-tuner-103
+              mountPath: /dev/rtl
+            - name: config-volume
+              mountPath: /etc/rtl_433
+      volumes:
+        - name: rtlsdr-tuner-103
+          hostPath:
+            path: /dev/rtlsdr103
+        - name: config-volume
+          configMap:
+            # Provide the name of the ConfigMap containing the files you want
+            # to add to the container
+            name: rtl433-conf
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: feature.node.kubernetes.io/usb-ff_0bda_2838_00000103.present
+                operator: Exists

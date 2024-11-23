@@ -1,0 +1,60 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pb-deployment
+  namespace: pastebin
+  labels:
+    app: pastebin
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: pastebin
+  template:
+    metadata:
+      labels:
+        app: pastebin
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: amd64
+      initContainers:
+        - name: createdbfile
+          image: busybox:1.37
+          command: 
+            - sh
+            - -c
+            - touch $WASTEBIN_DATABASE_PATH && chmod -R 777 /data && chmod 777 $WASTEBIN_DATABASE_PATH && ls -lash /data
+          env:
+            - name: WASTEBIN_DATABASE_PATH
+              value: '/data/state.db'
+          volumeMounts:
+            - mountPath: /data
+              name: pastebin-data
+      containers:
+        - name: pastebin
+          image: quxfoo/wastebin:2.5.0
+          envFrom:
+            - secretRef:
+                name: keys
+          env:
+            - name: WASTEBIN_DATABASE_PATH
+              value: '/data/state.db'
+            - name: WASTEBIN_ADDRESS_PORT
+              value: "0.0.0.0:8080"
+            - name: WASTEBIN_MAX_BODY_SIZE
+              value: "5242880"
+            - name: WASTEBIN_TITLE
+              value: "Herrington Pastebin"
+          ports:
+            - containerPort: 8080
+              name: pastebin-http
+          volumeMounts:
+            - mountPath: /data
+              name: pastebin-data
+      volumes:
+        - name: pastebin-data
+          persistentVolumeClaim:
+            claimName: pb-pvc

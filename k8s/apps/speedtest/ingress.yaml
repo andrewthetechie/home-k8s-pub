@@ -1,0 +1,36 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: speedtest
+  namespace: speedtest
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    gethomepage.dev/description: Check Internet Speed
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/group: Monitoring
+    gethomepage.dev/icon: si-speedtest
+    gethomepage.dev/name: Speedtest
+    gethomepage.dev/widget.type: speedtest
+    gethomepage.dev/widget.url: https://speedtest.herrington.services
+    uptimekuma.io/monitor: "true"
+    uptimekuma.io/name: "Speedtest"
+    uptimekuma.io/type: "http"
+    uptimekuma.io/interval: "120"
+spec:
+  tls:
+    - hosts:
+        - speedtest.herrington.services
+      secretName: speedtest-tls-cert
+  rules:
+    - host: speedtest.herrington.services
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: speedtest
+                port:
+                  number: 8765

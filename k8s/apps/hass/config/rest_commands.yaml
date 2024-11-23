@@ -1,0 +1,7 @@
+barcode_api:
+  url: "https://barcode.herrington.services/album/search/?barcode={{ barcode }}"
+  method: GET
+  headers:
+    accept: "application/json, text/html"
+    user-agent: "HomeAssistant"
+  verify_ssl: true

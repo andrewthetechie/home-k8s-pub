@@ -1,0 +1,133 @@
+csiDriver:
+  # should be globally unique for a given cluster
+  name: "org.democratic-csi.iscsi"
+
+# add note here about volume expansion requirements
+storageClasses:
+  - name: freenas-iscsi-csi
+    defaultClass: true
+    reclaimPolicy: Delete
+    volumeBindingMode: Immediate
+    allowVolumeExpansion: true
+    parameters:
+      fsType: ext4
+
+      # if true, volumes created from other snapshots will be
+      # zfs send/received instead of zfs cloned
+      # detachedVolumesFromSnapshots: "false"
+
+      # if true, volumes created from other volumes will be
+      # zfs send/received instead of zfs cloned
+      # detachedVolumesFromVolumes: "false"
+
+    mountOptions: []
+    secrets:
+      provisioner-secret:
+      controller-publish-secret:
+      node-stage-secret:
+      #      # any arbitrary iscsiadm entries can be add by creating keys starting with node-db.<entry.name>
+      #      # if doing CHAP
+      #      node-db.node.session.auth.authmethod: CHAP
+      #      node-db.node.session.auth.username: foo
+      #      node-db.node.session.auth.password: bar
+      #
+      #      # if doing mutual CHAP
+      #      node-db.node.session.auth.username_in: baz
+      #      node-db.node.session.auth.password_in: bar
+      node-publish-secret:
+      controller-expand-secret:
+
+# if your cluster supports snapshots you may enable below
+volumeSnapshotClasses: []
+#- name: freenas-iscsi-csi
+#  parameters:
+#  # if true, snapshots will be created with zfs send/receive
+#  # detachedSnapshots: "false"
+#  secrets:
+#    snapshotter-secret:
+driver:
+  config:
+    driver: freenas-iscsi
+    instance_id:
+    httpConnection:
+      protocol: https
+      host: chrisjen.herrington.services
+      port: 443
+      apiKey: 3-vTSlP4C8yYcGi179r5c7Wju29dSeN9KtbM4UwJ28P05Vsa3g1okTA0kTczMuq07O
+    sshConnection:
+      host: chrisjen.herrington.services
+      port: 22
+      username: root
+      # use either password or key
+      password: AJHsvaco06
+    zfs:
+      # the example below is useful for TrueNAS 12
+      cli:
+        paths:
+          zfs: /usr/local/sbin/zfs
+          zpool: /usr/local/sbin/zpool
+          sudo: /usr/local/bin/sudo
+          chroot: /usr/sbin/chroot
+      # total volume name (zvol/<datasetParentName>/<pvc name>) length cannot exceed 63 chars
+      # https://www.ixsystems.com/documentation/freenas/11.2-U5/storage.html#zfs-zvol-config-opts-tab
+      # standard volume naming overhead is 46 chars
+      # datasetParentName should therefore be 17 chars or less
+      datasetParentName: data_pool/k8s/v
+      detachedSnapshotsDatasetParentName: data_pool/k8s/s
+      zvolCompression: inherit
+      zvolDedup: off
+      zvolEnableReservation: false
+      zvolBlocksize: 16K
+    iscsi:
+      targetPortal: "chrisjen.herrington.services"
+      targetPortals: []
+      # leave empty to omit usage of -I with iscsiadm
+      interface:
+      namePrefix: csi-
+      nameSuffix: "-hddcluster"
+      # add as many as needed
+      targetGroups:
+        # get the correct ID from the "portal" section in the UI
+        - targetGroupPortalGroup: 1
+          # get the correct ID from the "initiators" section in the UI
+          targetGroupInitiatorGroup: 1
+          # None, CHAP, or CHAP Mutual
+          targetGroupAuthType: None
+          # get the correct ID from the "Authorized Access" section of the UI
+          # only required if using Chap
+          targetGroupAuthGroup:
+      extentInsecureTpc: true
+      extentXenCompat: false
+      extentDisablePhysicalBlocksize: true
+      # 512, 1024, 2048, or 4096,
+      extentBlocksize: 4096
+      # "" (let FreeNAS decide, currently defaults to SSD), Unknown, SSD, 5400, 7200, 10000, 15000
+      extentRpm: "7200"
+      # 0-100 (0 == ignore)
+      extentAvailThreshold: 0
+    node:
+      mount:
+        checkFileSystem:
+          enabled: true
+          ext4:
+            enabled: true
+# talos config
+# https://github.com/democratic-csi/democratic-csi#talos
+controller:
+  rbac:
+    enabled: true
+  enabled: true
+
+node:
+  rbac:
+    enabled: true
+  enabled: true
+  hostPID: true
+  driver:
+    extraEnv:
+      - name: ISCSIADM_HOST_STRATEGY
+        value: nsenter
+      - name: ISCSIADM_HOST_PATH
+        value: /usr/local/sbin/iscsiadm
+    iscsiDirHostPath: /usr/local/etc/iscsi
+    iscsiDirHostPathType: ""

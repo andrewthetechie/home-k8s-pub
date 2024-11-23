@@ -1,0 +1,36 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: democratic-csi
+
+resources:
+  - namespace.yaml
+
+helmCharts:
+  - name: democratic-csi
+    releaseName: nfs-hdd
+    namespace: democratic-csi
+    version: 0.14.6
+    includeCRDs: true
+    repo: https://democratic-csi.github.io/charts/
+    valuesFile: ./helm-values/truenas-nfs-hdd.yaml
+  - name: democratic-csi
+    releaseName: nfs-ssd
+    namespace: democratic-csi
+    version: 0.14.6
+    includeCRDs: true
+    repo: https://democratic-csi.github.io/charts/
+    valuesFile: ./helm-values/truenas-nfs-ssd.yaml
+  - name: democratic-csi
+    releaseName: iscsi-hdd
+    namespace: democratic-csi
+    version: 0.14.6
+    includeCRDs: true
+    repo: https://democratic-csi.github.io/charts/
+    valuesFile: ./helm-values/truenas-iscsi-hdd.yaml
+  - name: democratic-csi
+    releaseName: iscsi-ssd
+    namespace: democratic-csi
+    version: 0.14.6
+    includeCRDs: true
+    repo: https://democratic-csi.github.io/charts/
+    valuesFile: ./helm-values/truenas-iscsi-ssd.yaml

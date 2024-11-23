@@ -1,0 +1,266 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: piracy
+
+resources:
+  - namespace.yaml
+
+helmCharts:
+  - name: radarr
+    releaseName: radarr
+    namespace: piracy
+    version: 16.3.2
+    repo: https://k8s-at-home.com/charts/
+    valuesInline:
+      image:
+        repository: linuxserver/radarr
+        tag: 5.0.3
+      env:
+        TZ: "America/Chicago"
+      persistence:
+        config:
+          enabled: true
+          mountPath: /config
+      ingress:
+        main:
+          enabled: true
+          annotations:
+            cert-manager.io/cluster-issuer: letsencrypt-prod
+            gethomepage.dev/description: Movies PVR
+            gethomepage.dev/enabled: "true"
+            gethomepage.dev/group: Piracy
+            gethomepage.dev/icon: radarr
+            gethomepage.dev/name: Radarr
+            uptimekuma.io/monitor: "true"
+            uptimekuma.io/name: "Radarr"
+            gethomepage.dev/weight: "1"
+            uptimekuma.io/type: "http"
+            uptimekuma.io/interval: "120"
+            nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+            nginx.org/client-max-body-size: "50m"
+          hosts:
+            - host: radarr.herrington.services
+              paths:
+                - path: /
+                  pathType: Prefix
+          tls:
+            - secretName: radarr-tls
+              hosts:
+                - radarr.herrington.services
+  - name: sonarr
+    releaseName: sonarr
+    namespace: piracy
+    version: 16.3.2
+    repo: https://k8s-at-home.com/charts/
+    valuesInline:
+      image:
+        repository: linuxserver/sonarr
+        tag: 3.0.10
+      env:
+        TZ: "America/Chicago"
+      persistence:
+        config:
+          enabled: true
+          mountPath: /config
+      ingress:
+        main:
+          enabled: true
+          annotations:
+            cert-manager.io/cluster-issuer: letsencrypt-prod
+            gethomepage.dev/description: Shows PVR
+            gethomepage.dev/enabled: "true"
+            gethomepage.dev/group: Piracy
+            gethomepage.dev/icon: sonarr
+            gethomepage.dev/name: Sonarr
+            gethomepage.dev/weight: "1"
+            uptimekuma.io/monitor: "true"
+            uptimekuma.io/name: "Sonarr"
+            uptimekuma.io/type: "http"
+            uptimekuma.io/interval: "120"
+            nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+            nginx.org/client-max-body-size: "50m"
+          hosts:
+            - host: sonarr.herrington.services
+              paths:
+                - path: /
+                  pathType: Prefix
+          tls:
+            - secretName: sonarr-tls
+              hosts:
+                - sonarr.herrington.services
+  - name: lidarr
+    releaseName: lidarr
+    namespace: piracy
+    version: 14.2.2
+    repo: https://k8s-at-home.com/charts/
+    valuesInline:
+      image:
+        repository: linuxserver/lidarr
+        tag: 1.4.5
+      env:
+        TZ: "America/Chicago"
+      persistence:
+        config:
+          enabled: true
+          mountPath: /config
+      ingress:
+        main:
+          enabled: true
+          annotations:
+            cert-manager.io/cluster-issuer: letsencrypt-prod
+            gethomepage.dev/description: Music Downloads
+            gethomepage.dev/enabled: "true"
+            gethomepage.dev/group: Piracy
+            gethomepage.dev/icon: lidarr
+            gethomepage.dev/name: Lidarr
+            gethomepage.dev/weight: "3"
+            uptimekuma.io/monitor: "true"
+            uptimekuma.io/name: "Lidarr"
+            uptimekuma.io/type: "http"
+            uptimekuma.io/interval: "120"
+            nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+            nginx.org/client-max-body-size: "50m"
+          hosts:
+            - host: lidarr.herrington.services
+              paths:
+                - path: /
+                  pathType: Prefix
+          tls:
+            - secretName: lidarr-tls
+              hosts:
+                - lidarr.herrington.services
+  - name: prowlarr
+    releaseName: prowlarr
+    namespace: piracy
+    version: 4.5.2
+    repo: https://k8s-at-home.com/charts/
+    valuesInline:
+      image:
+        repository: linuxserver/prowlarr
+        tag: version-1.21.2.4649
+      env:
+        TZ: "America/Chicago"
+      persistence:
+        config:
+          enabled: true
+          mountPath: /config
+      ingress:
+        main:
+          enabled: true
+          annotations:
+            cert-manager.io/cluster-issuer: letsencrypt-prod
+            gethomepage.dev/description: Local Indexer
+            gethomepage.dev/enabled: "true"
+            gethomepage.dev/group: Piracy
+            gethomepage.dev/icon: prowlarr
+            gethomepage.dev/name: Prowlarr
+            gethomepage.dev/weight: "2"
+            uptimekuma.io/monitor: "true"
+            uptimekuma.io/name: "Prowlarr"
+            uptimekuma.io/type: "http"
+            uptimekuma.io/interval: "120"
+            nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+            nginx.org/client-max-body-size: "50m"
+          hosts:
+            - host: prowlarr.herrington.services
+              paths:
+                - path: /
+                  pathType: Prefix
+          tls:
+            - secretName: prowlarr-tls
+              hosts:
+                - prowlarr.herrington.services
+  - name: readarr
+    releaseName: readarr
+    namespace: piracy
+    version: 6.4.2
+    repo: https://k8s-at-home.com/charts/
+    valuesInline:
+      image:
+        repository: linuxserver/readarr
+        tag: 0.3.8-nightly
+      env:
+        TZ: "America/Chicago"
+      persistence:
+        config:
+          enabled: true
+          mountPath: /config
+      ingress:
+        main:
+          enabled: true
+          annotations:
+            cert-manager.io/cluster-issuer: letsencrypt-prod
+            gethomepage.dev/description: Books PVR
+            gethomepage.dev/enabled: "true"
+            gethomepage.dev/group: Piracy
+            gethomepage.dev/icon: readarr
+            gethomepage.dev/name: Readarr
+            gethomepage.dev/weight: "3"
+            uptimekuma.io/monitor: "true"
+            uptimekuma.io/name: "Readarr"
+            uptimekuma.io/type: "http"
+            uptimekuma.io/interval: "120"
+            nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+            nginx.org/client-max-body-size: "50m"
+          hosts:
+            - host: readarr.herrington.services
+              paths:
+                - path: /
+                  pathType: Prefix
+          tls:
+            - secretName: readarr-tls
+              hosts:
+                - readarr.herrington.services
+patches:
+  - target:
+      kind: Deployment
+      name: radarr
+    path: patches/nfs-mount-radarr.yaml
+  - target:
+      kind: Deployment
+      name: sonarr
+    path: patches/nfs-mount-sonarr.yaml
+  - target:
+      kind: Deployment
+      name: lidarr
+    path: patches/nfs-mount-lidarr.yaml
+  - target:
+      kind: Deployment
+      name: readarr
+    path: patches/nfs-mount-readarr.yaml
+  - target:
+      kind: Deployment
+      name: radarr
+    path: patches/nfs-mount-downloaded.yaml
+  - target:
+      kind: Deployment
+      name: sonarr
+    path: patches/nfs-mount-downloaded.yaml
+  - target:
+      kind: Deployment
+      name: lidarr
+    path: patches/nfs-mount-downloaded.yaml
+  - target:
+      kind: Deployment
+      name: readarr
+    path: patches/nfs-mount-downloaded.yaml
+  - target:
+      kind: PersistentVolumeClaim
+      name: sonarr-config
+    path: patches/pvc-ssd.yaml
+  - target:
+      kind: PersistentVolumeClaim
+      name: radarr-config
+    path: patches/pvc-ssd.yaml
+  - target:
+      kind: PersistentVolumeClaim
+      name: lidarr-config
+    path: patches/pvc-ssd.yaml
+  - target:
+      kind: PersistentVolumeClaim
+      name: prowlarr-config
+    path: patches/pvc-ssd.yaml
+  - target:
+      kind: PersistentVolumeClaim
+      name: readarr-config
+    path: patches/pvc-ssd.yaml

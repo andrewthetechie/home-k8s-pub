@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: lldap-crt
+  namespace: lldap
+spec:
+  secretName: lldap-crt-secret
+  dnsNames:
+    - ldap.herrington.services
+  issuerRef:
+    group: cert-manager.io
+    kind: ClusterIssuer
+    name: letsencrypt-prod

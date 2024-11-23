@@ -1,0 +1,84 @@
+controllers:
+  stirling-pdf:
+    strategy: RollingUpdate
+    containers:
+      app:
+        image:
+          repository: ghcr.io/stirling-tools/s-pdf
+          tag: 0.28.2@sha256:3762aea62fe6b55f6eb6b60c6186fecda6226c8e30f4cb60950525a8034778bb
+          pullPolicy: IfNotPresent
+        env:
+          TZ: America/Chicago
+          DOCKER_ENABLE_SECURITY: "false"
+          INSTALL_BOOK_AND_ADVANCED_HTML_OPS: "false"
+        probes:
+          liveness: &probe
+            enabled: true
+            type: HTTP
+            path: /api/v1/info/status
+          readiness: *probe
+          startup:
+            <<: *probe
+            spec:
+              failureThreshold: 90
+              periodSeconds: 5
+        securityContext:
+          readOnlyRootFilesystem: true
+    pod:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+persistence:
+  configs:
+    enabled: true
+    type: emptyDir
+  logs:
+    enabled: true
+    type: emptyDir
+  tmp:
+    enabled: true
+    type: emptyDir
+  tessdata:
+    enabled: true
+    type: emptyDir
+    globalMounts:
+      - path: /usr/share/tessdata
+
+service:
+  stirling-pdf:
+    controller: stirling-pdf
+    ports:
+      http:
+        port: 8080
+
+ingress:
+  stirling-pdf:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/description: Work with PDFs
+      gethomepage.dev/enabled: "true"
+      gethomepage.dev/group: Misc
+      gethomepage.dev/icon: mdi-file-pdf-box
+      gethomepage.dev/name: PDF Editor
+      uptimekuma.io/monitor: "true"
+      uptimekuma.io/name: "Stirling PDF"
+      uptimekuma.io/type: "http"
+      uptimekuma.io/interval: "120"
+      nginx.ingress.kubernetes.io/proxy-body-size: 256m
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "3000"
+    hosts:
+      - host: pdf.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: stirling-pdf
+              port: http
+    tls:
+      - secretName: stirling-pdf
+        hosts:
+          - pdf.herrington.services

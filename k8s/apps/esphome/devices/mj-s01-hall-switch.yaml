@@ -1,0 +1,66 @@
+# Basic Config
+esphome:
+  name: hall_switch
+  friendly_name: Hall Light
+  platform: ESP8266
+  board: esp01_1m
+
+substitutions:
+  friendly_name: Hall Light
+
+wifi:
+  ssid: !secret iot_wifi_ssid
+  password: !secret iot_wifi_password
+  use_address: 10.10.5.61
+
+api:
+
+ota:
+  platform: esphome
+
+# Device Specific Config
+
+logger:
+
+status_led: 
+  # https://esphome.io/components/status_led
+  pin:
+    number: GPIO4   # Red LED
+    inverted: True
+
+
+binary_sensor:
+  - platform: gpio
+    # https://esphome.io/components/switch/gpio
+    name: ${friendly_name} Button
+    id: button
+    pin:
+      number: GPIO13
+      mode: INPUT_PULLUP
+      inverted: True
+    internal: True
+    on_press:
+      - switch.toggle: relay
+
+
+switch:
+  - platform: gpio
+    # https://esphome.io/components/switch/gpio
+    name: ${friendly_name} Blue LED
+    id: blue_led
+    pin:
+      number: GPIO5
+      inverted: True
+    internal: True
+
+  - platform: gpio
+    # https://esphome.io/components/switch/gpio
+    name: ${friendly_name}
+    id: relay
+    pin:
+      number: GPIO12
+    # Tie Blue LED operation to relay
+    on_turn_on:
+      - switch.turn_off: blue_led
+    on_turn_off:
+      - switch.turn_on: blue_led

@@ -1,0 +1,61 @@
+- id: "1730581432753"
+  alias: Play Album on Spotify
+  description: Play an album from its barcode
+  triggers:
+    - entity_id:
+        - sensor.album_barcode
+      trigger: state
+  conditions:
+    - condition: template
+      value_template: "{{ trigger.to_state.state not in ['unknown', 'unavailable', 'blank'] }}"
+  actions:
+    - action: rest_command.barcode_api
+      metadata: {}
+      data:
+        barcode: "{{ trigger.to_state.state }}"
+      response_variable: barcode_response
+    - if:
+        - condition: template
+          value_template: "{{ barcode_response['status'] == 200 }}"
+      then:
+        - action: tts.speak
+          metadata: {}
+          data:
+            cache: false
+            language: en-au
+            media_player_entity_id: media_player.andrew_office_speaker
+            message: >-
+              Playing {{ barcode_response['content']['name'] }} by {{
+              barcode_response['content']['artist'] }}.
+          target:
+            entity_id: tts.google_en_com
+        - delay:
+            hours: 0
+            minutes: 0
+            seconds: 3
+            milliseconds: 0
+        - action: spotcast.start
+          metadata: {}
+          data:
+            limit: 20
+            force_playback: false
+            offset: 0
+            ignore_fully_played: false
+            device_name: Andrew Office speaker
+            uri: spotify:album:{{ barcode_response['content']['spotify_id'] }}
+      else:
+        - if:
+            - condition: template
+              value_template: "{{ barcode_response['status'] == 404 }}"
+          then:
+            - action: tts.speak
+              metadata: {}
+              data:
+                cache: false
+                language: en-au
+                media_player_entity_id: media_player.andrew_office_speaker
+                message: >-
+                  Error {{ barcode_response['content']['detail'] }}
+              target:
+                entity_id: tts.google_en_com
+  mode: single

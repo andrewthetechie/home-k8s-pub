@@ -1,0 +1,30 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: smokeping-config
+  namespace: smokeping
+  labels:
+    k8s-app: smokeping
+spec:
+  storageClassName: freenas-iscsi-csi
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 500Mi
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: smokeping-data
+  namespace: smokeping
+  labels:
+    k8s-app: smokeping
+spec:
+  storageClassName: freenas-iscsi-ssd-csi
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi

@@ -1,0 +1,8 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: hyperion
+  labels:
+    name: hyperion
+    app.kubernetes.io/instance: hyperion

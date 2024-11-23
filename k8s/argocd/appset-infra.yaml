@@ -1,0 +1,48 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: infra
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: "git@github.com:andrewthetechie/home-k8s.git"
+        revision: HEAD
+        directories:
+          - path: "nauvoo-v2/manifests/infra/*"
+  template:
+    metadata:
+      name: "{{ path.basename }}"
+    spec:
+      project: infra
+      source:
+        repoURL: "git@github.com:andrewthetechie/home-k8s.git"
+        targetRevision: HEAD
+        path: "nauvoo-v2/manifests/infra/{{ path.basename }}"
+      destination:
+        server: https://kubernetes.default.svc
+      syncPolicy: 
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - PrunePropagationPolicy=foreground
+          - PruneLast=true
+          - ServerSideApply=true
+          - FailOnSharedResource=true
+          - RespectIgnoreDifferences=true
+          - SkipDryRunOnMissingResource=true
+          - RespectIgnoreDifferences=true
+      ignoreDifferences:
+        - group: argoproj.io
+          kind: Application
+          managedFieldsManagers:
+            - argocd-server
+          jsonPointers:
+            - /spec/syncPolicy/automated
+        # https://github.com/argoproj/argo-cd/issues/11143#issuecomment-1664144190
+        - group: apps
+          kind: StatefulSet
+          jqPathExpressions:
+            - '.spec.volumeClaimTemplates[]?'

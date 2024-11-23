@@ -1,0 +1,50 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: node-feature-discovery
+
+resources:
+  - namespace.yaml
+
+helmCharts:
+  - name: node-feature-discovery
+    includeCRDs: true
+    namespace: node-feature-discovery
+    releaseName: node-feature-discovery
+    version: 0.16.3
+    repo: https://kubernetes-sigs.github.io/node-feature-discovery/charts
+    valuesInline:
+      master:
+        extraLabelNs:
+          - gpu.intel.com
+          - sgx.intel.com
+        resourceLabels:
+          - gpu.intel.com/millicores
+          - gpu.intel.com/memory.max
+          - gpu.intel.com/tiles
+          - sgx.intel.com/epc
+      worker:
+        sources:
+          usb:
+            deviceLabelFields: [class, vendor, device, serial]
+patches:
+  - target:
+      kind: ConfigMap
+      name: node-feature-discovery-worker-conf
+    patch: |-
+      - op: replace
+        path: /data/nfd-worker.conf
+        value: |-
+          sources:
+            usb:
+              deviceLabelFields:
+                - "class"
+                - "vendor"
+                - "device"
+                - "serial"
+            pci:
+              deviceLabelFields:
+                - "class"
+                - "vendor"
+                - "device"
+                - "subsystem_vendor"
+                - "subsystem_device"

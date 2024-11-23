@@ -1,0 +1,75 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: homepage
+
+resources:
+  - namespace.yaml
+
+helmCharts:
+  - name: homepage
+    releaseName: homepage
+    namespace: homepage
+    version: 1.2.3
+    repo: https://jameswynn.github.io/helm-charts
+    valuesInline:
+      enableRbac: true
+      image:
+        repository: ghcr.io/gethomepage/homepage
+        tag: v0.9.5
+      ingress:
+        main:
+          enabled: true
+          annotations:
+            cert-manager.io/cluster-issuer: letsencrypt-prod
+            uptimekuma.io/monitor: "true"
+            uptimekuma.io/name: "Homepage"
+            uptimekuma.io/type: "http"
+            uptimekuma.io/interval: "120"
+          hosts:
+          - host: home.herrington.services
+            paths:
+              - path: /
+                pathType: Prefix
+          tls:
+            - secretName: heimdall-tls
+              hosts:
+                - home.herrington.services
+      persistence:
+        logs:
+          enabled: false
+patches:
+  - target:
+      kind: Deployment
+      name: homepage
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/volumes/0/configMap/name
+        value: custom-homepage
+  - target:
+      kind: Deployment
+      name: homepage
+    patch: |-
+      - op: add
+        path: /metadata/annotations
+        value: 'configmap.reloader.stakater.com/reload: "custom-homepage"'
+  - target:
+      kind: Deployment
+      name: homepage
+    patch: |-
+      - op: add
+        path: /spec/template/spec/dnsConfig
+        value: 
+          nameservers:
+            - 10.10.0.35
+            - 10.10.99.2
+configMapGenerator:
+  - name: custom-homepage
+    files:
+      - config/bookmarks.yaml
+      - config/docker.yaml
+      - config/kubernetes.yaml
+      - config/services.yaml
+      - config/settings.yaml
+      - config/widgets.yaml
+    options:
+      disableNameSuffixHash: true

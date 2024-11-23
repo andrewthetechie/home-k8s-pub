@@ -1,0 +1,92 @@
+kind: Deployment
+image:
+  repository: fluent/fluent-bit
+podAnnotations:
+  fluentbit.io/exclude: 'true'
+
+labels:
+  app: syslog
+
+testFramework:
+  enabled: false
+
+extraPorts:
+  - port: 514
+    containerPort: 514
+    protocol: TCP
+    name: syslog
+
+service:
+  type: LoadBalancer
+  labels:
+    app: syslog
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: syslog.herrington.services
+
+env:
+  - name: NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
+config:
+  customParsers: |
+    [PARSER]
+      Name severity
+      Format regex
+      Regex .*(?<severity>(?i)PANIC|ERROR|WARNING|WARN|INFO|DEBUG|TRACE).* 
+
+  service: |
+    [SERVICE]
+      Flush         5
+      Daemon        Off
+      Log_Level     info
+      Parsers_File /fluent-bit/etc/parsers.conf
+      Parsers_File  custom_parsers.conf    
+      HTTP_Server On
+      HTTP_Listen 0.0.0.0
+      HTTP_Port 2020
+      Health_Check On
+
+  inputs: |
+    [INPUT]
+      Name                syslog
+      Mode                tcp
+      Parser              syslog-rfc3164
+      Listen              0.0.0.0
+      Port                514
+      Buffer_Chunk_Size   32000
+      Buffer_Max_Size     64000
+      Receive_Buffer_Size 512000
+      Source_Address_Key  source
+      Tag                 syslog.*
+  
+  filters: |
+    [FILTER]
+      Name modify
+      Match *
+      Add host ${NODE_NAME}
+
+    [FILTER]
+      Name modify
+      Match syslog.*
+      Add type syslog
+      Add node ${NODE_NAME}
+
+  outputs: |
+    [OUTPUT]
+      Name stdout
+      Match *
+      Format json_lines
+    [OUTPUT]
+      Name http
+      Match *
+      URI /api/default/default/_json
+      Host oo.herrington.services
+      Port 443
+      tls On
+      Format json
+      Json_date_key    _timestamp
+      Json_date_format iso8601
+      HTTP_User andrew.the.techie@gmail.com
+      HTTP_Passwd PHczpOL72nk7Q8aj
+      compress gzip

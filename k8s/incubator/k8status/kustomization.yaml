@@ -1,0 +1,27 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: k8status
+
+resources:
+  - namespace.yaml
+
+helmCharts:
+  - name: k8status
+    releaseName: k8status
+    namespace: k8status
+    version: 0.14.1
+    repo: https://stenic.github.io/k8status/
+    valuesInline:
+      ingress:
+        enabled: true
+        annotations:
+          cert-manager.io/cluster-issuer: letsencrypt-prod
+        tls:
+          - hosts:
+              - k8s.status.herrington.services
+            secretName: ha-tls-cert
+        hosts:
+          - host: k8s.status.herrington.services
+            paths:
+              - path: /
+                pathType: Prefix

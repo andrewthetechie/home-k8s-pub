@@ -1,0 +1,252 @@
+- id: "1702178086494"
+  alias: Garage - Close Door
+  description: ""
+  trigger:
+    - type: opened
+      platform: device
+      device_id: 7dae4a8d5cbcc4b29b8dbba9c82a69e1
+      entity_id: 32c87f38e5630da372418730c22cda75
+      domain: binary_sensor
+      for:
+        hours: 0
+        minutes: 10
+        seconds: 0
+  condition: []
+  action:
+    - device_id: 4c1af0d0e035d96dc72c313fc6b2ff0a
+      domain: cover
+      entity_id: c715f6e3c21040902f0c24e69c42d01d
+      type: close
+    - service: notify.mobile_app_andrew_phone
+      data:
+        message: >-
+          The Garage Door was left open and is being closed. Check door sensor
+          status
+  mode: single
+- id: "1702180779437"
+  alias: Back Door Alarm
+  description: "Alerts the back door is open after 2am "
+  trigger:
+    - type: opened
+      platform: device
+      device_id: ad66ddfd4d483f21a26b2147b309cd91
+      entity_id: 97580b3d9364cd2c721426c313bda444
+      domain: binary_sensor
+  condition:
+    - condition: time
+      after: 02:00:00
+      before: 05:15:00
+      weekday:
+        - sun
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+        - sat
+  action:
+    - service: script.unmute_googles
+      data: {}
+    - service: media_player.play_media
+      target:
+        entity_id: media_player.whole_house
+      data:
+        media_content_id: media-source://tts/cloud?message=Guest+Door+has+opened%21&language=en-AU&voice=NatashaNeural
+        media_content_type: provider
+      metadata:
+        title: Back Door has opened!
+        thumbnail: https://brands.home-assistant.io/_/cloud/logo.png
+        media_class: app
+        children_media_class:
+        navigateIds:
+          - {}
+          - media_content_type: app
+            media_content_id: media-source://tts
+          - media_content_type: provider
+            media_content_id: media-source://tts/cloud?message=Guest+Door+has+opened%21&language=en-AU&voice=NatashaNeural
+  mode: single
+- id: "1702181171438"
+  alias: Front Door Alarm
+  description: Alerts if the front door has opened after 2am
+  trigger:
+    - type: opened
+      platform: device
+      device_id: c1f3999e996e763ee5b43ccb15b07bdb
+      entity_id: e1ae61610e9197c84b4453b049c69657
+      domain: binary_sensor
+  condition:
+    - condition: time
+      after: "02:00:00"
+      before: 05:15:00
+      weekday:
+        - sun
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+        - sat
+  action:
+    - service: script.unmute_googles
+      data: {}
+    - service: media_player.play_media
+      target:
+        entity_id: media_player.whole_house
+      data:
+        media_content_id: media-source://tts/cloud?message=Guest+Door+has+opened%21&language=en-AU&voice=NatashaNeural
+        media_content_type: provider
+      metadata:
+        title: Front Door has opened!
+        thumbnail: https://brands.home-assistant.io/_/cloud/logo.png
+        media_class: app
+        children_media_class:
+        navigateIds:
+          - {}
+          - media_content_type: app
+            media_content_id: media-source://tts
+          - media_content_type: provider
+            media_content_id: media-source://tts/cloud?message=Guest+Door+has+opened%21&language=en-AU&voice=NatashaNeural
+  mode: single
+- id: "1702181231318"
+  alias: Guest Door Alarm
+  description: Alerts if the guest door is opened after 2 am
+  trigger:
+    - type: opened
+      platform: device
+      device_id: a30ac6b5240bbd10e0084ee856194484
+      entity_id: 113edee161f51eb5782f942d93e06a74
+      domain: binary_sensor
+  condition:
+    - condition: time
+      after: "02:00:00"
+      before: 05:15:00
+      weekday:
+        - sun
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+        - sat
+  action:
+    - service: script.unmute_googles
+      data: {}
+    - service: media_player.play_media
+      target:
+        entity_id: media_player.whole_house
+      data:
+        media_content_id: media-source://tts/cloud?message=Guest+Door+has+opened%21&language=en-AU&voice=NatashaNeural
+        media_content_type: provider
+      metadata:
+        title: Guest Door has opened!
+        thumbnail: https://brands.home-assistant.io/_/cloud/logo.png
+        media_class: app
+        children_media_class:
+        navigateIds:
+          - {}
+          - media_content_type: app
+            media_content_id: media-source://tts
+          - media_content_type: provider
+            media_content_id: media-source://tts/cloud?message=Guest+Door+has+opened%21&language=en-AU&voice=NatashaNeural
+  mode: single
+- id: "1702762557004"
+  alias: Garage - Door Alarm
+  description: "Alerts if the garage door opens after 2:30 AM"
+  trigger:
+    - type: opened
+      platform: device
+      device_id: 7dae4a8d5cbcc4b29b8dbba9c82a69e1
+      entity_id: 32c87f38e5630da372418730c22cda75
+      domain: binary_sensor
+  condition:
+    - condition: time
+      before: "05:15:00"
+      after: "02:00:00"
+  action:
+    - service: script.unmute_googles
+      data: {}
+    - service: media_player.play_media
+      target:
+        entity_id: media_player.whole_house
+      data:
+        media_content_id: >-
+          media-source://tts/cloud?message=Garage+Door+has+opened%21&language=en-AU&voice=NatashaNeural
+        media_content_type: provider
+      metadata:
+        title: Garage Door has opened!
+        thumbnail: https://brands.home-assistant.io/_/cloud/logo.png
+        media_class: app
+        children_media_class: null
+        navigateIds:
+          - {}
+          - media_content_type: app
+            media_content_id: media-source://tts
+          - media_content_type: provider
+            media_content_id: >-
+              media-source://tts/cloud?message=Garage+Door+has+opened%21&language=en-AU&voice=NatashaNeural
+  mode: single
+- id: "1702765224675"
+  alias: Alarm Notification
+  description: "Send notifications if doors are opened when Alarm is armed"
+  trigger:
+    - type: opened
+      platform: device
+      device_id: c1f3999e996e763ee5b43ccb15b07bdb
+      entity_id: e1ae61610e9197c84b4453b049c69657
+      domain: binary_sensor
+    - type: opened
+      platform: device
+      device_id: ad66ddfd4d483f21a26b2147b309cd91
+      entity_id: 97580b3d9364cd2c721426c313bda444
+      domain: binary_sensor
+    - type: opened
+      platform: device
+      device_id: a30ac6b5240bbd10e0084ee856194484
+      entity_id: 113edee161f51eb5782f942d93e06a74
+      domain: binary_sensor
+    - type: opened
+      platform: device
+      device_id: 7dae4a8d5cbcc4b29b8dbba9c82a69e1
+      entity_id: 32c87f38e5630da372418730c22cda75
+      domain: binary_sensor
+  condition:
+    - condition: or
+      conditions:
+        - condition: state
+          entity_id: alarm_control_panel.home_alarm
+          state: armed_away
+        - condition: state
+          entity_id: alarm_control_panel.home_alarm
+          state: armed_night
+        - condition: state
+          entity_id: alarm_control_panel.home_alarm
+          state: armed_vacation
+  action:
+    - service: script.unmute_googles
+      data: {}
+    - service: media_player.play_media
+      target:
+        entity_id: media_player.whole_house
+      data:
+        media_content_id: >-
+          media-source://tts/cloud?message=Alarm%21+The+Alarm+is+armed+and+a+door+has+opened%21&language=en-AU&voice=NatashaNeural
+        media_content_type: provider
+      metadata:
+        title: Alarm! The Alarm is armed and a door has opened!
+        thumbnail: https://brands.home-assistant.io/_/cloud/logo.png
+        media_class: app
+        children_media_class: null
+        navigateIds:
+          - {}
+          - media_content_type: app
+            media_content_id: media-source://tts
+          - media_content_type: provider
+            media_content_id: >-
+              media-source://tts/cloud?message=Alarm%21+The+Alarm+is+armed+and+a+door+has+opened%21&language=en-AU&voice=NatashaNeural
+    - service: notify.mobile_app_andrew_phone
+      data:
+        message: Alarm! A door has opened when alarm is armed
+    - service: notify.mobile_app_iphone
+      data:
+        message: Alarm! A door has opened when alarm is armed
+  mode: single

@@ -1,0 +1,50 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: esphome
+
+resources:
+  - namespace.yaml
+  - pvc.yaml
+  - deployment.yaml
+  - service.yaml
+  - ingress.yaml
+  - sealed-secret-wifi.yaml
+  - secret-store.yaml
+  - templated-secret.yaml
+
+configMapGenerator:
+  - name: esphome
+    files:
+      - devices/mbr_bt_proxy.yaml
+      - devices/lr_bt_proxy.yaml
+      - devices/sonoff-s31-radiorack-1.yaml
+      - devices/sonoff-s31-radiorack-2.yaml
+      - devices/sonoff-s31-power-1.yaml
+      - devices/sonoff-s31-power-2.yaml
+      - devices/sonoff-s31-power-3.yaml
+      - devices/mj-s01-andrew-office-closet.yaml
+      - devices/mj-s01-andrew-office-overhead.yaml
+      - devices/mj-fc01-andrew-office-ceiling-fan.yaml
+      - devices/mj-fc01-living-room-ceiling-fan.yaml
+      - devices/mj-s01-front-door-inside.yaml
+      - devices/mj-s01-front-door-outside.yaml
+      - devices/mj-s01-garage-inside.yaml
+      - devices/mj-s01-garage-outside.yaml
+      - devices/mj-s01-hall-switch.yaml
+      - devices/mj-s01-laundry-hall-switch.yaml
+      - devices/mirage-ac-server-room.yaml
+      - devices/gosund-wo1-mantle.yaml
+      - devices/salt-sensor-garage.yaml
+      - devices/andrew-touch-lamp.yaml
+      - devices/sarah-touch-lamp.yaml
+      - devices/touch-dimming.h
+      - devices/kitchen-cabinet-light-coffee-bar.yaml
+      - devices/kitchen-cabinet-light-left.yaml
+      - devices/kitchen-cabinet-light-right.yaml
+      - devices/living-room-barcode-scanner.yaml
+      - devices/uart_read_line_sensor.h
+  - name: esphome-secrets-tmpl
+    files:
+      - devices/secrets.yaml
+    options:
+      disableNameSuffixHash: true

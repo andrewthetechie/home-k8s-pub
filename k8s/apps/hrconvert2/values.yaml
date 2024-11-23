@@ -1,0 +1,56 @@
+controllers:
+  hrconvert:
+    strategy: RollingUpdate
+    containers:
+      app:
+        image:
+          repository: zelon88/hrconvert2
+          tag: v3.3.7
+          pullPolicy: IfNotPresent
+        env:
+          TZ: America/Chicago
+        command:
+          - "sh"
+          - "-c"
+          - "apache2-foreground && python3 /usr/bin/unoconv -l"
+    # pod:
+    #   securityContext:
+    #     runAsNonRoot: true
+    #     runAsUser: 1000
+    #     runAsGroup: 1000
+    #     fsGroup: 1000
+    #     fsGroupChangePolicy: OnRootMismatch
+
+service:
+  hrconvert:
+    controller: hrconvert
+    ports:
+      http:
+        port: 80
+
+ingress:
+  hrconvert:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/description: Convert Files
+      gethomepage.dev/enabled: "true"
+      gethomepage.dev/group: Misc
+      gethomepage.dev/icon: mdi-tools
+      gethomepage.dev/name: HRConvert
+      uptimekuma.io/monitor: "true"
+      uptimekuma.io/name: "hrconvert"
+      uptimekuma.io/type: "http"
+      uptimekuma.io/interval: "120"
+    hosts:
+      - host: convert.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: hrconvert
+              port: http
+    tls:
+      - secretName: hrconvert
+        hosts:
+          - convert.herrington.services

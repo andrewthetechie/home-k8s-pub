@@ -1,0 +1,66 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: openobserve
+
+resources:
+  - namespace.yaml
+  - sealedsecret-credentials.yaml
+
+
+helmCharts:
+  - name: openobserve
+    releaseName: openobserve
+    namespace: openobserve
+    version: 0.6.4
+    repo: https://charts.openobserve.ai
+    valuesFile: helm-values/oo-values.yaml
+  - name: openobserve-collector
+    releaseName: collector
+    version: 0.1.0
+    repo: https://charts.openobserve.ai
+    valuesFile: helm-values/collector-values.yaml
+patches:
+  - target:
+      kind: Deployment
+      name: openobserve-alertmanager
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/envFrom/0/secretRef/name
+        value: oo-creds
+  - target:
+      kind: Deployment
+      name: openobserve-compactor
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/envFrom/0/secretRef/name
+        value: oo-creds
+  - target:
+      kind: Deployment
+      name: openobserve-compactor
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/env/-
+        value:
+          name: ZO_DATA_LIFECYCLE
+          value: "14"
+  - target:
+      kind: Deployment
+      name: openobserve-querier
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/envFrom/0/secretRef/name
+        value: oo-creds
+  - target:
+      kind: Deployment
+      name: openobserve-router
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/envFrom/0/secretRef/name
+        value: oo-creds
+  - target:
+      kind: StatefulSet
+      name: openobserve-ingester
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/envFrom/0/secretRef/name
+        value: oo-creds

@@ -1,0 +1,50 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: aprs
+  namespace: rtl
+spec:
+  serviceName: aprs
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aprs
+  template:
+    metadata:
+      labels:
+        app: aprs
+        selector: aprs
+        app.kubernetes.io/instance: aprs
+        app.kubernetes.io/name: aprs
+    spec:
+      containers:
+        - name: aprs
+          image: ghcr.io/andrewthetechie/docker-direwolf:rtlsdrblog9e4a585
+          command: ["/bin/bash", "-c"]
+          args:
+            - rtl_fm -f 144.39M | direwolf -t 0 -d ii -d ff -c /etc/direwolf/direwolf.conf -n 1 -r 24000 -
+          securityContext:
+            privileged: true
+            runAsUser: 0
+          volumeMounts:
+          - name: config-volume
+            mountPath: /etc/direwolf
+          - name: dev
+            mountPath: /dev/rtl
+      volumes:
+        - name: config-volume
+          configMap:
+            # Provide the name of the ConfigMap containing the files you want
+            # to add to the container
+            name: direwolf-conf
+        - name: dev
+          hostPath:
+            path: /dev/rtl
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: feature.node.kubernetes.io/usb-ff_0bda_2838_00000102.present
+                operator: Exists

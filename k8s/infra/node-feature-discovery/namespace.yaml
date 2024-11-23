@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: node-feature-discovery
+  labels:
+    # democratic-csi needs privileged mode on talos
+    pod-security.kubernetes.io/enforce: privileged

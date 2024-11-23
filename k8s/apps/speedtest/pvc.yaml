@@ -1,0 +1,15 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: speedtest
+  namespace: speedtest
+  labels:
+    app.kubernetes.io/name: speedtest
+    app.kubernetes.io/instance: speedtest
+spec:
+  accessModes:
+    - "ReadWriteOnce"
+  resources:
+    requests:
+      storage: "1Gi"
+  storageClassName: "freenas-iscsi-csi"

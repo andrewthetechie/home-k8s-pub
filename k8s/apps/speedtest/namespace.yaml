@@ -1,0 +1,9 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: speedtest
+  labels:
+    name: speedtest
+    app.kubernetes.io/name: speedtest-tracker
+    app.kubernetes.io/instance: speedtest

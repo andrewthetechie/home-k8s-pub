@@ -1,0 +1,35 @@
+esphome:
+  name: lr-bt-proxy
+  platform: ESP32
+  board: esp-wrover-kit
+
+ethernet:
+  type: LAN8720
+  mdc_pin: GPIO23
+  mdio_pin: GPIO18
+  clk_mode: GPIO0_IN
+  phy_addr: 1
+  power_pin: GPIO16
+  # Optional manual IP
+  manual_ip:
+    static_ip: 10.10.0.52
+    gateway: 10.0.0.1
+    subnet: 255.255.255.0
+
+esp32_ble_tracker:
+  scan_parameters:
+    interval: 1100ms
+    window: 1100ms
+    active: true
+
+bluetooth_proxy:
+  active: true
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+  platform: esphome

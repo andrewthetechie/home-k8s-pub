@@ -1,0 +1,70 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: hass
+
+resources:
+  - namespace.yaml
+  - postgres.yaml
+  - sealed-spotcast-secret.yaml
+  - sealed-alarm-code-secret.yaml
+  - secret-store.yaml
+  - templated-secret.yaml
+  - hass-pvc.yaml
+  - deployment.yaml
+  - service.yaml
+  - ingress.yaml
+
+configMapGenerator:
+  - name: hass-secrets-tmpl
+    files:
+      - templates/secrets.yaml
+    options:
+      disableNameSuffixHash: true
+  - files:
+      - config/automations.yaml
+      - config/configuration.yaml
+      - config/alarm.yaml
+      - config/mqtt.yaml
+      - config/recorder.yaml
+      - config/scenes.yaml
+      - config/scripts.yaml
+      - config/spotcast.yaml
+      - config/rest_commands.yaml
+      - config/climate.yaml
+      - config/input_boolean.yaml
+      - config/repo_data.yaml
+    name: hass-configs
+    options:
+      disableNameSuffixHash: true
+  - files:
+      - config/www/more-info-card.js
+      - config/www/slider-entity-row.js
+    name: hass-www
+    options:
+      disableNameSuffixHash: true
+  - files:
+      - config/automations/alerts.yaml
+      - config/automations/barcode.yaml
+      - config/automations/climate.yaml
+      - config/automations/doors.yaml
+      - config/automations/lighting.yaml
+      - config/automations/occupancy.yaml
+      - config/automations/radio_rack.yaml
+      - config/automations/kitchen.yaml
+    name: hass-automations
+    options:
+      disableNameSuffixHash: true
+  - files:
+      - themes/google-theme.yaml
+      - themes/synthwave.yaml
+      - themes/lcars.yaml
+    name: hass-themes
+    options:
+      disableNameSuffixHash: true
+  - files:
+      - init/init-hass.sh
+      - init/git-download.py
+      - init/run-git-download.sh
+    name: init-scripts
+    options:
+      disableNameSuffixHash: true

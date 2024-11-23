@@ -1,0 +1,170 @@
+- id: "1705258898413"
+  alias: Garage - Freeze Warning
+  description: ""
+  trigger:
+    - type: temperature
+      platform: device
+      device_id: 06c90225086d65c97d32816dd1c944ec
+      entity_id: f6a993f50e18c8f10d831779a5a14744
+      domain: sensor
+      below: 32
+      for:
+        hours: 0
+        minutes: 45
+        seconds: 0
+  condition: []
+  action:
+    - service: notify.mobile_app_andrew_phone
+      data:
+        title: Garage Freeze Warning
+    - service: media_player.play_media
+      target:
+        entity_id: media_player.whole_house
+      data:
+        media_content_id: >-
+          media-source://tts/cloud?message=Warning%3A+Garage+is+below+freezing&language=en-AU&voice=NatashaNeural
+        media_content_type: provider
+      metadata:
+        title: "Warning: Garage is below freezing"
+        thumbnail: https://brands.home-assistant.io/_/cloud/logo.png
+        media_class: app
+        children_media_class: null
+        navigateIds:
+          - {}
+          - media_content_type: app
+            media_content_id: media-source://tts
+          - media_content_type: provider
+            media_content_id: >-
+              media-source://tts/cloud?message=Warning%3A+Garage+is+below+freezing&language=en-AU&voice=NatashaNeural
+  mode: single
+- id: "1705258804156"
+  alias: Outdoor Freeze Warning
+  description: ""
+  trigger:
+    - type: temperature
+      platform: device
+      device_id: bfe1edb9e8906fcc97f59d8574d08be2
+      entity_id: 0365fb2a14e234fd2b75e52e57c62b84
+      domain: sensor
+      below: 32
+      for:
+        hours: 1
+        minutes: 30
+        seconds: 0
+  condition: []
+  action:
+    - service: notify.mobile_app_andrew_phone
+      data:
+        title: Outdoor Freeze Warning
+  mode: single
+- id: "1723764507128"
+  alias: Deep Freeze Door Alarm
+  description: ""
+  trigger:
+    - type: opened
+      platform: device
+      device_id: 1395ea248355b77100618285aba6c7ff
+      entity_id: 4dfcb1bd4d454748f1678d45a1a8ecb4
+      domain: binary_sensor
+      for:
+        hours: 0
+        minutes: 6
+        seconds: 0
+  condition: []
+  action:
+    - repeat:
+        sequence:
+          - service: media_player.play_media
+            target:
+              entity_id: media_player.whole_house
+            data:
+              media_content_id: >-
+                media-source://tts/tts.google_en_com?message=Deep+Freeze+has+been+left+open&language=en-au
+              media_content_type: provider
+            metadata:
+              title: Deep Freeze has been left open
+              thumbnail: https://brands.home-assistant.io/_/tts/logo.png
+              media_class: app
+              children_media_class: null
+              navigateIds:
+                - {}
+                - media_content_type: app
+                  media_content_id: media-source://tts
+                - media_content_type: provider
+                  media_content_id: >-
+                    media-source://tts/tts.google_en_com?message=Deep+Freeze+has+been+left+open&language=en-au
+          - service: notify.mobile_app_iphone
+            data:
+              message: Deep Freeze Has Been Left Open
+              title: "Alert: Deep Freeze Has Been Left Open"
+          - service: notify.mobile_app_pixel_8_pro
+            data:
+              title: Deep Freeze Has Been Left Open
+              message: Deep Freeze Has Been Left Open
+          - delay:
+              hours: 0
+              minutes: 5
+              seconds: 0
+              milliseconds: 0
+        until:
+          - type: is_not_open
+            condition: device
+            device_id: 1395ea248355b77100618285aba6c7ff
+            entity_id: 4dfcb1bd4d454748f1678d45a1a8ecb4
+            domain: binary_sensor
+  mode: single
+- id: "1731182508762"
+  alias: Water Softener Power Alarm
+  description: ""
+  triggers:
+    - type: power
+      device_id: 96da67373a6e8b756058ed6a488f88b8
+      entity_id: 7abadc9dcbcb281f2df1b265eee0abce
+      domain: sensor
+      trigger: device
+      below: 0.18
+      for:
+        hours: 0
+        minutes: 5
+        seconds: 0
+  conditions: []
+  actions:
+    - data:
+        message: Water Softener is powered off
+        title: "Alert: Water Softener is powered off"
+      action: notify.mobile_app_iphone
+    - data:
+        message: Water Softener is powered off
+        title: "Alert: Water Softener is powered off"
+      action: notify.mobile_app_pixel_8_pro
+  mode: single
+- id: "1731454038935"
+  alias: Sarah's Home Alert
+  description: ""
+  triggers:
+    - type: opened
+      device_id: 7dae4a8d5cbcc4b29b8dbba9c82a69e1
+      entity_id: 32c87f38e5630da372418730c22cda75
+      domain: binary_sensor
+      trigger: device
+  conditions:
+    - condition: time
+      after: "08:00:00"
+      before: "23:00:00"
+      weekday:
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+  actions:
+    - action: tts.speak
+      metadata: {}
+      data:
+        cache: false
+        language: en-au
+        media_player_entity_id: media_player.andrew_office_speaker
+        message: Sarah is probably home
+      target:
+        entity_id: tts.google_en_com
+  mode: single

@@ -1,0 +1,36 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: https-ingress
+  namespace: lldap
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    gethomepage.dev/description: Auth service
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/group: Infra
+    gethomepage.dev/icon: https://miro.medium.com/v2/resize:fit:470/1*ANDFHfaVoCd0yoWrY5IlXw.png
+    gethomepage.dev/name: LDAP
+    uptimekuma.io/monitor: "true"
+    uptimekuma.io/name: "LLDAP"
+    uptimekuma.io/type: "http"
+    uptimekuma.io/interval: "120"
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: http-service
+                port:
+                  name: http
+      host: ldap.herrington.services
+  tls:
+    - hosts:
+        - ldap.herrington.services
+      secretName: lldap-crt-secret

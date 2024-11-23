@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+data:
+  direwolf.conf: |
+    ADEVICE stdin null
+    CHANNEL 0
+    MYCALL KG5JNC-10
+    MODEM 1200
+
+    AGWPORT 8000
+    KISSPORT 8001
+
+    IGSERVER noam.aprs2.net
+    IGLOGIN KG5JNC-10 17324
+    IGTXLIMIT 6 10
+    IGFILTER m/50
+
+    # turned off pbeacon for now, no real reason to beacon an rx only igate
+    #PBEACON sendto=IG delay=1 every=90 overlay=R symbol="igate" lat=28.979480 long=-98.513290 power=0 height=8 gain=0 comment="iGate-Direwolf-rtlsdr-k8s" via=WIDE1-1,WIDE2-1
+    # display stats in stdout
+    #IBEACON sendto=R0 delay=1 every=10
+metadata:
+  labels:
+    app.kubernetes.io/instance: direwolf
+    app.kubernetes.io/name: direwolf
+  name: direwolf-conf
+  namespace: rtl

@@ -1,0 +1,31 @@
+kind: "postgresql"
+apiVersion: "acid.zalan.do/v1"
+
+metadata:
+  name: "hass-db"
+  namespace: "hass"
+  labels:
+    team: hass
+    app.kubernetes.io/instance: hass
+    app.kubernetes.io/name: home-assistant
+spec:
+  teamId: "hass"
+  postgresql:
+    version: "15"
+  numberOfInstances: 1
+  enableMasterLoadBalancer: false
+  enableConnectionPooler: false
+  users:
+    hass: []
+  databases:
+    hass: hass
+  volume:
+    size: "50Gi"
+    storageClass: freenas-iscsi-ssd-csi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 100Mi
+    limits:
+      cpu: 500m
+      memory: 500Mi

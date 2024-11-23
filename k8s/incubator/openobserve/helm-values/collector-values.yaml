@@ -1,0 +1,88 @@
+exporters:
+  otlphttp/openobserve:
+    endpoint: https://oo.herrington.services/api/default
+    headers:
+      Authorization: Basic YW5kcmV3LnRoZS50ZWNoaWVAZ21haWwuY29tOlBIY3pwT0w3Mm5rN1E4YWo=
+  otlphttp/openobserve_k8s_events:
+    endpoint: https://oo.herrington.services/api/default
+    headers:
+      Authorization: Basic YW5kcmV3LnRoZS50ZWNoaWVAZ21haWwuY29tOlBIY3pwT0w3Mm5rN1E4YWo=
+      stream-name: k8s_events
+agent:
+  receivers:
+    otlp:
+      protocols:
+        grpc: {}
+        http: {}
+    hostmetrics:
+      root_path: /hostfs
+      collection_interval: 15s
+      scrapers:
+        cpu:
+        disk:
+        filesystem:
+          exclude_mount_points:
+            match_type: regexp
+            mount_points:
+              - /dev/.*
+              - /proc/.*
+              - /sys/.*
+              - /run/k3s/containerd/.*
+              - /var/lib/docker/.*
+              - /var/lib/kubelet/.*
+              - /snap/.*
+          exclude_fs_types:
+            match_type: strict
+            fs_types:
+              - autofs
+              - binfmt_misc
+              - bpf
+              - cgroup2
+              - configfs
+              - debugfs
+              - devpts
+              - devtmpfs
+              - fusectl
+              - hugetlbfs
+              - iso9660
+              - mqueue
+              - nsfs
+              - overlay
+              - proc
+              - procfs
+              - pstore
+              - rpc_pipefs
+              - securityfs
+              - selinuxfs
+              - squashfs
+              - sysfs
+              - tracefs
+        load:
+        memory:
+        network:
+        paging:
+        processes:
+        # process: # a bug in the process scraper causes the collector to throw errors so disabling it for now
+    kubeletstats:
+      collection_interval: 15s
+      auth_type: "serviceAccount"
+      endpoint: "https://${env:K8S_NODE_NAME}:10250"
+      insecure_skip_verify: true
+      extra_metadata_labels:
+        - container.id
+        - k8s.volume.type
+      metric_groups:
+        - node
+        - pod
+        - container
+        - volume
+  service:
+    pipelines:
+      metrics:
+        receivers: [hostmetrics, kubeletstats]
+        processors: [batch, k8sattributes]
+        exporters: [otlphttp/openobserve]
+      traces:
+        receivers: [otlp]
+        processors: [batch, k8sattributes]
+        exporters: [otlphttp/openobserve]

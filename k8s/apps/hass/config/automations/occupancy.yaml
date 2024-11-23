@@ -1,0 +1,229 @@
+- id: "1720227557250"
+  alias: Andrew Office - Motion - Turn off
+  description: ""
+  trigger:
+    - type: no_motion
+      platform: device
+      device_id: dd87a288d82bec3576e61e4262eb5dca
+      entity_id: fca1bfde3eecad996d50369c2057afa3
+      domain: binary_sensor
+      for:
+        hours: 0
+        minutes: 30
+        seconds: 0
+  condition:
+    - condition: and
+      conditions:
+        - condition: time
+          after: "23:30:00"
+          before: "09:00:00"
+          weekday:
+            - sun
+            - mon
+            - tue
+            - wed
+            - fri
+            - thu
+            - sat
+        - type: is_not_occupied
+          condition: device
+          device_id: 6b4c828e6eebb3ae414f6cfc7899b849
+          entity_id: 36955ac8a9c0f6f8915d6be5c1c6e407
+          domain: binary_sensor
+  action:
+    - service: fan.turn_off
+      data: {}
+      target:
+        device_id: 19deda7b6bdff19e9113c4c9e3b8d148
+    - service: switch.turn_off
+      data: {}
+      target:
+        device_id: 11e91d0311357f1ddf76ee2534f0032f
+    - service: switch.turn_off
+      data: {}
+      target:
+        device_id: 18d12bca4bbc78ef7251b06af873e30c
+  mode: single
+- id: "1720227551234"
+  alias: Andrew Office - Motion - Turn on Fan
+  description: ""
+  trigger:
+    - type: motion
+      platform: device
+      device_id: dd87a288d82bec3576e61e4262eb5dca
+      entity_id: fca1bfde3eecad996d50369c2057afa3
+      domain: binary_sensor
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 3
+  condition:
+    - condition: and
+      conditions:
+        - type: is_temperature
+          condition: device
+          device_id: 99659a54d8c94c7919bd056fadca1a8b
+          entity_id: 83ca9c2ad57b2148c848132e5818c686
+          domain: sensor
+          above: 70
+        - condition: device
+          device_id: 19deda7b6bdff19e9113c4c9e3b8d148
+          domain: fan
+          entity_id: b659ad2b1a3c69b27f333beb7dba15df
+          type: is_off
+  action:
+    - service: fan.turn_on
+      data:
+        percentage: 100
+      target:
+        device_id: 19deda7b6bdff19e9113c4c9e3b8d148
+  mode: single
+- id: "1728328832915"
+  alias: Couch Empty Turns off Ceiling Fan
+  description: ""
+  trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.couch_occupancy
+      from: "on"
+      to: "off"
+      for:
+        hours: 0
+        minutes: 25
+        seconds: 30
+  condition: []
+  action:
+    - type: turn_off
+      device_id: 2526bb69f082e014611d2cf1d871b453
+      entity_id: 5a6cc7775d12b73edca0bbb289026cf2
+      domain: fan
+  mode: single
+- id: "1728328785840"
+  alias: Couch Occupied Turns on Ceiling Fan
+  description: ""
+  trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.couch_occupancy
+      from: "off"
+      to: "on"
+      for:
+        hours: 0
+        minutes: 1
+        seconds: 30
+  condition:
+    - condition: numeric_state
+      entity_id: sensor.inside_temp
+      above: 70
+  action:
+    - type: turn_on
+      device_id: 2526bb69f082e014611d2cf1d871b453
+      entity_id: 5a6cc7775d12b73edca0bbb289026cf2
+      domain: fan
+  mode: single
+- id: "1731099589543"
+  alias: Living Room Presence Clear - Turn off Fan
+  description: ""
+  triggers:
+    - type: not_occupied
+      device_id: de3640b690a3c27ebcfe00e2481211cf
+      entity_id: 061f29f35090bd6986042dbe7297d948
+      domain: binary_sensor
+      trigger: device
+      for:
+        hours: 0
+        minutes: 5
+        seconds: 0
+  conditions: []
+  actions:
+    - type: turn_off
+      device_id: 2526bb69f082e014611d2cf1d871b453
+      entity_id: 5a6cc7775d12b73edca0bbb289026cf2
+      domain: fan
+  mode: single
+- id: "1731100345732"
+  alias: Living Room Presence Clear - Lights Off or Dim
+  description: ""
+  triggers:
+    - type: not_occupied
+      device_id: de3640b690a3c27ebcfe00e2481211cf
+      entity_id: 061f29f35090bd6986042dbe7297d948
+      domain: binary_sensor
+      trigger: device
+      for:
+        hours: 0
+        minutes: 5
+        seconds: 0
+  conditions:
+    - condition: state
+      entity_id: input_boolean.bedtime
+      state: "off"
+  actions:
+    - if:
+        - condition: sun
+          before: sunset
+          after: sunrise
+      then:
+        - action: light.turn_off
+          metadata: {}
+          data: {}
+          target:
+            area_id: living_room
+      else:
+        - if:
+            - condition: device
+              type: is_on
+              device_id: e435d4107048faee192e3dd667f5d4ca
+              entity_id: e9cbc3bc7c0faf74053aa8b27683bf3c
+              domain: light
+          then:
+            - action: light.turn_off
+              metadata: {}
+              data: {}
+              target:
+                area_id: living_room
+          else:
+            - action: light.turn_on
+              metadata: {}
+              data:
+                brightness_pct: 20
+                transition: 5
+              target:
+                device_id: 6152020e0378864c4a20113579228fc7
+  mode: single
+- id: "1731100894076"
+  alias: Living Room Presence Found - Lights On
+  description: ""
+  triggers:
+    - type: occupied
+      device_id: de3640b690a3c27ebcfe00e2481211cf
+      entity_id: 061f29f35090bd6986042dbe7297d948
+      domain: binary_sensor
+      trigger: device
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 5
+  conditions:
+    - condition: and
+      conditions:
+        - condition: sun
+          before: sunrise
+          after: sunset
+        - condition: state
+          entity_id: input_boolean.bedtime
+          state: "off"
+        - condition: device
+          type: is_off
+          device_id: e435d4107048faee192e3dd667f5d4ca
+          entity_id: e9cbc3bc7c0faf74053aa8b27683bf3c
+          domain: light
+  actions:
+    - action: light.turn_on
+      metadata: {}
+      data:
+        transition: 1
+        brightness_pct: 75
+      target:
+        device_id: 6152020e0378864c4a20113579228fc7
+  mode: single

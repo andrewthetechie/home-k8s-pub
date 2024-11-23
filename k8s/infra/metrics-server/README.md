@@ -1,0 +1,1 @@
+https://www.talos.dev/v1.5/kubernetes-guides/configuration/deploy-metrics-server/

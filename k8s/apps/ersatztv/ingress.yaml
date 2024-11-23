@@ -1,0 +1,43 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ersatztv
+  labels:
+    app: ersatztv
+  annotations:
+    nginx.org/websocket-services: ersatztv-http
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.org/client-max-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "0"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "0"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "0"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    gethomepage.dev/description: Create TV Channels
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/group: Media
+    gethomepage.dev/icon: ersatztv
+    gethomepage.dev/name: ErsatzTV
+    gethomepage.dev/weight: "10" # put it at the end of the list
+    uptimekuma.io/monitor: "true"
+    uptimekuma.io/name: "ErsatzTV"
+    uptimekuma.io/type: "http"
+    uptimekuma.io/interval: "120"
+
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - ersatztv.herrington.services
+      secretName: ersatztv-tls-cert
+  rules:
+    - host: ersatztv.herrington.services
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ersatztv-http
+                port:
+                  number: 80

@@ -1,0 +1,48 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spotifystats
+  namespace: spotifystats
+  labels:
+    app: spotifystats
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: spotifystats
+  template:
+    metadata:
+      labels:
+        app: spotifystats
+    spec:
+      containers:
+        - name: spotifystats-api
+          image: yooooomi/your_spotify_server:1.11.0
+          envFrom:
+            - secretRef:
+                name: spotifystats
+          env:
+            - name: API_ENDPOINT
+              value: https://api.spotifystats.herrington.services
+            - name: CLIENT_ENDPOINT
+              value: https://spotifystats.herrington.services
+            - name: MONGO_ENDPOINT
+              value: mongodb://mongodb.spotifystats.svc.cluster.local:27017/your_spotify
+            - name: LOG_LEVEL
+              value: debug
+            - name: CORS
+              value: "https://api.spotifystats.herrington.services,https://spotifystats.herrington.services"
+          ports:
+            - containerPort: 8080
+              name: api-http
+        - name: spotifystats-web
+          image: yooooomi/your_spotify_client:1.11.0
+          env:
+            - name: API_ENDPOINT
+              value: https://api.spotifystats.herrington.services
+          ports:
+            - containerPort: 3000
+              name: web-http

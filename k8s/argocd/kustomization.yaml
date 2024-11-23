@@ -1,0 +1,34 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: argocd
+metadata:
+  name: argocd
+
+resources:
+  - namespace.yaml
+  - ingress.yaml
+  - sealed-secret-repo.yaml
+  - project-apps.yaml
+  - project-infra.yaml
+  - app-argocd.yaml
+  - appset-apps.yaml
+  - appset-infra.yaml
+patches:
+  - path: configmap.yaml
+
+helmCharts:
+  - includeCRDs: true
+    name: argo-cd
+    namespace: argocd
+    releaseName: argocd
+    repo: https://argoproj.github.io/argo-helm
+    valuesInline:
+      global:
+        deploymentAnnotations:
+          configmap.reloader.stakater.com/reload: argocd-cm,argocd-rbac-cm
+      server:
+        extraArgs:
+          - --insecure
+        rbacConfig:
+          policy.default: role:admin
+    version: 5.45.5

@@ -1,0 +1,19 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd
+  namespace: argocd
+spec:
+  destination:
+    namespace: argocd
+    server: "https://kubernetes.default.svc"
+  source:
+    path: nauvoo-v2/manifests/argocd
+    repoURL: git@github.com:andrewthetechie/home-k8s.git
+    targetRevision: HEAD
+  project: infra
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

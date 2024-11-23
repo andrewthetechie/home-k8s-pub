@@ -1,0 +1,61 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: pg-operator
+
+resources:
+  - namespace.yaml
+
+helmCharts:
+  - name: postgres-operator
+    releaseName: postgres-operator
+    namespace: pg-operator
+    version: 1.10.1
+    includeCRDs: true
+    repo: https://opensource.zalando.com/postgres-operator/charts/postgres-operator
+    valuesInline:
+      enableJsonLogging: true
+      configGeneral:
+        workers: 4
+      configKubernetes:
+        enable_cross_namespace_secret: true
+        enable_pod_antiaffinity: true
+        watched_namespace: "*"
+      configLoadBalancer:
+        db_hosted_zone: db.herrington.services
+      configLogicalBackup:
+        logical_backup_s3_access_key_id: "YUKMQNCCQDQXQXS9EJ7"
+        logical_backup_s3_bucket: "postgres-wal"
+        # logical_backup_s3_region: ""
+        logical_backup_s3_endpoint: "https://chrisgen.herrington.services:9000"
+        logical_backup_s3_secret_access_key: "y8hYxgXBafjoIVdWjr2BKh2Ikh7ODvq3z69LjxQ"
+        logical_backup_s3_sse: "AES256"
+        logical_backup_schedule: "30 00 * * *"
+  - name: postgres-operator-ui
+    releaseName: postgres-operator-ui
+    namespace: pg-operator
+    version: 1.10.1
+    repo: https://opensource.zalando.com/postgres-operator/charts/postgres-operator-ui
+    valuesInline:
+      envs:
+        appUrl: "https://pg-operator.herrington.services"
+      ingress:
+        enabled: true
+        ingressClassName: nginx
+        annotations:
+          cert-manager.io/cluster-issuer: letsencrypt-prod
+          gethomepage.dev/description: Manages Postgres databases deployed in k8s
+          gethomepage.dev/enabled: "true"
+          gethomepage.dev/group: Infra
+          gethomepage.dev/icon: https://icon2.cleanpng.com/20180315/ifq/kisspng-postgresql-logo-computer-software-database-open-source-vector-images-5aaa26e1a38cf4.7370214515211005136699.jpg
+          gethomepage.dev/name: Postgres Operator UI
+          uptimekuma.io/monitor: "true"
+          uptimekuma.io/name: "Postgres Operator"
+          uptimekuma.io/type: "http"
+          uptimekuma.io/interval: "120"
+        hosts:
+          - host: pg-operator.herrington.services
+            paths: ["/"]
+        tls:
+          - secretName: ui-tls
+            hosts:
+              - pg-operator.herrington.services

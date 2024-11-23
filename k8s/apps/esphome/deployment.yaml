@@ -1,0 +1,103 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    configmap.reloader.stakater.com/reload: esphome
+    secret.reloader.stakater.com/reload: esphome
+  labels:
+    app.kubernetes.io/instance: esphome
+    app.kubernetes.io/name: esphome
+  name: esphome
+  namespace: esphome
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: esphome
+      app.kubernetes.io/name: esphome
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: esphome
+        app.kubernetes.io/name: esphome
+    spec:
+      automountServiceAccountToken: true
+      containers:
+        - env:
+            - name: ESPHOME_DASHBOARD_USE_PING
+              value: "true"
+          image: "esphome/esphome:2024.10.3"
+          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              cpu: 50m
+              memory: 256M
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 10
+            tcpSocket:
+              port: 6052
+            timeoutSeconds: 1
+          name: esphome
+          ports:
+            - containerPort: 6052
+              name: http
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 10
+            tcpSocket:
+              port: 6052
+            timeoutSeconds: 1
+          securityContext:
+            capabilities:
+              add:
+                - NET_ADMIN
+                - NET_RAW
+                - SYS_ADMIN
+            privileged: true
+          startupProbe:
+            failureThreshold: 30
+            initialDelaySeconds: 0
+            periodSeconds: 5
+            tcpSocket:
+              port: 6052
+            timeoutSeconds: 1
+          volumeMounts:
+            - mountPath: /configmap
+              name: configmap
+            - mountPath: /config
+              name: config
+      dnsPolicy: ClusterFirstWithHostNet
+      enableServiceLinks: true
+      hostNetwork: true
+      initContainers:
+        - command:
+            - /bin/sh
+            - -c
+            - cp /configs/*.h /config/; cp /configs/*.yaml /config/; cp /secrets/*.yaml /config/
+          image: alpine:latest
+          imagePullPolicy: IfNotPresent
+          name: copy
+          volumeMounts:
+            - mountPath: /config
+              name: config
+            - mountPath: /configs/
+              name: configmap
+            - mountPath: /secrets/
+              name: secrets
+      serviceAccountName: default
+      volumes:
+        - configMap:
+            name: esphome
+          name: configmap
+        - name: config
+          persistentVolumeClaim:
+            claimName: esphome
+        - name: secrets
+          secret:
+            secretName: esphome-secrets
