@@ -1,0 +1,8 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: spegel
+  labels:
+    name: spegel
+    pod-security.kubernetes.io/enforce: privileged
