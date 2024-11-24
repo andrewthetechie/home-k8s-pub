@@ -1,0 +1,24 @@
+controllers:
+  pihole:
+    strategy: RollingUpdate
+    containers:
+      app:
+        image:
+          repository: mattwebbio/orbital-sync
+          tag: 1.8.2-distroless
+          pullPolicy: IfNotPresent
+        env:
+          TZ: America/Chicago
+          PRIMARY_HOST_BASE_URL: "https://1.pihole.herrington.services/"
+          PRIMARY_HOST_PASSWORD:
+            valueFrom:
+              secretKeyRef:
+                name: pihole-password
+                key: pihole_password
+          SECONDARY_HOSTS_1_BASE_URL: "http://pihole-pihole-http.pihole.svc"
+          SECONDARY_HOSTS_1_PASSWORD:
+            valueFrom:
+              secretKeyRef:
+                name: pihole-password
+                key: pihole_password
+          INTERVAL_MINUTES: 5
