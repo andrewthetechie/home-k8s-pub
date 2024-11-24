@@ -1,0 +1,44 @@
+controllers:
+  ittools:
+    strategy: RollingUpdate
+    containers:
+      app:
+        image:
+          repository: corentinth/it-tools
+          tag: 2024.10.22-7ca5933
+          pullPolicy: IfNotPresent
+
+service:
+  ittools:
+    controller: ittools
+    ports:
+      http:
+        port: 80
+
+ingress:
+  ittools:
+    enabled: true
+    className: nginx
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/description: Misc IT Tools to convert files and check signatures, etc. 
+      gethomepage.dev/enabled: "true"
+      gethomepage.dev/group: Misc
+      gethomepage.dev/icon: mdi-tools
+      gethomepage.dev/name: IT Tools
+      uptimekuma.io/monitor: "true"
+      uptimekuma.io/name: "ittools"
+      uptimekuma.io/type: "http"
+      uptimekuma.io/interval: "120"
+    hosts:
+      - host: ittools.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: ittools
+              port: http
+    tls:
+      - secretName: ittools
+        hosts:
+          - ittools.herrington.services
