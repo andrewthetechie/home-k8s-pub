@@ -1,0 +1,11 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: k8tz
+
+helmCharts:
+  - name: k8tz
+    releaseName: k8tz
+    namespace: k8tz
+    version: 0.17.1
+    repo: https://k8tz.github.io/k8tz/
+    valuesFile: values.yaml
