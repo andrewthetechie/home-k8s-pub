@@ -1,0 +1,31 @@
+kind: "postgresql"
+apiVersion: "acid.zalan.do/v1"
+
+metadata:
+  name: "atuin-db"
+  namespace: "atuin"
+  labels:
+    team: atuin
+    app.kubernetes.io/instance: atuin
+    app.kubernetes.io/name: atuin
+spec:
+  teamId: "atuin"
+  postgresql:
+    version: "15"
+  numberOfInstances: 1
+  enableMasterLoadBalancer: false
+  enableConnectionPooler: false
+  users:
+    atuin: []
+  databases:
+    atuin: atuin
+  volume:
+    size: "20Gi"
+    storageClass: freenas-iscsi-csi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 100Mi
+    limits:
+      cpu: 500m
+      memory: 500Mi

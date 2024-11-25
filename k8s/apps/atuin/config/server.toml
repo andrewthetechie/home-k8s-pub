@@ -1,0 +1,4 @@
+host = "0.0.0.0"
+port = 8080
+open_registration = true
+db_uri="postgres://{{ .username }}:{{ .password }}@atuin-db-0.atuin-db.atuin.svc.cluster.local:5432/atuin"
