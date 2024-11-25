@@ -1,0 +1,24 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: atuin
+
+resources:
+  - namespace.yaml
+  - postgres.yaml
+  - secret-store.yaml
+  - config.yaml
+
+helmCharts:
+  - name: app-template
+    releaseName: atuin
+    namespace: atuin
+    version: 3.3.2
+    repo: https://bjw-s.github.io/helm-charts
+    valuesFile: values.yaml
+
+configMapGenerator:
+  - name: atuin-config-tmpl
+    files:
+      - config/server.toml
+    options:
+      disableNameSuffixHash: true

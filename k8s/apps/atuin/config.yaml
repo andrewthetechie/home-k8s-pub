@@ -1,0 +1,30 @@
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: atuin-config
+  namespace: atuin
+spec:
+  refreshInterval: 1m # Adjust as needed
+  secretStoreRef:
+    name: atuin-store
+    kind: SecretStore
+  target:
+    name: atuin-config
+    template:
+      engineVersion: v2
+      templateFrom:
+        - target: Data
+          configMap:
+            name: atuin-config-tmpl
+            items:
+              - key: server.toml
+                templateAs: Values
+  data:
+    - secretKey: username
+      remoteRef:
+        key: atuin.atuin-db.credentials.postgresql.acid.zalan.do
+        property: username
+    - secretKey: password
+      remoteRef:
+        key: atuin.atuin-db.credentials.postgresql.acid.zalan.do
+        property: password
