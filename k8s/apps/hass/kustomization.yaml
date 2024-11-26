@@ -51,6 +51,7 @@ configMapGenerator:
       - config/automations/occupancy.yaml
       - config/automations/radio_rack.yaml
       - config/automations/kitchen.yaml
+      - config/automations/holiday.yaml
     name: hass-automations
     options:
       disableNameSuffixHash: true
