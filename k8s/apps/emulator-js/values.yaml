@@ -1,0 +1,88 @@
+controllers:
+  emulatorjs:
+    strategy: RollingUpdate
+    containers:
+      app:
+        image:
+          repository: linuxserver/emulatorjs
+          tag: 1.9.2
+          pullPolicy: IfNotPresent
+persistence:
+  config:
+    type: persistentVolumeClaim
+    accessMode: ReadWriteOnce
+    size: 1Gi
+    globalMounts:
+      - path: /config
+  artwork:
+    type: persistentVolumeClaim
+    accessMode: ReadWriteOnce
+    size: 10Gi
+    globalMounts:
+      - path: /data
+
+service:
+  emu-fe:
+    controller: emulatorjs
+    ports:
+      http:
+        port: 80
+  emu-mgmt:
+    controller: emulatorjs
+    ports:
+      mgmt:
+        port: 3000
+
+ingress:
+  emulatorjs:
+    enabled: true
+    className: nginx
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/description: Emulator in the browser
+      gethomepage.dev/enabled: "true"
+      gethomepage.dev/group: Misc
+      gethomepage.dev/icon: mdi-gamepad-square
+      gethomepage.dev/name: EmulatorJS
+      uptimekuma.io/monitor: "true"
+      uptimekuma.io/name: "emulatorjs"
+      uptimekuma.io/type: "http"
+      uptimekuma.io/interval: "120"
+    hosts:
+      - host: emu.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: emu-fe
+              port: http
+    tls:
+      - secretName: emulatorjs
+        hosts:
+          - emu.herrington.services
+  emulatorjs-mgmt:
+    enabled: true
+    className: nginx
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/description: Add roms to Emu
+      gethomepage.dev/enabled: "true"
+      gethomepage.dev/group: Misc
+      gethomepage.dev/icon: mdi-gamepad-round-up
+      gethomepage.dev/name: EmulatorJS-Mgmt
+      uptimekuma.io/monitor: "true"
+      uptimekuma.io/name: "emulatorjs-mgmt"
+      uptimekuma.io/type: "http"
+      uptimekuma.io/interval: "120"
+    hosts:
+      - host: emu-mgmt.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: emu-mgmt
+              port: mgmt
+    tls:
+      - secretName: emulatorjs-mgmt
+        hosts:
+          - emu-mgmt.herrington.services
