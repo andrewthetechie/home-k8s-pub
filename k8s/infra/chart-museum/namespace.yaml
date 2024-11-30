@@ -1,0 +1,7 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: chart-museum
+  labels:
+    name: chart-museum
