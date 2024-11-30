@@ -1,0 +1,49 @@
+controllers:
+  charts:
+    strategy: RollingUpdate
+    containers:
+      app:
+        image:
+          repository: ghcr.io/helm/chartmuseum
+          tag: v0.16.2
+          pullPolicy: IfNotPresent
+        env:
+          LOG_JSON: "1"
+          STORAGE: "local"
+          STORAGE_LOCAL_ROOTDIR: "/data"
+          CHART_URL: "https://charts.herrington.services"
+          PORT: "8000"
+
+persistence:
+  charts:
+    type: persistentVolumeClaim
+    accessMode: ReadWriteOnce
+    size: 10Gi
+    globalMounts:
+      - path: /data
+
+service:
+  charts:
+    controller: charts
+    ports:
+      http:
+        port: 8000
+
+ingress:
+  charts:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/enabled: "false"
+    hosts:
+      - host: charts.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: charts
+              port: http
+    tls:
+      - secretName: charts
+        hosts:
+          - charts.herrington.services
