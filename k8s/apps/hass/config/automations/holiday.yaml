@@ -15,6 +15,10 @@
       device_id: badb29c5b3232dbb20cfc8d6b3ffa21a
       entity_id: f0a936abb4128ecc9c37b6661b588beb
       domain: switch
+    - type: turn_on
+      device_id: badb29c5b3232dbb20cfc8d6b3ffa21a
+      entity_id: ed9ead48aa0e43ad14ef82cfc65a81e4
+      domain: switch
   mode: single
 - id: "1732594009144"
   alias: Holiday Mantle Lights - Off
@@ -27,5 +31,9 @@
     - type: turn_off
       device_id: badb29c5b3232dbb20cfc8d6b3ffa21a
       entity_id: f0a936abb4128ecc9c37b6661b588beb
+      domain: switch
+    - type: turn_off
+      device_id: badb29c5b3232dbb20cfc8d6b3ffa21a
+      entity_id: ed9ead48aa0e43ad14ef82cfc65a81e4
       domain: switch
   mode: single
