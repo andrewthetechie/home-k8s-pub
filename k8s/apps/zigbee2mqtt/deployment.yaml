@@ -48,7 +48,7 @@ spec:
             seccompProfile:
               type: RuntimeDefault
       containers:
-      - image: koenkk/zigbee2mqtt:1.40.2
+      - image: koenkk/zigbee2mqtt:1.42.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
