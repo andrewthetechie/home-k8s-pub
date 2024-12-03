@@ -1,0 +1,29 @@
+controllers:
+  actionsrunner:
+    strategy: RollingUpdate
+    containers:
+      app:
+        image:
+          repository: myoung34/github-runner
+          tag: 2.321.0-ubuntu-noble
+          pullPolicy: IfNotPresent
+        resources:
+          limits:
+            cpu: 2
+            memory: 512Mi
+          requests:
+            cpu: 2
+            memory: 256Mi
+        env:
+          RUNNER_SCOPE: repo
+          REPO_URL: https://github.com/andrewthetechie/home-k8s
+          RUNNER_GROUP: home-k8s
+          RUNNER_NAME:
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          ACCESS_TOKEN:
+            valueFrom:
+              secretKeyRef:
+                name: actions-runner
+                key: ACCESS_TOKEN
