@@ -1,0 +1,16 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  creationTimestamp: null
+  name: actions-runner
+  namespace: actions-runner
+spec:
+  encryptedData:
+    ACCESS_TOKEN: AgAa+712frQuZTbE20jYxUOGyoOevO6R47VHhHfNbO23giOmVN/Unzo25kbzWQKDEaCDP1ILSJVbR1MINRdcoRMXSOxu2pNV8HTWBVZIufg/9AYTAE5ZDEsuNGKV7o50xC3H1dSWkUwbvfumcHjsg/pzqvOnB6+WItyFckDD2FJlxyUFDC1QQ97Kb9c/upkacvO4xL6AZ8S3yDx/OQQIdGuJVyulZ6hwL3O0yBGYmrQiR8oYCWapzBCt6tlzl8sWCWbbx8iMj9z0V737tu5/LQQH+RiPoc5dA69UOc2W1/svkItWLwaDR0PkMcb02KEVoXzla68cyo0VbLcX2eV9kSIF+gSbxCBVfJxI8jUtD5rotKytk/rzEaWqNhqFA4nwWvIpB3R9yrX8vxGaelf2Fxg4709gshz+dT91dChMuobv9kZRtP2ICKmSZrLFD5ogDIHffHDQQXPO0b71DdG78HmDniP4wSQ0388T6+UJ2mM1arQ3XbezyyI+x11FVTiyNp+XXpaug3wqzh9DYgMkXYrfHAGT9L1W50VQ9crH3o1S1RdYenociWdZ7zpgtPaomeMD2c44c3MOHIq621Ck4QUIXB0a0smfnwDWrRRLjLrPvb4wvVNRJBVpX25U9gjQKrOnzdGIzj7JNs/3jZeEfnV0NeBrncCoyaQXuiNumyTSG5Ec7I9p6euN/j0oONRjYSsN5qLOQyuW6mDLuUTM3wNpsBjFmv+zSGOdshRMgC+cWthrpol7U0Du
+  template:
+    metadata:
+      creationTimestamp: null
+      name: actions-runner
+      namespace: actions-runner
+    type: Opaque
