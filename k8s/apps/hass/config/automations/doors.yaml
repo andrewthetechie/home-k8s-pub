@@ -250,3 +250,46 @@
       data:
         message: Alarm! A door has opened when alarm is armed
   mode: single
+- id: "1733195685236"
+  alias: Front Door - Turn out outside lights
+  description: ""
+  triggers:
+    - type: opened
+      device_id: c1f3999e996e763ee5b43ccb15b07bdb
+      entity_id: e1ae61610e9197c84b4453b049c69657
+      domain: binary_sensor
+      trigger: device
+  conditions:
+    - condition: sun
+      before: sunrise
+      after: sunset
+  actions:
+    - action: light.turn_on
+      metadata: {}
+      data: {}
+      target:
+        entity_id: light.front_outside_lights
+    - if:
+        - condition: and
+          conditions:
+            - condition: device
+              type: is_off
+              device_id: e435d4107048faee192e3dd667f5d4ca
+              entity_id: e9cbc3bc7c0faf74053aa8b27683bf3c
+              domain: light
+            - condition: device
+              type: is_off
+              device_id: 6152020e0378864c4a20113579228fc7
+              entity_id: 523ea3f7acdbc9ba1dea2502aa888eb2
+              domain: light
+            - condition: device
+              type: is_off
+              device_id: a78101786aa87c42d75b72f0022d371b
+              entity_id: dd9f2bda363c4712a7a9273e4bc5ac56
+              domain: light
+      then:
+        - type: turn_on
+          device_id: 9c44d400c001402e0b9594c3bfe35f0f
+          entity_id: 46b3ac95efbc03f7857a6e1233a68b0d
+          domain: switch
+  mode: single
