@@ -17,7 +17,7 @@ controllers:
         env:
           RUNNER_SCOPE: repo
           REPO_URL: https://github.com/andrewthetechie/home-k8s
-          RUNNER_GROUP: home-k8s
+          LABELS: home-k8s
           RUNNER_NAME:
             valueFrom:
               fieldRef:
