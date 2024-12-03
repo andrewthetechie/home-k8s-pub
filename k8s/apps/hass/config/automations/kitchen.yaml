@@ -82,3 +82,58 @@
   actions:
     - action: script.turn_on_coffee_pot
       data: {}
+- id: "1733194601236"
+  alias: Kitchen - Turn on Cabinet Lights with Switch
+  description: ""
+  triggers:
+    - domain: mqtt
+      device_id: e435d4107048faee192e3dd667f5d4ca
+      type: action
+      subtype: up_single
+      trigger: device
+  conditions:
+    - condition: device
+      type: is_on
+      device_id: e435d4107048faee192e3dd667f5d4ca
+      entity_id: e9cbc3bc7c0faf74053aa8b27683bf3c
+      domain: light
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 0.5
+  actions:
+    - action: light.turn_on
+      metadata: {}
+      data: {}
+      target:
+        entity_id:
+          - light.left_cabinet_light
+          - light.right_cabinet_light
+  mode: single
+- id: "1733194901295"
+  description: ""
+  mode: single
+  triggers:
+    - domain: mqtt
+      device_id: e435d4107048faee192e3dd667f5d4ca
+      type: action
+      subtype: down_single
+      trigger: device
+  conditions:
+    - condition: device
+      type: is_off
+      device_id: e435d4107048faee192e3dd667f5d4ca
+      entity_id: e9cbc3bc7c0faf74053aa8b27683bf3c
+      domain: light
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 0.5
+  actions:
+    - action: light.turn_off
+      metadata: {}
+      data: {}
+      target:
+        entity_id:
+          - light.left_cabinet_light
+          - light.right_cabinet_light
