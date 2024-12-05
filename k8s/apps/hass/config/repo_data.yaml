@@ -90,3 +90,8 @@
   src: card-mod.js
   dest: /config/www/card-mod.js
   tag: v3.4.3
+- url: https://github.com/simbaja/ha_gehome.git
+  src: custom_components/ge_home
+  dest: /config/custom_components/ge_home
+  tag: v0.6.14
+  copy_contents: True
