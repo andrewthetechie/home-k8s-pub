@@ -31,4 +31,4 @@ helmCharts:
           - --insecure
         rbacConfig:
           policy.default: role:admin
-    version: 5.45.5
+    version: 7.7.7
