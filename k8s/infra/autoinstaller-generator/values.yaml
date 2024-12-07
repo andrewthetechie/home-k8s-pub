@@ -1,0 +1,32 @@
+controllers:
+  autoinstaller-generator:
+    strategy: RollingUpdate
+    containers:
+      dhcp:
+        image:
+          repository: ghcr.io/andrewthetechie/home-k8s-pub/ubu_autoinstall_generator
+          tag: 3d49098015b94c41869bb2ea56e5f26a40ed5dc0
+          pullPolicy: IfNotPresent
+        env:
+          SERVICE_ACCOUNT_JSON: "/config/service_account.json"
+          BOOTSTRAP_URL: "https://bootstrap.herrington.services/bootstrap"
+          BUCKET: "bootstrap-resources"
+          ACCESS_KEY:
+            valueFrom:
+              secretKeyRef:
+                name: autoinstaller-secrets
+                key: ACCESS_KEY
+          SECRET_KEY:
+            valueFrom:
+              secretKeyRef:
+                name: autoinstaller-secrets
+                key: SECRET_KEY
+        resources:
+          requests:
+            memory: 64Mi
+persistence:
+  config:
+    type: secret
+    name: autoinstaller-secrets
+    globalMounts:
+      - path: /config
