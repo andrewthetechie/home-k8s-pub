@@ -1,0 +1,8 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: dhcp-reservations
+  labels:
+    name: dhcp-reservations
+

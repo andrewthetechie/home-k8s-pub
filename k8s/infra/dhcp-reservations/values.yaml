@@ -1,0 +1,23 @@
+controllers:
+  dhcp-reservations:
+    strategy: RollingUpdate
+    containers:
+      dhcp:
+        image:
+          repository: ghcr.io/andrewthetechie/home-k8s-pub/unifi_dhcp_reservations
+          tag: 28a4fb945a4a35701126c248271d60b6294548ac
+          pullPolicy: IfNotPresent
+        env:
+          SERVICE_ACCOUNT_JSON: "/config/service_account.json"
+          CONTROLLER_PASSWORD:
+            valueFrom:
+              secretKeyRef:
+                name: dhcp-reservation
+                key: CONTROLLER_PASSWORD
+
+persistence:
+  config:
+    type: secret
+    name: dhcp-reservation
+    globalMounts:
+      - path: /config
