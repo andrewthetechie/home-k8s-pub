@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: autoinstaller-generator
+
+resources:
+  - namespace.yaml
+  - sealed-secret.yaml
+
+helmCharts:
+  - name: app-template
+    releaseName: autoinstaller-generator
+    namespace: autoinstaller-generator
+    version: 3.3.2
+    repo: https://bjw-s.github.io/helm-charts
+    valuesFile: values.yaml
