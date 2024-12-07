@@ -18,9 +18,9 @@ jobs:
       - name: Find Docker image directories
         id: set-matrix
         run: |
-          dirs=$(find custom_images -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)
+          dirs=$(find custom_images -type f -name Dockerfile -exec dirname {} \; | awk -F'/' '{print $NF}' | sort | uniq | jq -R -s -c 'split("\n") | map(select(. != ""))')
           echo "Matrix input: $dirs"
-          echo "::set-output name=matrix::$(echo $dirs | jq -R -s -c 'split("\n") | map(select(. != ""))')"
+          echo "matrix=$dirs" >> $GITHUB_OUTPUT
 
   build-and-push:
     name: Build and Push Images
