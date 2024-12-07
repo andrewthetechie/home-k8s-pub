@@ -14,7 +14,9 @@ controllers:
               secretKeyRef:
                 name: dhcp-reservation
                 key: CONTROLLER_PASSWORD
-
+        resources:
+          requests:
+            memory: 64Mi
 persistence:
   config:
     type: secret
