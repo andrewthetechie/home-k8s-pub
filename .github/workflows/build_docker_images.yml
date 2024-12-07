@@ -1,0 +1,67 @@
+name: Build and Push Docker Images
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  scan-directories:
+    name: Scan Custom Images
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Find Docker image directories
+        id: set-matrix
+        run: |
+          dirs=$(find custom_images -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)
+          echo "Matrix input: $dirs"
+          echo "::set-output name=matrix::$(echo $dirs | jq -R -s -c 'split("\n") | map(select(. != ""))')"
+
+  build-and-push:
+    name: Build and Push Images
+    needs: scan-directories
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        directory: ${{ fromJson(needs.scan-directories.outputs.matrix) }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.THIS_PAT }}
+
+      - name: Docker metadata
+        uses: docker/metadata-action@v4
+        id: meta
+        with:
+          images: |
+            ghcr.io/${{ github.repository }}/${{ matrix.directory }}
+          tags: |
+            type=raw,value=${{ github.ref_name }}
+            type=sha,prefix=
+            type=sha,format=long,prefix=
+
+      - name: Build and Push
+        uses: docker/build-push-action@v3
+        with:
+          context: custom_images/${{ matrix.directory }}
+          file: custom_images/${{ matrix.directory }}/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: linux/amd64,linux/arm64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
