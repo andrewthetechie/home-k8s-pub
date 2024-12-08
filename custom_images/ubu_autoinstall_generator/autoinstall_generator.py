@@ -10,12 +10,19 @@ from io import BytesIO
 
 BOOTSTRAP_URL = os.environ.get("BOOTSTRAP_URL", "")
 TEMPLATE_DIR = Path(os.environ.get("TEMPLATE_DIR", "./"))
-APT_CACHE_URL = os.environ.get("APT_CACHE_URL", "https://apt.cache.herrington.services")
+APT_CACHE_URL = os.environ.get(
+    "APT_CACHE_URL", "http://apt.cache.herrington.services:3142"
+)
 
 MINIO_HOST = os.environ.get("MINIO_URL", "chrisjen.herrington.services:9000")
 BUCKET = os.environ.get("BUCKET")
 ACCESS_KEY = os.environ.get("ACCESS_KEY")
 SECRET_KEY = os.environ.get("SECRET_KEY")
+
+
+def get_set_default(object, key, default):
+    value = object.get(key, default)
+    object[key] = value
 
 
 def generate_autoinstall(
@@ -35,9 +42,36 @@ def generate_autoinstall(
         template_data = {}
         template_data["autoinstall"] = {}
     template_data["version"] = 1
-    template_data["autoinstall"]["proxy"] = APT_CACHE_URL
+    get_set_default(template_data["autoinstall"], "proxy", APT_CACHE_URL)
+    get_set_default(
+        template_data["autoinstall"], "kernel", {"package": "linux-generic"}
+    )
+    get_set_default(
+        template_data["autoinstall"],
+        "keyboard",
+        {
+            "layout": "us",
+            "toggle": None,
+            "variant": "",
+        },
+    )
+
     template_data["autoinstall"]["version"] = 1
-    template_data["autoinstall"]["refresh-installer"] = {"update": True}
+    get_set_default(template_data["autoinstall"], "refresh-installer", {"update": True})
+    get_set_default(template_data["autoinstall"], "codecs", {"install": False})
+    get_set_default(template_data["autoinstall"], "drivers", {"install": False})
+    get_set_default(template_data["autoinstall"], "oem", {"install": True})
+    get_set_default(
+        template_data["autoinstall"],
+        "source",
+        {"id": "ubuntu-server", "search_drivers": False},
+    )
+    get_set_default(template_data["autoinstall"], "updates", "security")
+    get_set_default(
+        template_data["autoinstall"],
+        "apt",
+        {"preserve_sources_list": False, "geoip": True, "fallback": "offline-install"},
+    )
 
     packages = template_data["autoinstall"].get("packages", [])
     if "curl" not in packages:
