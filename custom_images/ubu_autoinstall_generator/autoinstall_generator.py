@@ -10,6 +10,7 @@ from io import BytesIO
 
 BOOTSTRAP_URL = os.environ.get("BOOTSTRAP_URL", "")
 TEMPLATE_DIR = Path(os.environ.get("TEMPLATE_DIR", "./"))
+APT_CACHE_URL = os.environ.get("APT_CACHE_URL", "https://apt.cache.herrington.services")
 
 MINIO_HOST = os.environ.get("MINIO_URL", "chrisjen.herrington.services:9000")
 BUCKET = os.environ.get("BUCKET")
@@ -34,6 +35,7 @@ def generate_autoinstall(
         template_data = {}
         template_data["autoinstall"] = {}
     template_data["version"] = 1
+    template_data["autoinstall"]["proxy"] = APT_CACHE_URL
     template_data["autoinstall"]["version"] = 1
     template_data["autoinstall"]["refresh-installer"] = {"update": True}
 
