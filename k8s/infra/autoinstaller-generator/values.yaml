@@ -5,7 +5,7 @@ controllers:
       dhcp:
         image:
           repository: ghcr.io/andrewthetechie/home-k8s-pub/ubu_autoinstall_generator
-          tag: ff258ffa3774f2c4876b81f124be0756111549ff
+          tag: a9f88f108d386f74d11c1b8ecd56681c023b3966
           pullPolicy: IfNotPresent
         env:
           SERVICE_ACCOUNT_JSON: "/config/service_account.json"
