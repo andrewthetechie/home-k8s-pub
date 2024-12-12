@@ -22,7 +22,7 @@ spec:
         transcode: "true"
       containers:
         - name: ersatztv
-          image: jasongdove/ersatztv:v0.8.7-vaapi
+          image: jasongdove/ersatztv:v0.8.8-vaapi
           env:
             - name: TZ
               value: "America/Chicago"
