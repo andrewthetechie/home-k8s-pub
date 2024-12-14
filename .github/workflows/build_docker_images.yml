@@ -50,6 +50,7 @@ jobs:
           images: |
             ghcr.io/${{ github.repository }}/${{ matrix.directory }}
           tags: |
+            type=raw,value=latest
             type=raw,value=${{ github.ref_name }}
             type=sha,prefix=
             type=sha,format=long,prefix=
