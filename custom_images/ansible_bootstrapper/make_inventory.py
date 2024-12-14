@@ -10,7 +10,7 @@ with open(f"/hosts/{HOST}/inventory/inventory.yaml", "r") as fh:
 
 host_inventory["all"]["hosts"][HOST]["ansible_host"] = IP
 host_inventory["all"]["hosts"][HOST]["ansible_ssh_private_key_file"] = (
-    "/secret/ansible-key"
+    "/secrets/ansible-key"
 )
 host_inventory["all"]["hosts"][HOST]["ansible_ssh_extra_args"] = (
     "-o StrictHostKeyChecking=no"
