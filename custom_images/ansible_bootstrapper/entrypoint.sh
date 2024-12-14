@@ -8,4 +8,4 @@ cd /hosts/$NAME
 make install
 
 pwd
-SECRET_FILE_PATH=/secret/ansible-vault-password make run-all
+SECRET_FILE_PATH=/secrets/ansible-vault-password make run-all
