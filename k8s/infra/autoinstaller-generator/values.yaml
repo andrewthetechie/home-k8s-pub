@@ -9,7 +9,7 @@ controllers:
           pullPolicy: IfNotPresent
         env:
           SERVICE_ACCOUNT_JSON: "/config/service_account.json"
-          BOOTSTRAP_URL: "https://bootstrap.herrington.services/bootstrap"
+          BOOTSTRAP_URL: "http://10.10.0.15:8082/bootstrap"
           BUCKET: "bootstrap-resources"
           ACCESS_KEY:
             valueFrom:
