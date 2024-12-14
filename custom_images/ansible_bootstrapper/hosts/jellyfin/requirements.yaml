@@ -1,0 +1,8 @@
+roles:
+  - name: nickjj.acme_sh
+    src: https://github.com/nickjj/ansible-acme-sh
+  - name: geerlingguy.docker
+  - name: geerlingguy.security
+  - name: geerlingguy.pip
+  - name: geerlingguy.ntp
+  - name: sleepy-nols.jellyfin

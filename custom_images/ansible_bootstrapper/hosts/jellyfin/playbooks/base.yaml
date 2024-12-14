@@ -1,0 +1,33 @@
+---
+- hosts: all
+  become: true
+  become_method: sudo
+  vars:
+    # security variables
+    security_ssh_password_authentication: "no"
+    security_ssh_permit_root_login: "no"
+    security_ssh_usedns: "no"
+    security_ssh_permit_empty_password: "no"
+    security_ssh_challenge_response_auth: "no"
+    security_ssh_gss_api_authentication: "no"
+    security_ssh_x11_forwarding: "no"
+    security_sudoers_passwordless:
+      - andrew
+    security_autoupdate_enabled: true
+    security_autoupdate_reboot_time: "03:00"
+    # docker variables
+    docker_users:
+      - andrew
+    pip_install_packages:
+      - name: docker
+    ntp_timezone: America/Chicago
+  roles:
+    # https://galaxy.ansible.com/ui/standalone/roles/geerlingguy/security/
+    - geerlingguy.security
+    # https://galaxy.ansible.com/ui/standalone/roles/geerlingguy/docker/
+    - geerlingguy.docker
+    - geerlingguy.ntp
+  tasks:
+    - name: Install python3-docker
+      ansible.builtin.apt:
+        name: python3-docker

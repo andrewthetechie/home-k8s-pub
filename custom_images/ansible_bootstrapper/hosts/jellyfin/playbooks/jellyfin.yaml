@@ -1,0 +1,86 @@
+---
+- hosts: all
+  become: true
+  become_method: sudo
+  vars:
+    jellyfin_webserver:
+      enabled: false
+    jellyfin_fail2ban_enabled: false
+    jellyfin_ssl_enabled: false
+    jellyfin_package_dependencies:
+      - gnupg
+      - libicu74
+      - python3
+      - intel-opencl-icd
+    acme_sh_account_email: andrew@andrewherrington.com
+    acme_sh_copy_certs_to_path: /etc/ssl/jellyfin
+    acme_sh_default_dns_provider: "dns_cf"
+    acme_sh_domains:
+      - domains: ["jf.herrington.services"]
+        force_issue: True
+        extra_issue_renew_hook: /etc/ssl/jellyfin/jf-cert-renew-hook.sh
+  pre_tasks:
+    - name: Ensure required NFS utilities are installed
+      package:
+        name: nfs-common
+        state: present
+
+    - name: Create /etc/ssl/jellyfin directory
+      file:
+        path: /etc/ssl/jellyfin
+        state: directory
+        owner: jellyfin
+        group: jellyfin
+        mode: "0755"
+
+    - name: Create /nas directory
+      file:
+        path: /nas
+        state: directory
+        owner: jellyfin
+        group: jellyfin
+        mode: "0755"
+
+    - name: Mount NFS share
+      mount:
+        path: /nas
+        src: chrisjen.herrington.services:/mnt/disk_pool/Media
+        fstype: nfs
+        opts: defaults
+        state: mounted
+
+    - name: Allow jellyfin to bind to ports 80 and 443
+      command: setcap 'cap_net_bind_service=+ep' /usr/share/jellyfin
+      args:
+        warn: false
+      register: setcap_result
+
+    - name: Ensure setcap change is effective
+      systemd:
+        name: jellyfin
+        state: restarted
+      when: setcap_result.changed
+
+    - name: Allow jellyfin-web to bind to ports 80 and 443
+      command: setcap 'cap_net_bind_service=+ep' /usr/share/jellyfin-web
+      args:
+        warn: false
+      register: setcap_result_web
+
+    - name: Ensure setcap change is effective
+      systemd:
+        name: jellyfin
+        state: restarted
+      when: setcap_result_web.changed
+
+    - name: Copy jf-cert-renew-hook.sh to /etc/ssl/jellyfin
+      copy:
+        src: files/jf-cert-renew-hook.sh
+        dest: /etc/ssl/jellyfin/jf-cert-renew-hook.sh
+        owner: jellyfin
+        group: jellyfin
+        mode: "0755"
+
+  roles:
+    - sleepy-nols.jellyfin
+    - nickjj.acme_sh
