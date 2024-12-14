@@ -1,0 +1,89 @@
+---
+- hosts: all
+  become: true
+  become_method: sudo
+  vars:
+    repo_base: /nas/backup
+    restic_password_file_path: /backup/restic-password
+  pre_tasks:
+    - name: Create /nas/backup directory for media
+      file:
+        path: /nas/backup
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Mount Backup NFS share
+      mount:
+        path: /nas/backup
+        src: chrisjen.herrington.services:/mnt/data_pool/Backups
+        fstype: nfs
+        opts: defaults
+        state: mounted
+
+    - name: Install restic
+      package:
+        name: restic
+        state: present
+
+    - name: Create /backup directory if it does not exist
+      file:
+        path: "{{ restic_password_file_path | dirname }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0700"
+
+    - name: Copy restic_password to /backup/restic-password
+      copy:
+        content: "{{ restic_password }}"
+        dest: "{{ restic_password_file_path }}"
+        owner: root
+        group: root
+        mode: "0600"
+
+    - name: Copy backup script to /backup/backup.sh
+      copy:
+        src: files/backup.sh
+        dest: /backup/backup.sh
+        owner: root
+        group: root
+        mode: "0755"
+
+  tasks:
+    - name: Check if restic repository is already initialized
+      stat:
+        path: "{{ repo_base }}/{{ repo_path }}/config"
+      register: restic_repo_config
+
+    - name: Initialize restic repository
+      command: >
+        restic init --repo {{ repo_base }}/{{ repo_path }}
+        --from-password-file /backup/restic-password
+      environment:
+        RESTIC_PASSWORD_FILE: /backup/restic-password
+      when: not restic_repo_config.stat.exists
+      changed_when: true
+    - name: Configure Restic Repo Env var in crontab
+      ansible.builtin.cron:
+        name: RESTIC_REPO
+        env: true
+        job: "{{ repo_base }}/{{ repo_path }}"
+    - name: Configure Restic Repo Env var in crontab
+      ansible.builtin.cron:
+        name: RESTIC_PASSWORD_FILE
+        env: true
+        job: "{{ restic_password_file_path }}"
+    - name: Configure cron jobs for restic backups
+      ansible.builtin.cron:
+        name: "Restic Backup: {{ item.name }}"
+        day: "{{ item.cron.day }}"
+        hour: "{{ item.cron.hour }}"
+        minute: "{{ item.cron.minute }}"
+        user: root
+        job: |
+          STOP_SERVICES="{{ item.services | join(',') }}" BACKUP_DIRS="{{ item.directories | join(',') }}" /backup/backup.sh
+      loop: "{{ restic_backups }}"
+      loop_control:
+        label: "{{ item.name }}"
