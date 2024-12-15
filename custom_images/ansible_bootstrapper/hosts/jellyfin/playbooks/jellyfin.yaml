@@ -49,30 +49,6 @@
         opts: defaults
         state: mounted
 
-    - name: Allow jellyfin to bind to ports 80 and 443
-      command: setcap 'cap_net_bind_service=+ep' /usr/share/jellyfin
-      args:
-        warn: false
-      register: setcap_result
-
-    - name: Ensure setcap change is effective
-      systemd:
-        name: jellyfin
-        state: restarted
-      when: setcap_result.changed
-
-    - name: Allow jellyfin-web to bind to ports 80 and 443
-      command: setcap 'cap_net_bind_service=+ep' /usr/share/jellyfin-web
-      args:
-        warn: false
-      register: setcap_result_web
-
-    - name: Ensure setcap change is effective
-      systemd:
-        name: jellyfin
-        state: restarted
-      when: setcap_result_web.changed
-
     - name: Copy jf-cert-renew-hook.sh to /etc/ssl/jellyfin
       copy:
         src: files/jf-cert-renew-hook.sh
@@ -84,3 +60,15 @@
   roles:
     - sleepy-nols.jellyfin
     - nickjj.acme_sh
+
+  tasks:
+    - name: Allow jellyfin to bind to ports 80 and 443
+      community.general.capabilities:
+        path: /usr/lib/jellyfin/bin/jellyfin
+        capability: "cap_net_bind_service+ep"
+        state: present
+
+    - name: Restart jellyfin
+      ansible.builtin.service:
+        name: jellyfin
+        state: restarted
