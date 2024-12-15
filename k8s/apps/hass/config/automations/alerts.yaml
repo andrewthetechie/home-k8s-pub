@@ -168,3 +168,60 @@
       target:
         entity_id: tts.google_en_com
   mode: single
+- id: "1734295610272"
+  alias: Doorbell Alert
+  description: Doorbell Alert
+  triggers:
+    - trigger: state
+      entity_id:
+        - binary_sensor.front_door_bell_doorbell
+      from: "off"
+      to: "on"
+  conditions: []
+  actions:
+    - data: {}
+      action: script.unmute_googles
+    - target:
+        entity_id: media_player.whole_house
+      data:
+        media_content_id: >-
+          media-source://tts/cloud?message=Someone%20is%20at%20the%20door&language=en-AU&voice=NatashaNeural
+        media_content_type: provider
+      metadata:
+        title: Someone is at the door
+        thumbnail: https://brands.home-assistant.io/_/cloud/logo.png
+        media_class: app
+        children_media_class: null
+        navigateIds:
+          - {}
+          - media_content_type: app
+            media_content_id: media-source://tts
+          - media_content_type: provider
+            media_content_id: >-
+              media-source://tts/cloud?message=Someone%20is%20at%20the%20door&language=en-AU&voice=NatashaNeural
+      action: media_player.play_media
+    - delay:
+        hours: 0
+        minutes: 0
+        seconds: 4
+        milliseconds: 0
+    - target:
+        entity_id: media_player.whole_house
+      data:
+        media_content_id: >-
+          media-source://tts/cloud?message=Someone%20is%20at%20the%20door&language=en-AU&voice=NatashaNeural
+        media_content_type: provider
+      metadata:
+        title: Someone is at the door
+        thumbnail: https://brands.home-assistant.io/_/cloud/logo.png
+        media_class: app
+        children_media_class: null
+        navigateIds:
+          - {}
+          - media_content_type: app
+            media_content_id: media-source://tts
+          - media_content_type: provider
+            media_content_id: >-
+              media-source://tts/cloud?message=Someone%20is%20at%20the%20door&language=en-AU&voice=NatashaNeural
+      action: media_player.play_media
+  mode: single
