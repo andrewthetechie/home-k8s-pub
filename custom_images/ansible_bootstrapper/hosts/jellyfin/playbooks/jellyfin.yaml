@@ -15,6 +15,7 @@
     acme_sh_account_email: andrew@andrewherrington.com
     acme_sh_copy_certs_to_path: /etc/ssl/jellyfin
     acme_sh_default_dns_provider: "dns_cf"
+    acme_sh_default_staging: False
     acme_sh_domains:
       - domains: ["jf.herrington.services"]
         force_issue: True
