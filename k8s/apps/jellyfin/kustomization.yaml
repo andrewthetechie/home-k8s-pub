@@ -33,7 +33,7 @@ helmCharts:
           storageClassName: freenas-iscsi-ssd-csi
       ingress:
         main:
-          enabled: true
+          enabled: false
           annotations:
             cert-manager.io/cluster-issuer: letsencrypt-prod
             gethomepage.dev/description: Watch movies, shows, or listen to music
