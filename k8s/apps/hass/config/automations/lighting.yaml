@@ -642,3 +642,31 @@
           entity_id: 6fb220d1b8aa9f2f47029e0bc559e4d5
           domain: switch
   mode: single
+- id: ""
+  alias: Front Door Motion Detected - Turn on Lights
+  description: "1734908362620"
+  triggers:
+    - type: turned_on
+      device_id: 37a04f3462e2173a8a54bb496d4bc63f
+      entity_id: 64a868d7b5d577378538946e29c8f816
+      domain: binary_sensor
+      trigger: device
+  conditions:
+    - condition: sun
+      before: sunrise
+      after: sunset
+  actions:
+    - type: turn_on
+      device_id: 3eba65c05e61fef83bfa0547f1956962
+      entity_id: 1655257281ca57b25336a54eb80b8943
+      domain: light
+    - delay:
+        hours: 0
+        minutes: 10
+        seconds: 0
+        milliseconds: 0
+    - type: turn_off
+      device_id: 3eba65c05e61fef83bfa0547f1956962
+      entity_id: 1655257281ca57b25336a54eb80b8943
+      domain: light
+  mode: single
