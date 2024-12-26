@@ -1,0 +1,23 @@
+---
+- hosts: all
+  become: false
+  tasks:
+    - name: Copy pxe.conf to /run/dnsmasq.conf.d/
+      ansible.builtin.copy:
+        src: files/pxe.conf
+        dest: /run/dnsmasq.conf.d/
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Reload dnsmasq
+
+    - name: Check if dnsmasq PID file exists
+      ansible.builtin.stat:
+        path: /run/dnsmasq.pid
+      register: dnsmasq_pid_file
+
+  handlers:
+    - name: Reload dnsmasq
+      ansible.builtin.shell: |
+        kill -HUP $(cat /run/dnsmasq.pid)
+      when: dnsmasq_pid_file.stat.exists
