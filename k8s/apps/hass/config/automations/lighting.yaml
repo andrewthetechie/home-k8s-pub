@@ -642,7 +642,7 @@
           entity_id: 6fb220d1b8aa9f2f47029e0bc559e4d5
           domain: switch
   mode: single
-- id: ""
+- id: "173a2106209512"
   alias: Front Door Motion Detected - Turn on Lights
   description: "1734908362620"
   triggers:
@@ -669,4 +669,123 @@
       device_id: 3eba65c05e61fef83bfa0547f1956962
       entity_id: 1655257281ca57b25336a54eb80b8943
       domain: light
+  mode: single
+- id: "1735427612125"
+  alias: MBR Switch - Sarah Bedside
+  description: ""
+  triggers:
+    - domain: mqtt
+      device_id: d9a701a6a7017064038828533ee852e3
+      type: action
+      subtype: 1_single
+      metadata: {}
+      trigger: device
+  conditions: []
+  actions:
+    - action: light.toggle
+      metadata: {}
+      data: {}
+      target:
+        device_id: 2118e7b0cbcce48655cf4ab0ad0de12a
+  mode: single
+- id: "1735428176466"
+  alias: MBR Switch - All Light Toggle
+  description: ""
+  triggers:
+    - domain: mqtt
+      device_id: d9a701a6a7017064038828533ee852e3
+      type: action
+      subtype: 4_single
+      trigger: device
+  conditions: []
+  actions:
+    - if:
+        - condition: or
+          conditions:
+            - condition: device
+              type: is_on
+              device_id: 1aff6d81460377c7c1b7a72e85f95156
+              entity_id: d9bbcfdb6db8922de0fd5fa4dbb9649a
+              domain: light
+            - condition: device
+              type: is_on
+              device_id: 2118e7b0cbcce48655cf4ab0ad0de12a
+              entity_id: 2653847a270920b2dde013dcc5936aef
+              domain: light
+            - condition: device
+              type: is_on
+              device_id: 553a209d5c875a36d62352466f0705cf
+              entity_id: 5c265e66f4ce4f820a31b1bf755a990c
+              domain: light
+            - condition: device
+              type: is_on
+              device_id: 553a209d5c875a36d62352466f0705cf
+              entity_id: 6fb220d1b8aa9f2f47029e0bc559e4d5
+              domain: switch
+      then:
+        - action: light.turn_off
+          metadata: {}
+          data: {}
+          target:
+            device_id:
+              - 1aff6d81460377c7c1b7a72e85f95156
+              - 2118e7b0cbcce48655cf4ab0ad0de12a
+              - 553a209d5c875a36d62352466f0705cf
+        - type: turn_off
+          device_id: 553a209d5c875a36d62352466f0705cf
+          entity_id: 6fb220d1b8aa9f2f47029e0bc559e4d5
+          domain: switch
+      else:
+        - action: light.turn_on
+          metadata: {}
+          data:
+            brightness_pct: 80
+          target:
+            device_id:
+              - 1aff6d81460377c7c1b7a72e85f95156
+              - 2118e7b0cbcce48655cf4ab0ad0de12a
+              - 553a209d5c875a36d62352466f0705cf
+        - type: turn_on
+          device_id: 553a209d5c875a36d62352466f0705cf
+          entity_id: 6fb220d1b8aa9f2f47029e0bc559e4d5
+          domain: switch
+  mode: single
+- id: "1735427792759"
+  alias: MBR Switch - Andrew Bedside
+  description: ""
+  triggers:
+    - domain: mqtt
+      device_id: d9a701a6a7017064038828533ee852e3
+      type: action
+      subtype: 2_single
+      trigger: device
+  conditions: []
+  actions:
+    - action: light.toggle
+      metadata: {}
+      data: {}
+      target:
+        device_id: 1aff6d81460377c7c1b7a72e85f95156
+  mode: single
+- id: "1735427899807"
+  alias: MBR Switch - Bed Lights
+  description: ""
+  triggers:
+    - domain: mqtt
+      device_id: d9a701a6a7017064038828533ee852e3
+      type: action
+      subtype: 3_single
+      trigger: device
+  conditions: []
+  actions:
+    - type: toggle
+      device_id: 553a209d5c875a36d62352466f0705cf
+      entity_id: 6fb220d1b8aa9f2f47029e0bc559e4d5
+      domain: switch
+    - action: light.toggle
+      metadata: {}
+      data:
+        brightness_pct: 80
+      target:
+        device_id: 553a209d5c875a36d62352466f0705cf
   mode: single
