@@ -55,7 +55,7 @@ helmCharts:
     valuesInline:
       image:
         repository: linuxserver/sonarr
-        tag: 3.0.10
+        tag: 4.0.12
       env:
         TZ: "America/Chicago"
       persistence:
@@ -137,7 +137,7 @@ helmCharts:
     valuesInline:
       image:
         repository: linuxserver/prowlarr
-        tag: version-1.21.2.4649
+        tag: 1.29.2
       env:
         TZ: "America/Chicago"
       persistence:
