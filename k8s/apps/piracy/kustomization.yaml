@@ -178,7 +178,7 @@ helmCharts:
     valuesInline:
       image:
         repository: linuxserver/readarr
-        tag: 0.3.8-nightly
+        tag: 0.4.8-nightly
       env:
         TZ: "America/Chicago"
       persistence:
