@@ -2,26 +2,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: vlmcsd
+  name: kms
   namespace: kms
   labels:
-    env: prod
-    app: vlmcsd
+    app: kms
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: vlmcsd
-      env: prod
+      app: kms
   template:
     metadata:
       labels:
-        app: vlmcsd
-        env: prod
+        app: kms
     spec:
       containers:
-        - image: luodaoyi/kms-server:1113
-          name: vlmcsd
+        - image: p3terx/kms:latest
+          name: kms
           ports:
             - name: kms
               containerPort: 1688
