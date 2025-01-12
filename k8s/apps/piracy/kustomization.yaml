@@ -14,7 +14,7 @@ helmCharts:
     valuesInline:
       image:
         repository: linuxserver/radarr
-        tag: 5.0.3
+        tag: 5.17.2
       env:
         TZ: "America/Chicago"
       persistence:
