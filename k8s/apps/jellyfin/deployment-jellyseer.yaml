@@ -23,7 +23,7 @@ spec:
       containers:
         - name: jellyseer
           securityContext: {}
-          image: "fallenbagel/jellyseerr:2.2.3"
+          image: "fallenbagel/jellyseerr:2.3.0"
           imagePullPolicy: Always
           env:
             - name: TZ
