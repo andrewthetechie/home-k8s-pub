@@ -35,7 +35,7 @@ spec:
               name: pastebin-data
       containers:
         - name: pastebin
-          image: quxfoo/wastebin:2.7.0
+          image: quxfoo/wastebin:2.7.1
           envFrom:
             - secretRef:
                 name: keys
