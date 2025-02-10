@@ -52,6 +52,10 @@
         url: http://10.10.0.35:3001
         slug: all
 - SmartHome:
+  - Cameras:
+      href: https://10.10.0.1/protect/dashboard/all
+      icon: mdi-camera-outline
+      description: Security Cameras
   - Zigbee Coordinator:
       href: http://zigbee1.iot.herrington.services/
       icon: https://static-00.iconduck.com/assets.00/zigbee-icon-512x512-3txmp44z.png
