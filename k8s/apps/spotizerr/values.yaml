@@ -44,7 +44,7 @@ ingress:
       kubernetes.io/ingress.class: nginx
       gethomepage.dev/enabled: "true"
       gethomepage.dev/group: Piracy
-      gethomepage.dev/icon: sh-spotify
+      gethomepage.dev/icon: spotify
       gethomepage.dev/name: Spotify Downloader
       gethomepage.dev/description: Download albums or playlists from spotify to the Nas
       uptimekuma.io/monitor: "true"
