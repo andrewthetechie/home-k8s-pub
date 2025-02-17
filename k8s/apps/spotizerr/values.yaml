@@ -42,8 +42,15 @@ ingress:
     enabled: true
     annotations:
       kubernetes.io/ingress.class: nginx
-      cert-manager.io/cluster-issuer: letsencrypt-prod
-      gethomepage.dev/enabled: "false"
+      gethomepage.dev/enabled: "true"
+      gethomepage.dev/group: Piracy
+      gethomepage.dev/icon: sh-spotify
+      gethomepage.dev/name: Spotify Downloader
+      gethomepage.dev/description: Download albums or playlists from spotify to the Nas
+      uptimekuma.io/monitor: "true"
+      uptimekuma.io/name: "Spotifzerr"
+      uptimekuma.io/type: "http"
+      uptimekuma.io/interval: "120"
     hosts:
       - host: spotdl.herrington.services
         paths:
