@@ -1,0 +1,11 @@
+---
+customDirFormat: "%ar_album%/%album%"
+customTrackFormat: "%tracknum%. %music%"
+deezer: ""
+deezerQuality: "MP3_128"
+downloadQueueVisible: "true"
+fallback: "false"
+maxConcurrentDownloads: "1"
+realTime: "true"
+spotify: "MyAccount"
+spotifyQuality: "VERY_HIGH"

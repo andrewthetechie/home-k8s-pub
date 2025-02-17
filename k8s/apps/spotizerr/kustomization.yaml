@@ -1,0 +1,29 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: piracy
+
+resources:
+  - namespace.yaml
+  - sealed-credentials.yaml
+
+helmCharts:
+  - name: app-template
+    releaseName: spotizerr
+    namespace: piracy
+    version: 3.3.2
+    repo: https://bjw-s.github.io/helm-charts
+    valuesFile: values.yaml
+
+patches:
+  - target:
+      kind: Deployment
+      name: spotizerr
+    path: patches/nfs-mount-music.yaml
+
+# kustomization.yaml
+configMapGenerator:
+  - name: configuration
+    files:
+      - config/main.yaml
+    options:
+      disableNameSuffixHash: true

@@ -1,0 +1,75 @@
+controllers:
+  spotizerr:
+    strategy: RollingUpdate
+    initContainers:
+      config-copy:
+        image:
+          repository: mikefarah/yq
+          tag: 4.45.1
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 1000
+          allowPrivilegeEscalation: False
+        command:
+          - /bin/sh
+          - -c
+          - yq -o json /config/main.yaml > /app/config/main.json &&
+            chown -R 1000:1000 /app/config
+    containers:
+      app:
+        image:
+          repository: cooldockerizer93/spotizerr
+          tag: latest
+        env:
+          PUID: "1000"
+          PGID: "1000"
+        command:
+          - /bin/sh
+          - -c
+          - mkdir -p /app/creds/spotify/MyAccount/ && cp /secrets/spotify.json /app/creds/spotify/MyAccount/credentials.json &&
+            groupadd -g 1000 appgroup && useradd -u 1000 -g appgroup -d /app appuser &&
+            chown -R 1000:1000 /app/ &&
+            gosu appuser python app.py
+service:
+  spotizerr:
+    controller: spotizerr
+    ports:
+      http:
+        port: 7171
+
+ingress:
+  spotizerr:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/enabled: "false"
+    hosts:
+      - host: spotdl.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: spotizerr
+              port: http
+    tls:
+      - secretName: spotizerr
+        hosts:
+          - spotdl.herrington.services
+
+persistence:
+  config:
+    type: persistentVolumeClaim
+    accessMode: ReadWriteOnce
+    size: 500Mi
+    globalMounts:
+      - path: /app/config
+  credentials:
+    type: secret
+    name: credentials
+    globalMounts:
+      - path: /secrets
+  config-map:
+    type: configMap
+    name: configuration
+    globalMounts:
+      - path: /config
