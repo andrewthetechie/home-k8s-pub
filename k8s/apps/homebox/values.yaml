@@ -40,7 +40,7 @@ ingress:
       cert-manager.io/cluster-issuer: letsencrypt-prod
       gethomepage.dev/enabled: "true"
       gethomepage.dev/description: Inventory items in the house, track maintenance, etc
-      gethomepage.dev/group: Smarthome
+      gethomepage.dev/group: SmartHome
       gethomepage.dev/icon: mdi-folder-home-outline
       gethomepage.dev/name: Home Inventory
       gethomepage.dev/weight: "2"
