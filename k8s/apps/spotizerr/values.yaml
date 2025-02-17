@@ -20,17 +20,16 @@ controllers:
         image:
           repository: cooldockerizer93/spotizerr
           tag: latest
-        env:
-          PUID: "1000"
-          PGID: "1000"
+        # env:
+        #   PUID: "1000"
+        #   PGID: "1000"
         command:
           - /bin/sh
           - -c
           - mkdir -p /app/creds/spotify/MyAccount/ && cp /secrets/spotify.json /app/creds/spotify/MyAccount/credentials.json &&
-            mkdir -p /app/prgs && chown -R 1000:1000 /app/prgs &&
-            groupadd -g 1000 appgroup && useradd -u 1000 -g appgroup -d /app appuser &&
-            chown -R 1000:1000 /app/ &&
-            gosu appuser python app.py
+            chown -R 1000:1000 /app/prgs &&
+            chmod +x /app/entrypoint.sh &&
+            /app/entrypoint.sh python app.py
 service:
   spotizerr:
     controller: spotizerr
@@ -64,6 +63,12 @@ persistence:
     size: 500Mi
     globalMounts:
       - path: /app/config
+  progress:
+    type: persistentVolumeClaim
+    accessMode: ReadWriteOnce
+    size: 500Mi
+    globalMounts:
+      - path: /app/prgs
   credentials:
     type: secret
     name: credentials
