@@ -1,0 +1,43 @@
+controllers:
+  moodist:
+    strategy: RollingUpdate
+    containers:
+      app:
+        image:
+          repository: ghcr.io/remvze/moodist
+          tag: v1.5.1
+          pullPolicy: IfNotPresent
+
+service:
+  moodist:
+    controller: moodist
+    ports:
+      http:
+        port: 8080
+
+ingress:
+  moodist:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/enabled: "true"
+      gethomepage.dev/group: Media
+      gethomepage.dev/icon: home-sound-out-outline
+      gethomepage.dev/name: Ambient Mood Sounds
+      gethomepage.dev/description: Play ambient sounds like rain or wind in the trees.
+      uptimekuma.io/monitor: "true"
+      uptimekuma.io/name: "Moodist"
+      uptimekuma.io/type: "http"
+      uptimekuma.io/interval: "120"
+    hosts:
+      - host: mood.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: moodist
+              port: http
+    tls:
+      - secretName: moodist
+        hosts:
+          - mood.herrington.services
