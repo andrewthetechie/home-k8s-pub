@@ -27,7 +27,7 @@ controllers:
           - /bin/sh
           - -c
           - mkdir -p /app/creds/spotify/MyAccount/ && cp /secrets/spotify.json /app/creds/spotify/MyAccount/credentials.json &&
-            mkdir -p /app/prgs && chown -R /app/prgs &&
+            mkdir -p /app/prgs && chown -R 1000:1000 /app/prgs &&
             groupadd -g 1000 appgroup && useradd -u 1000 -g appgroup -d /app appuser &&
             chown -R 1000:1000 /app/ &&
             gosu appuser python app.py
