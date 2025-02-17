@@ -23,9 +23,10 @@ ingress:
       cert-manager.io/cluster-issuer: letsencrypt-prod
       gethomepage.dev/enabled: "true"
       gethomepage.dev/group: Media
-      gethomepage.dev/icon: home-sound-out-outline
+      gethomepage.dev/icon: mdi-home-sound-out-outline
       gethomepage.dev/name: Ambient Mood Sounds
       gethomepage.dev/description: Play ambient sounds like rain or wind in the trees.
+      gethomepage.dev/weight: "3"
       uptimekuma.io/monitor: "true"
       uptimekuma.io/name: "Moodist"
       uptimekuma.io/type: "http"

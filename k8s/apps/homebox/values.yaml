@@ -1,0 +1,69 @@
+controllers:
+  homebox:
+    strategy: RollingUpdate
+    initContainers:
+      permissions:
+        image:
+          repository: alpine
+          tag: latest
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 65532
+          allowPrivilegeEscalation: False
+        command:
+          - /bin/sh
+          - -c
+          - chown 65532:65532 -R /data
+    containers:
+      app:
+        image:
+          repository: ghcr.io/sysadminsmedia/homebox
+          tag: 0.17.2-rootless
+          pullPolicy: IfNotPresent
+        securityContext:
+          runAsUser: 65532
+          runAsGroup: 65532
+          allowPrivilegeEscalation: False
+
+service:
+  homebox:
+    controller: homebox
+    ports:
+      http:
+        port: 7745
+
+ingress:
+  homebox:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/enabled: "true"
+      gethomepage.dev/description: Inventory items in the house, track maintenance, etc
+      gethomepage.dev/group: Smarthome
+      gethomepage.dev/icon: mdi-folder-home-outline
+      gethomepage.dev/name: Home Inventory
+      gethomepage.dev/weight: "2"
+      uptimekuma.io/monitor: "true"
+      uptimekuma.io/name: "homebox"
+      uptimekuma.io/type: "http"
+      uptimekuma.io/interval: "120"
+    hosts:
+      - host: inventory.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: homebox
+              port: http
+    tls:
+      - secretName: homebox
+        hosts:
+          - inventory.herrington.services
+
+persistence:
+  data:
+    type: persistentVolumeClaim
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    globalMounts:
+      - path: /data
