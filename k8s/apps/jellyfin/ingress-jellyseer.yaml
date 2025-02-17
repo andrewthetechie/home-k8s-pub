@@ -11,6 +11,7 @@ metadata:
     gethomepage.dev/group: Media
     gethomepage.dev/icon: https://png.pngtree.com/png-clipart/20210128/ourmid/pngtree-pirate-flag-black-png-image_2824280.jpg
     gethomepage.dev/name: Jellyseer
+    gethomepage.dev/weight: "2"
     uptimekuma.io/monitor: "true"
     uptimekuma.io/name: "Jellyseer"
     uptimekuma.io/type: "http"

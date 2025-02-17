@@ -41,6 +41,7 @@ helmCharts:
             gethomepage.dev/group: Media
             gethomepage.dev/icon: jellyfin
             gethomepage.dev/name: Jellyfin
+            gethomepage.dev/weight: "1"
             uptimekuma.io/monitor: "true"
             uptimekuma.io/name: "Jellyfin"
             uptimekuma.io/type: "http"

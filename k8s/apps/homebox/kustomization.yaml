@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: homebox
+
+resources:
+  - namespace.yaml
+
+helmCharts:
+  - name: app-template
+    releaseName: homebox
+    namespace: homebox
+    version: 3.3.2
+    repo: https://bjw-s.github.io/helm-charts
+    valuesFile: values.yaml
+
