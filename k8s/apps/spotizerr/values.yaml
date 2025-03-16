@@ -26,7 +26,8 @@ controllers:
         command:
           - /bin/sh
           - -c
-          - mkdir -p /app/creds/spotify/MyAccount/ && cp /secrets/spotify.json /app/creds/spotify/MyAccount/credentials.json &&
+          - mkdir -p /app/creds/spotify/MyAccount/ && cp /secrets/*.json /app/creds/spotify/MyAccount/ &&
+            mkdir -p /app/prgs &&
             chown -R 1000:1000 /app/prgs &&
             chmod +x /app/entrypoint.sh &&
             /app/entrypoint.sh python app.py
@@ -70,15 +71,15 @@ persistence:
     size: 500Mi
     globalMounts:
       - path: /app/config
-  progress:
-    type: persistentVolumeClaim
-    accessMode: ReadWriteOnce
-    size: 500Mi
-    globalMounts:
-      - path: /app/prgs
+  # progress:
+  #   type: persistentVolumeClaim
+  #   accessMode: ReadWriteOnce
+  #   size: 500Mi
+  #   globalMounts:
+  #     - path: /app/prgs
   credentials:
     type: secret
-    name: credentials
+    name: spotizerr-credentials
     globalMounts:
       - path: /secrets
   config-map:
