@@ -1,4 +1,10 @@
 controllers:
+  redis:
+    containers:
+      redis:
+        image:
+          repository: redis
+          tag: 7.4.2-alpine
   spotizerr:
     strategy: RollingUpdate
     initContainers:
@@ -19,10 +25,13 @@ controllers:
       app:
         image:
           repository: cooldockerizer93/spotizerr
-          tag: latest
-        # env:
-        #   PUID: "1000"
-        #   PGID: "1000"
+          tag: 1.2
+        env:
+          REDIS_HOST: "spotizerr-redis.piracy.svc"
+          REDIS_PORT: 6379
+          REDIS_DB: 0
+          REDIS_URL: redis://spotizerr-redis.piracy.svc:6379/0
+          REDIS_BACKEND: redis://spotizerr-redis.piracy.svc:6379/0
         command:
           - /bin/sh
           - -c
@@ -37,6 +46,11 @@ service:
     ports:
       http:
         port: 7171
+  redis:
+    controller: redis
+    ports:
+      redis:
+        port: 6379
 
 ingress:
   spotizerr:
@@ -71,15 +85,17 @@ persistence:
     size: 500Mi
     globalMounts:
       - path: /app/config
-  # progress:
-  #   type: persistentVolumeClaim
-  #   accessMode: ReadWriteOnce
-  #   size: 500Mi
-  #   globalMounts:
-  #     - path: /app/prgs
+  queue:
+    type: persistentVolumeClaim
+    accessMode: ReadWriteOnce
+    size: 2Gi
+    advancedMounts:
+      redis:
+        redis:
+          - path: /data
   credentials:
     type: secret
-    name: spotizerr-credentials
+    name: spotizerr-spotify-credentials
     globalMounts:
       - path: /secrets
   config-map:

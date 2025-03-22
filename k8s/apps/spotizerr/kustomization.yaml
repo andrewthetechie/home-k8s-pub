@@ -4,7 +4,7 @@ namespace: piracy
 
 resources:
   - namespace.yaml
-  - sealed-credentials.yaml
+  - sealed-spotify-credentials.yaml
 
 helmCharts:
   - name: app-template
