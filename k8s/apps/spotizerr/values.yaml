@@ -83,8 +83,10 @@ persistence:
     type: persistentVolumeClaim
     accessMode: ReadWriteOnce
     size: 500Mi
-    globalMounts:
-      - path: /app/config
+    advancedMounts:
+      spotizerr:
+        app:
+          - path: /app/config
   queue:
     type: persistentVolumeClaim
     accessMode: ReadWriteOnce
