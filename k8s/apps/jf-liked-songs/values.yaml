@@ -1,0 +1,53 @@
+controllers:
+  jf-liked-songs:
+    strategy: RollingUpdate
+    containers:
+      app:
+        image:
+          repository: python
+          tag: 3.13
+          pullPolicy: IfNotPresent
+        command:
+          - /bin/bash
+          - -c
+          - cp /secrets/accounts.json /app/jellyfin-liked-playlist/accounts.json && cd /app/jellyfin-liked-playlist/ && /app/venv/bin/python jf-liked-playlist/main.py
+service:
+  jf-liked-songs:
+    controller: jf-liked-songs
+    ports:
+      http:
+        port: 7079
+
+ingress:
+  jf-liked-songs:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/enabled: "false"
+    hosts:
+      - host: jf-liked-songs.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: jf-liked-songs
+              port: http
+    tls:
+      - secretName: jf-liked-songs
+        hosts:
+          - jf-liked-songs.herrington.services
+
+persistence:
+  code:
+    type: persistentVolumeClaim
+    accessMode: ReadWriteOnce
+    size: 500Mi
+    advancedMounts:
+      jf-liked-songs:
+        app:
+          - path: /app
+  credentials:
+    type: secret
+    name: credentials
+    globalMounts:
+      - path: /secrets
