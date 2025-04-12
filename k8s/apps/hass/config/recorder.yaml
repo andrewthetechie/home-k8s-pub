@@ -4,7 +4,7 @@ db_retry_wait: 15 # Wait 15 seconds before retrying
 commit_interval: 0
 auto_purge: true
 auto_repack: true
-purge_keep_days: 90
+purge_keep_days: 75
 exclude:
   domains:
     - automation

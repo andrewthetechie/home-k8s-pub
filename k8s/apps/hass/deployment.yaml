@@ -37,7 +37,7 @@ spec:
                   name: spotcast-secrets
             - name: TZ
               value: UTC
-          image: ghcr.io/home-assistant/home-assistant:2024.10.2
+          image: ghcr.io/home-assistant/home-assistant:2025.04.2
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 3
