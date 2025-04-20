@@ -80,10 +80,6 @@ unmute_googles:
 tv_watching:
   alias: TV Watching
   sequence:
-    - type: turn_on
-      device_id: 1655afd46b6b27096315ea7f35735a2c
-      entity_id: a5357c46a5f029acfe22a342ae0af256
-      domain: remote
     - action: light.turn_on
       metadata: {}
       data:
