@@ -1,17 +1,17 @@
 - id: "1720227557250"
   alias: Andrew Office - Motion - Turn off
   description: ""
-  trigger:
-    - type: no_motion
-      platform: device
+  triggers:
+    - type: not_occupied
       device_id: dd87a288d82bec3576e61e4262eb5dca
       entity_id: fca1bfde3eecad996d50369c2057afa3
       domain: binary_sensor
+      trigger: device
       for:
         hours: 0
-        minutes: 30
+        minutes: 5
         seconds: 0
-  condition:
+  conditions:
     - condition: and
       conditions:
         - condition: time
@@ -30,34 +30,30 @@
           device_id: 6b4c828e6eebb3ae414f6cfc7899b849
           entity_id: 36955ac8a9c0f6f8915d6be5c1c6e407
           domain: binary_sensor
-  action:
-    - service: fan.turn_off
-      data: {}
+  actions:
+    - data: {}
       target:
         device_id: 19deda7b6bdff19e9113c4c9e3b8d148
-    - service: switch.turn_off
-      data: {}
+      action: fan.turn_off
+    - data: {}
       target:
         device_id: 11e91d0311357f1ddf76ee2534f0032f
-    - service: switch.turn_off
-      data: {}
+      action: switch.turn_off
+    - data: {}
       target:
         device_id: 18d12bca4bbc78ef7251b06af873e30c
+      action: switch.turn_off
   mode: single
 - id: "1720227551234"
   alias: Andrew Office - Motion - Turn on Fan
   description: ""
-  trigger:
-    - type: motion
-      platform: device
-      device_id: dd87a288d82bec3576e61e4262eb5dca
-      entity_id: fca1bfde3eecad996d50369c2057afa3
+  triggers:
+    - type: occupied
+      device_id: 4321cd9d0cb66e63c9a8e3f8eb1a9985
+      entity_id: 4f7e7755b10c1bf7a8f25152e81331de
       domain: binary_sensor
-      for:
-        hours: 0
-        minutes: 0
-        seconds: 3
-  condition:
+      trigger: device
+  conditions:
     - condition: and
       conditions:
         - type: is_temperature
@@ -71,12 +67,12 @@
           domain: fan
           entity_id: b659ad2b1a3c69b27f333beb7dba15df
           type: is_off
-  action:
-    - service: fan.turn_on
-      data:
+  actions:
+    - data:
         percentage: 100
       target:
         device_id: 19deda7b6bdff19e9113c4c9e3b8d148
+      action: fan.turn_on
   mode: single
 - id: "1728328832915"
   alias: Couch Empty Turns off Ceiling Fan
