@@ -1,0 +1,35 @@
+controllers:
+  tvappm3u:
+    strategy: RollingUpdate
+    containers:
+      app:
+        image:
+          repository: ghcr.io/thebinaryninja/tvapp2
+          tag: 1.5.0
+          pullPolicy: IfNotPresent
+
+service:
+  tvappm3u:
+    controller: tvappm3u
+    ports:
+      http:
+        port: 4124
+
+ingress:
+  tvappm3u:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/enabled: "false"
+    hosts:
+      - host: tvappm3u.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: tvappm3u
+              port: http
+    tls:
+      - secretName: tvappm3u
+        hosts:
+          - tvappm3u.herrington.services
