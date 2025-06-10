@@ -7,39 +7,39 @@ controllers:
           tag: 7.4.2-alpine
   spotizerr:
     strategy: RollingUpdate
-    initContainers:
-      config-copy:
-        image:
-          repository: mikefarah/yq
-          tag: 4.45.1
-        securityContext:
-          runAsUser: 0
-          runAsGroup: 1000
-          allowPrivilegeEscalation: False
-        command:
-          - /bin/sh
-          - -c
-          - yq -o json /config/main.yaml > /app/config/main.json &&
-            chown -R 1000:1000 /app/config
+    # initContainers:
+    #   config-copy:
+    #     image:
+    #       repository: mikefarah/yq
+    #       tag: 4.45.1
+    #     securityContext:
+    #       runAsUser: 0
+    #       runAsGroup: 1000
+    #       allowPrivilegeEscalation: False
+    #     command:
+    #       - /bin/sh
+    #       - -c
+    #       - yq -o json /config/main.yaml > /app/config/main.json &&
+    #         chown -R 1000:1000 /app/config
     containers:
       app:
         image:
           repository: cooldockerizer93/spotizerr
-          tag: 1.3.1
+          tag: 2.5.0
         env:
           REDIS_HOST: "spotizerr-redis.piracy.svc"
           REDIS_PORT: 6379
           REDIS_DB: 0
           REDIS_URL: redis://spotizerr-redis.piracy.svc:6379/0
           REDIS_BACKEND: redis://spotizerr-redis.piracy.svc:6379/0
-        command:
-          - /bin/sh
-          - -c
-          - mkdir -p /app/creds/spotify/MyAccount/ && cp /secrets/*.json /app/creds/spotify/MyAccount/ &&
-            mkdir -p /app/prgs &&
-            chown -R 1000:1000 /app/prgs &&
-            chmod +x /app/entrypoint.sh &&
-            /app/entrypoint.sh python app.py
+        # command:
+        #   - /bin/sh
+        #   - -c
+        #   - mkdir -p /app/creds/spotify/MyAccount/ && cp /secrets/*.json /app/creds/spotify/MyAccount/ &&
+        #     mkdir -p /app/prgs &&
+        #     chown -R 1000:1000 /app/prgs &&
+        #     chmod +x /app/entrypoint.sh &&
+        #     /app/entrypoint.sh python app.py
 service:
   spotizerr:
     controller: spotizerr
@@ -82,11 +82,11 @@ persistence:
   config:
     type: persistentVolumeClaim
     accessMode: ReadWriteOnce
-    size: 500Mi
+    size: 1Gi
     advancedMounts:
       spotizerr:
         app:
-          - path: /app/config
+          - path: /app/data
   queue:
     type: persistentVolumeClaim
     accessMode: ReadWriteOnce
