@@ -10,7 +10,7 @@ helmCharts:
     releaseName: emulatorjs
     namespace: emulatorjs
     version: 3.3.2
-    repo: ttps://bjw-s-labs.github.io/helm-charts
+    repo: https://bjw-s-labs.github.io/helm-charts
     valuesFile: values.yaml
 
 patches:

@@ -10,5 +10,5 @@ helmCharts:
     releaseName: orbital-sync
     namespace: pihole
     version: 3.3.2
-    repo: ttps://bjw-s-labs.github.io/helm-charts
+    repo: https://bjw-s-labs.github.io/helm-charts
     valuesFile: values.yaml
