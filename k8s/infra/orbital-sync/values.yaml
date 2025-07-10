@@ -15,7 +15,7 @@ controllers:
               secretKeyRef:
                 name: pihole-password
                 key: pihole_password
-          SECONDARY_HOSTS_1_BASE_URL: "http://pihole-pihole-http.pihole.svc"
+          SECONDARY_HOSTS_1_BASE_URL: "https://2.pihole.herrington.services/admin/"
           SECONDARY_HOSTS_1_PASSWORD:
             valueFrom:
               secretKeyRef:
