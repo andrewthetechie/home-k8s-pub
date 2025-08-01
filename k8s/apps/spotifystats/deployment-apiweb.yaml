@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: spotifystats-api
-          image: yooooomi/your_spotify_server:1.13.1
+          image: yooooomi/your_spotify_server:1.14.0
           envFrom:
             - secretRef:
                 name: spotifystats
