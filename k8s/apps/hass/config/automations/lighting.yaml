@@ -51,19 +51,39 @@
       entity_id: 3efca776d0eb43194d64e809d77273f5
       domain: switch
   mode: single
+- id: "1720e274a8232"
+  alias: Garage Lights On After Dark when Door Opens
+  description: ""
+  triggers:
+    - type: opened
+      device_id: 7dae4a8d5cbcc4b29b8dbba9c82a69e1
+      entity_id: 32c87f38e5630da372418730c22cda75
+      domain: binary_sensor
+      trigger: device
+  conditions:
+    - condition: sun
+      before: sunrise
+      after: sunset
+      after_offset: "-1"
+  actions:
+    - data: {}
+      target:
+        device_id: 9bb558f103cdb50f6ccc9f3e22b7565b
+      action: switch.turn_on
+  mode: single
 - id: "1720e27457241"
   alias: Garage - Motion Detected Lights Off
   description: ""
   trigger:
-    - type: no_motion
-      platform: device
-      device_id: 8c0115137048df13e4becc930eead8e9
-      entity_id: 5a89660da26772c48a5904f0220a4ab8
+    - type: not_occupied
+      device_id: e8cfcd67304141cc3b7cb053ef05e1b7
+      entity_id: 2e254ff5447479a48c69a16eb5284e6e
       domain: binary_sensor
+      trigger: device
       for:
         hours: 0
-        minutes: 8
-        seconds: 0
+        minutes: 0
+        seconds: 30
   condition: []
   action:
     - service: switch.turn_off
@@ -75,11 +95,11 @@
   alias: Garage - Motion Detected Lights On
   description: ""
   trigger:
-    - type: motion
-      platform: device
-      device_id: 8c0115137048df13e4becc930eead8e9
-      entity_id: 5a89660da26772c48a5904f0220a4ab8
+    - type: occupied
+      device_id: e8cfcd67304141cc3b7cb053ef05e1b7
+      entity_id: 2e254ff5447479a48c69a16eb5284e6e
       domain: binary_sensor
+      trigger: device
       for:
         hours: 0
         minutes: 0
