@@ -29,7 +29,7 @@ spec:
         - command:
           - /bin/sh
           - -c
-          - cp /configs/configuration.yaml /data/
+          - cp -f /configs/configuration.yaml /data/
           image: alpine:latest
           imagePullPolicy: IfNotPresent
           name: copy
