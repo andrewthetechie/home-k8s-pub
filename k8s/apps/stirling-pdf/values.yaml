@@ -69,7 +69,7 @@ ingress:
       uptimekuma.io/name: "Stirling PDF"
       uptimekuma.io/type: "http"
       uptimekuma.io/interval: "120"
-      nginx.ingress.kubernetes.io/proxy-body-size: 256m
+      nginx.ingress.kubernetes.io/proxy-body-size: "20m"
       nginx.ingress.kubernetes.io/proxy-send-timeout: "3000"
     hosts:
       - host: pdf.herrington.services
