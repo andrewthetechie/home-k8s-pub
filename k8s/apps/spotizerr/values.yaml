@@ -24,7 +24,7 @@ controllers:
     containers:
       app:
         image:
-          repository: cooldockerizer93/spotizerr
+          repository: lavaforge.org/spotizerr
           tag: 3.3.0
         env:
           REDIS_HOST: "spotizerr-redis.piracy.svc"
