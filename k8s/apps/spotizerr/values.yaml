@@ -1,12 +1,6 @@
 controllers:
-  redis:
-    containers:
-      redis:
-        image:
-          repository: redis
-          tag: 7.4.2-alpine
   spotizerr:
-    strategy: RollingUpdate
+    strategy: Recreate
     # initContainers:
     #   config-copy:
     #     image:
@@ -22,16 +16,20 @@ controllers:
     #       - yq -o json /config/main.yaml > /app/config/main.json &&
     #         chown -R 1000:1000 /app/config
     containers:
+      redis:
+        image:
+          repository: redis
+          tag: 7.4.2-alpine
       app:
         image:
           repository: lavaforge.org/spotizerr/spotizerr
           tag: latest
         env:
-          REDIS_HOST: "spotizerr-redis.piracy.svc"
+          REDIS_HOST: "localhost"
           REDIS_PORT: 6379
           REDIS_DB: 0
-          REDIS_URL: redis://spotizerr-redis.piracy.svc:6379/0
-          REDIS_BACKEND: redis://spotizerr-redis.piracy.svc:6379/0
+          REDIS_URL: redis://localhost:6379/0
+          REDIS_BACKEND: redis://localhost:6379/0
         # command:
         #   - /bin/sh
         #   - -c
