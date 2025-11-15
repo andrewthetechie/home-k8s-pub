@@ -8,20 +8,14 @@ controllers:
           tag: 7.4.2-alpine
       app:
         image:
-          # repository: lavaforge.org/spotizerr/spotizerr
-          # tag: latest
-          repository: ubuntu
-          tag: noble
-        command:
-          - sleep
-          - infinity
+          repository: lavaforge.org/spotizerr/spotizerr
+          tag: latest
         env:
           REDIS_HOST: "localhost"
           REDIS_PORT: 6379
           REDIS_DB: 0
           REDIS_URL: redis://localhost:6379/0
           REDIS_BACKEND: redis://localhost:6379/0
-
 service:
   spotizerr:
     controller: spotizerr
