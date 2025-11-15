@@ -32,9 +32,6 @@ controllers:
           REDIS_DB: 0
           REDIS_URL: redis://spotizerr-redis.piracy.svc:6379/0
           REDIS_BACKEND: redis://spotizerr-redis.piracy.svc:6379/0
-        command:
-          - sleep
-          - infinity
         # command:
         #   - /bin/sh
         #   - -c
