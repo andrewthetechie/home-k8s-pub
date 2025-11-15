@@ -3,7 +3,6 @@ kind: Kustomization
 namespace: piracy
 
 resources:
-  - namespace.yaml
   - sealed-spotify-credentials.yaml
 
 helmCharts:
