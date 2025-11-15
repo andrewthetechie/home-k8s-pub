@@ -16,6 +16,7 @@ controllers:
           REDIS_DB: 0
           REDIS_URL: redis://localhost:6379/0
           REDIS_BACKEND: redis://localhost:6379/0
+          LOG_LEVEL: DEBUG
 service:
   spotizerr:
     controller: spotizerr
