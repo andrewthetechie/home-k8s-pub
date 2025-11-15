@@ -68,7 +68,7 @@ ingress:
               identifier: spotizerr
               port: http
     tls:
-      - secretName: spotizerr
+      - secretName: spotizerr-tls
         hosts:
           - spotdl.herrington.services
 
