@@ -9,7 +9,7 @@ helmCharts:
   - name: app-template
     releaseName: spotizerr
     namespace: piracy
-    version: 3.3.2
+    version: 4.3.0
     repo: https://bjw-s-labs.github.io/helm-charts
     valuesFile: values.yaml
 
