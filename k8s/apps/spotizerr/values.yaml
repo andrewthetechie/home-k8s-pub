@@ -48,6 +48,7 @@ service:
 ingress:
   spotizerr:
     enabled: true
+    className: nginx
     annotations:
       kubernetes.io/ingress.class: nginx
       gethomepage.dev/enabled: "true"
