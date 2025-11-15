@@ -8,8 +8,8 @@ controllers:
           tag: 7.4.2-alpine
       app:
         image:
-          repository: lavaforge.org/spotizerr/spotizerr
-          tag: latest
+          repository: cooldockerizer93/spotizerr
+          tag: 3.3.0
         env:
           REDIS_HOST: "localhost"
           REDIS_PORT: 6379
