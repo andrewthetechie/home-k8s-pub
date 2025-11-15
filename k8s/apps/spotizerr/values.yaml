@@ -24,14 +24,19 @@ controllers:
     containers:
       app:
         image:
-          repository: lavaforge.org/spotizerr/spotizerr
-          tag: latest
+          repository: ubuntu
+          tag: noble
+          # repository: lavaforge.org/spotizerr/spotizerr
+          # tag: latest
         env:
           REDIS_HOST: "spotizerr-redis.piracy.svc"
           REDIS_PORT: 6379
           REDIS_DB: 0
           REDIS_URL: redis://spotizerr-redis.piracy.svc:6379/0
           REDIS_BACKEND: redis://spotizerr-redis.piracy.svc:6379/0
+        command:
+          - sleep
+          - infinity
         # command:
         #   - /bin/sh
         #   - -c
