@@ -25,7 +25,7 @@ controllers:
       app:
         image:
           repository: cooldockerizer93/spotizerr
-          tag: 3.1.0
+          tag: 3.3.0
         env:
           REDIS_HOST: "spotizerr-redis.piracy.svc"
           REDIS_PORT: 6379
