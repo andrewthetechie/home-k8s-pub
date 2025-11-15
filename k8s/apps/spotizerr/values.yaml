@@ -85,14 +85,6 @@ persistence:
       spotizerr:
         app:
           - path: /app/data
-  queue:
-    type: persistentVolumeClaim
-    accessMode: ReadWriteOnce
-    size: 2Gi
-    advancedMounts:
-      redis:
-        redis:
-          - path: /data
   credentials:
     type: secret
     name: spotizerr-spotify-credentials
