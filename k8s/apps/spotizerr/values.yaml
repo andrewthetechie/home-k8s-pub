@@ -44,11 +44,6 @@ service:
     ports:
       http:
         port: 7171
-  redis:
-    controller: redis
-    ports:
-      redis:
-        port: 6379
 
 ingress:
   spotizerr:
