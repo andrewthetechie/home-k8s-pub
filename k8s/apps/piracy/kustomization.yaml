@@ -96,7 +96,7 @@ helmCharts:
     valuesInline:
       image:
         repository: linuxserver/lidarr
-        tag: 2.8.2
+        tag: 3.1.1-nightly
       env:
         TZ: "America/Chicago"
       persistence:
