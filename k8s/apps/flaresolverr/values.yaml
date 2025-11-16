@@ -1,0 +1,35 @@
+controllers:
+  flaresolverr:
+    strategy: RollingUpdate
+    containers:
+      app:
+        image:
+          repository: ghcr.io/flaresolverr/flaresolverr
+          tag: v3.4.5
+          pullPolicy: IfNotPresent
+
+service:
+  flaresolverr:
+    controller: flaresolverr
+    ports:
+      http:
+        port: 8191
+
+ingress:
+  flaresolverr:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/enabled: "false"
+    hosts:
+      - host: flaresolverr.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: flaresolverr
+              port: http
+    tls:
+      - secretName: flaresolverr
+        hosts:
+          - flaresolverr.herrington.services
