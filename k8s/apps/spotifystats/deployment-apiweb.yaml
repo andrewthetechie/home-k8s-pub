@@ -39,7 +39,7 @@ spec:
             - containerPort: 8080
               name: api-http
         - name: spotifystats-web
-          image: yooooomi/your_spotify_client:1.16.0
+          image: yooooomi/your_spotify_client:1.17.0
           env:
             - name: API_ENDPOINT
               value: https://api.spotifystats.herrington.services
