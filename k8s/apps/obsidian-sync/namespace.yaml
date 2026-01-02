@@ -1,0 +1,8 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: obsidian-sync
+  labels:
+    name: obsidian-sync
+

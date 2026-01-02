@@ -1,0 +1,31 @@
+clusterSize: 3
+
+couchdbConfig:
+  couchdb:
+    uuid: "8492704f-05bf-4ac6-85d9-4d6a696278e7"
+
+autoSetup:
+  enabled: true
+  defaultDatabases:
+    - _global_changes
+    - _users
+    - obsidian
+
+persistentVolume:
+  enabled: true
+  accessModes:
+    - ReadWriteOnce
+  size: 20Gi
+  storageClass: freenas-iscsi-ssd-csi
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - obsidian-sync.herrington.services
+  tls:
+    - secretName: obsidian-sync-tls
+      hosts:
+        - obsidian-sync.herrington.services
