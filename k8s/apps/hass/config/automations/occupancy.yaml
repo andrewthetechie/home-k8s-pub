@@ -1,3 +1,30 @@
+- id: "1768174054925"
+  alias: Good Morning
+  description: ""
+  triggers:
+    - trigger: state
+      entity_id:
+        - input_button.good_morning
+  conditions: []
+  actions:
+    - device_id: c27ac01b203cccb25e7f4dfb7eb96385
+      domain: cover
+      entity_id: fb07e764100d76f7d5e672cbb76f2b10
+      type: open
+    - type: turn_off
+      device_id: ee9594b3fa11ae3b8339623c3f9bce79
+      entity_id: 2d9dbd1c46da7a87419b52071d91fea6
+      domain: fan
+    - type: turn_off
+      device_id: 330f6e439343c2295b686a684b053a97
+      entity_id: 06699fe7aa52784e782dc29d0f96cd8d
+      domain: fan
+    - action: input_boolean.turn_off
+      target:
+        entity_id:
+          - input_boolean.bedtime
+      data: {}
+  mode: single
 - id: "1720227557250"
   alias: Andrew Office - Motion - Turn off
   description: ""
