@@ -7,8 +7,7 @@ couchdbConfig:
 # Has to be set
 # https://github.com/apache/couchdb-helm/issues/114
 createAdminSecret: false
-extraSecretName: 'couchdb-admin'
-adminHash: 'notactuallyusedbuthastobeset'
+extraSecretName: "couchdb-admin"
 
 autoSetup:
   enabled: true
@@ -38,4 +37,4 @@ ingress:
 
 erlangFlags:
   name: couchdb
-  setcookie: 'erlangcookie1'
+  setcookie: "erlangcookie1"
