@@ -4,6 +4,7 @@ namespace: obsidian-sync
 
 resources:
   - namespace.yaml
+  - sealed-admin-secret.yaml
 
 helmCharts:
   - name: couchdb
