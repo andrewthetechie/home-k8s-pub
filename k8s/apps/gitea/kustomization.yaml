@@ -4,20 +4,19 @@ namespace: gitea
 
 resources:
   - namespace.yaml
-  - secret-themes.yaml
 
 helmCharts:
   - name: gitea
     releaseName: gitea
-    version: 10.4.0
+    version: 12.5.0
     repo: https://dl.gitea.com/charts/
     namespace: gitea
     valuesInline:
       # https://codeberg.org/pat-s/gitea-github-theme#helm-chart-instructions
-      extraVolumes:
-        - name: gitea-themes
-          secret:
-            secretName: gitea-themes
+      # extraVolumes:
+      #   - name: gitea-themes
+      #     secret:
+      #       secretName: gitea-themes
       ingress:
         enabled: true
         apiVersion: networking.k8s.io/v1
