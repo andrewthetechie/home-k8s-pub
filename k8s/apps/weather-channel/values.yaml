@@ -1,0 +1,69 @@
+controllers:
+  weather-channel-web:
+    strategy: RollingUpdate
+    containers:
+      app:
+        image:
+          repository: ghcr.io/netbymatt/ws4kp
+          tag: 6.4.2
+          pullPolicy: IfNotPresent
+        env:
+          WSQS_latLonQuery: "Pleasanton, TX"
+  weather-channel-tv:
+    strategy: RollingUpdate
+    containers:
+      app:
+        image:
+          repository: ghcr.io/andrewthetechie/ws4channels
+          tag: 89cdac9faeb677085068a6c7341dd411dfde358f
+          pullPolicy: IfNotPresent
+        env:
+          WS4KP_URL: "https://weather-channel.herrington.services/index.html"
+          FRAME_RATE: 15
+service:
+  weather-channel-web:
+    controller: weather-channel-web
+    ports:
+      http:
+        port: 8080
+  weather-channel-tv:
+    controller: weather-channel-tv
+    ports:
+      http:
+        port: 9798
+
+ingress:
+  weather-channel-web:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/enabled: "false"
+    hosts:
+      - host: weather-channel.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: weather-channel-web
+              port: http
+    tls:
+      - secretName: weather-channel
+        hosts:
+          - weather-channel.herrington.services
+  weather-channel-tv:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/enabled: "false"
+    hosts:
+      - host: weather-channel-tv.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: weather-channel-tv
+              port: http
+    tls:
+      - secretName: weather-channel-tv
+        hosts:
+          - weather-channel-tv.herrington.services
