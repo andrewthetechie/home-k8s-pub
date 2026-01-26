@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: weather-channel
+
+resources:
+  - namespace.yaml
+
+helmCharts:
+  - name: app-template
+    releaseName: weather-channel
+    namespace: weather-channel
+    version: 4.3.0
+    repo: https://bjw-s-labs.github.io/helm-charts
+    valuesFile: values.yaml
