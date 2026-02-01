@@ -101,49 +101,6 @@
         device_id: 19deda7b6bdff19e9113c4c9e3b8d148
       action: fan.turn_on
   mode: single
-- id: "1728328832915"
-  alias: Couch Empty Turns off Ceiling Fan
-  description: ""
-  trigger:
-    - platform: state
-      entity_id:
-        - binary_sensor.couch_occupancy
-      from: "on"
-      to: "off"
-      for:
-        hours: 0
-        minutes: 25
-        seconds: 30
-  condition: []
-  action:
-    - type: turn_off
-      device_id: 2526bb69f082e014611d2cf1d871b453
-      entity_id: 5a6cc7775d12b73edca0bbb289026cf2
-      domain: fan
-  mode: single
-- id: "1728328785840"
-  alias: Couch Occupied Turns on Ceiling Fan
-  description: ""
-  trigger:
-    - platform: state
-      entity_id:
-        - binary_sensor.couch_occupancy
-      from: "off"
-      to: "on"
-      for:
-        hours: 0
-        minutes: 1
-        seconds: 30
-  condition:
-    - condition: numeric_state
-      entity_id: sensor.inside_temp
-      above: 70
-  action:
-    - type: turn_on
-      device_id: 2526bb69f082e014611d2cf1d871b453
-      entity_id: 5a6cc7775d12b73edca0bbb289026cf2
-      domain: fan
-  mode: single
 - id: "1731099589543"
   alias: Living Room Presence Clear - Turn off Fan
   description: ""
