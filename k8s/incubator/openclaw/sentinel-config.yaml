@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sentinel-config
+data:
+  sentinel.toml: |
+    [server]
+    host = "0.0.0.0"
+    port = 8080
+    dashboard_port = 3000
+
+    [cache]
+    enabled = true
+    ttl_seconds = 3600
+
+    [metrics]
+    enabled = true
+    endpoint = "/metrics"
+
+    [pii]
+    enabled = true
+    mode = "redact"
+
+    [[providers]]
+    name = "ollama-m1-studio"
+    type = "openai"
+    endpoint = "http://ollama.herrington.services:11434/v1"
+    priority = 1
+    timeout_seconds = 5
+    models = ["yi:latest", "qwen2.5-coder:14b-base-q6_K", "deepseek-coder-v2:16b"]
+
+    [[providers]]
+    name = "ollama-m4-mini"
+    type = "openai"
+    endpoint = "http://ollama-m4.herrington.services:11434/v1"
+    priority = 1
+    timeout_seconds = 5
+    models = ["yi:latest", "qwen2.5-coder:14b-base-q6_K"]
+
+    [[providers]]
+    name = "z-ai"
+    type = "openai"
+    endpoint = "https://api.z.ai/v1"
+    api_key_env = "ZAI_API_KEY"
+    priority = 2
+    timeout_seconds = 30
+
+    [[providers]]
+    name = "nvidia-nim"
+    type = "openai"
+    endpoint = "https://integrate.api.nvidia.com/v1"
+    api_key_env = "NVIDIA_NIM_API_KEY"
+    priority = 3
+    timeout_seconds = 30
+
+    [[providers]]
+    name = "vercel-ai"
+    type = "openai"
+    endpoint = "https://api.vercel.ai/v1"
+    api_key_env = "VERCEL_AI_API_KEY"
+    priority = 4
+    timeout_seconds = 30

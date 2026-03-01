@@ -1,0 +1,154 @@
+controllers:
+  openclaw:
+    strategy: RollingUpdate
+    containers:
+      gateway:
+        image:
+          repository: ghcr.io/andrewthetechie/openclaw
+          tag: latest
+          pullPolicy: IfNotPresent
+        env:
+          DISCORD_BOT_TOKEN:
+            valueFrom:
+              secretKeyRef:
+                name: openclaw-secrets
+                key: DISCORD_BOT_TOKEN
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+
+      git-sync:
+        image:
+          repository: registry.k8s.io/git-sync/git-sync
+          tag: v4.4.0
+          pullPolicy: IfNotPresent
+        args:
+          - "--repo=git@github.com:andrewthetechie/heart-of-the-claw.git"
+          - "--root=/config-sync"
+          - "--period=21600s"
+          - "--one-time=false"
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+
+  sentinel:
+    strategy: RollingUpdate
+    containers:
+      proxy:
+        image:
+          repository: sentinel/sentinel
+          tag: latest
+          pullPolicy: IfNotPresent
+        env:
+          ZAI_API_KEY:
+            valueFrom:
+              secretKeyRef:
+                name: openclaw-secrets
+                key: ZAI_API_KEY
+          NVIDIA_NIM_API_KEY:
+            valueFrom:
+              secretKeyRef:
+                name: openclaw-secrets
+                key: NVIDIA_NIM_API_KEY
+          VERCEL_AI_API_KEY:
+            valueFrom:
+              secretKeyRef:
+                name: openclaw-secrets
+                key: VERCEL_AI_API_KEY
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+
+service:
+  openclaw:
+    controller: openclaw
+    ports:
+      gateway:
+        port: 18789
+  sentinel:
+    controller: sentinel
+    ports:
+      proxy:
+        port: 8080
+      dashboard:
+        port: 3000
+
+ingress:
+  sentinel:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/enabled: "false"
+    hosts:
+      - host: sentinel.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: sentinel
+              port: dashboard
+    tls:
+      - secretName: sentinel-tls
+        hosts:
+          - sentinel.herrington.services
+  openclaw:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/enabled: "false"
+    hosts:
+      - host: openclaw.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: openclaw
+              port: gateway
+    tls:
+      - secretName: openclaw-tls
+        hosts:
+          - openclaw.herrington.services
+
+persistence:
+  # NFS volume for OpenClaw config — SOUL.md, openclaw.json, skills
+  openclaw-config:
+    type: nfs
+    server: chrisjen.herrington.services
+    path: /mnt/data_pool/openclaw-config
+    advancedMounts:
+      openclaw:
+        gateway:
+          - path: /home/openclaw/.openclaw
+
+  # SSH key for git-sync
+  git-sync-ssh:
+    type: secret
+    name: git-sync-ssh-key
+    advancedMounts:
+      openclaw:
+        git-sync:
+          - path: /etc/git-secret/ssh
+            subPath: ssh-privatekey
+            readOnly: true
+
+  # Sentinel config from ConfigMap
+  sentinel-config:
+    type: configMap
+    name: sentinel-config
+    advancedMounts:
+      sentinel:
+        proxy:
+          - path: /app/sentinel.toml
+            subPath: sentinel.toml
