@@ -1,0 +1,35 @@
+controllers:
+  exampleapp:
+    strategy: RollingUpdate
+    containers:
+      app:
+        image:
+          repository: nginx
+          tag: tag-here
+          pullPolicy: IfNotPresent
+
+service:
+  exampleapp:
+    controller: exampleapp
+    ports:
+      http:
+        port: 8080
+
+ingress:
+  exampleapp:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/enabled: "false"
+    hosts:
+      - host: exampleapp.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: exampleapp
+              port: http
+    tls:
+      - secretName: exampleapp
+        hosts:
+          - exampleapp.herrington.services

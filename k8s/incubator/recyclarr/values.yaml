@@ -1,0 +1,27 @@
+controllers:
+  recylarr:
+    strategy: Recreate
+    containers:
+      app:
+        image:
+          repository: recyclarr/recyclarr
+          tag: 7
+          pullPolicy: IfNotPresent
+        env:
+          RECYCLARR_CREATE_CONFIG: "true"
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+persistence:
+  config:
+    type: persistentVolumeClaim
+    accessMode: ReadWriteOnce
+    size: 1Gi
+    advancedMounts:
+      recylarr:
+        app:
+          - path: /config

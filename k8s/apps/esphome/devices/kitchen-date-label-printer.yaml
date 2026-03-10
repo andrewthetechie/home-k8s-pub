@@ -1,0 +1,136 @@
+esphome:
+  name: ${name}
+  friendly_name: date-label-printer
+
+substitutions:
+  name: date-label-printer
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+wifi:
+  ssid: !secret iot_wifi_ssid
+  password: !secret iot_wifi_password
+  use_address: 10.10.5.82
+
+api:
+
+ota:
+  platform: esphome
+
+logger:
+
+time:
+  - platform: sntp
+    id: sntp_time
+    timezone: CST6CDT,M3.2.0,M11.1.0
+
+uart:
+  id: uart_bus
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+  baud_rate: 9600
+  debug:
+    direction: BOTH
+    after:
+      delimiter: "\n"
+
+sensor:
+  - platform: wifi_signal
+    name: ${name} WiFi Signal
+    update_interval: 300s
+  - platform: uptime
+    name: ${name} Uptime
+    unit_of_measurement: h
+    filters:
+      - lambda: return int((x + 1800.0) / 3600.0);
+
+text_sensor:
+  - platform: template
+    name: Feed Lines
+    id: feed_lines
+    on_value:
+      then:
+        - logger.log: "Feed Lines updated via web interface"
+
+web_server:
+  port: 80
+  text_sensors:
+    - text_sensor.feed_lines # Allow updating the feed lines via web
+
+script:
+  - id: write_date_to_uart
+    then:
+      # Send Initialize Printer command separately
+      - uart.write: !lambda |-
+          return std::vector<uint8_t>{0x1B, 0x40};
+      # Send the rest of the commands and the date in one write
+      - uart.write: !lambda |-
+          char buffer[11];
+          time_t now = id(sntp_time).now().timestamp;
+          strftime(buffer, sizeof(buffer), "%Y-%m-%d", localtime(&now));
+
+          std::vector<uint8_t> data = {
+            // Set font height to double
+            0x1D, 0x21, 0x01,
+            // Set printing to centered
+            0x1B, 0x61, 0x01
+          };
+
+          // Append the date string to the vector
+          data.insert(data.end(), buffer, buffer + strlen(buffer));
+
+          // Append newline
+          data.push_back('\n');
+
+          // Determine the number of feed lines
+          int feed_lines = 2;  // Default value
+          if (!id(feed_lines).state.empty()) {
+              int parsed_lines = atoi(id(feed_lines).state.c_str());
+              if (parsed_lines > 0 && parsed_lines <= 10) {
+                  feed_lines = parsed_lines;
+              }
+          }
+
+          // Add feed command with the number of lines
+          data.push_back(0x1F);  // Feed command 
+          data.push_back(0x2D);  // Feed command 
+          data.push_back(0x35);  // Feed command 
+          data.push_back(0x04);  // Feed command
+          data.push_back(0x01);  // Turn on feed
+          data.push_back(static_cast<uint8_t>(feed_lines));  // Number of feed lines
+          data.push_back(0xC8);  // Feed time
+          data.push_back(0xC5);  // Feed time
+
+          return data;
+
+binary_sensor:
+  - platform: status
+    name: ${name} status
+  - platform: gpio
+    pin:
+      number: GPIO25
+      mode:
+        input: true
+        pullup: True
+    name: Trigger Printer
+    on_press:
+      - then:
+          - logger.log: "Physical Button Triggered"
+          - script.execute: write_date_to_uart
+
+switch:
+  - platform: restart
+    name: ${name} Restart
+
+button:
+  - platform: template
+    name: Trigger printer
+    id: trigger_printer
+    icon: mdi:printer-check
+    on_press:
+      - then:
+          - logger.log: "Printer Trigger Button pushed"
+          - script.execute: write_date_to_uart

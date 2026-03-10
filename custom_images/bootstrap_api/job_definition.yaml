@@ -1,0 +1,23 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: test-job
+spec:
+  template:
+    spec:
+      backoffLimit: 5
+      containers:
+        - image: ghcr.io/andrewthetechie/home-k8s-pub/ansible_bootstrapper:latest
+          imagePullPolicy: Always
+          name: bootstrap-job
+          resources: {}
+          volumeMounts:
+            - name: bootstrap-secrets-volume
+              mountPath: /secrets
+              readOnly: true
+      restartPolicy: Never
+      volumes:
+        - name: bootstrap-secrets-volume
+          secret:
+            secretName: bootstrap-secrets
+            defaultMode: 0600

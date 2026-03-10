@@ -1,0 +1,9 @@
+#cloud-config
+version: 1
+autoinstall:
+  version: 1
+  shutdown: reboot
+  user-data:
+    hostname: jellyfin
+    users:
+      - name: jellyfin

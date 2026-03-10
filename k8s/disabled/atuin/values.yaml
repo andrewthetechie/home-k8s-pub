@@ -1,0 +1,50 @@
+controllers:
+  atuin:
+    strategy: RollingUpdate
+    containers:
+      app:
+        image:
+          repository: ghcr.io/atuinsh/atuin
+          tag: c5c5e9d
+          pullPolicy: IfNotPresent
+        args:
+          - server
+          - start
+        env:
+          ATUIN_HOST: "0.0.0.0"
+          ATUIN_PORT: "8080"
+          ATUIN_OPEN_REGISTRATION: "true"
+          RUST_LOG: debug,atuin_server=debug
+
+service:
+  atuin:
+    controller: atuin
+    ports:
+      http:
+        port: 8080
+
+ingress:
+  atuin:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/enabled: "false"
+    hosts:
+      - host: atuin.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: atuin
+              port: http
+    tls:
+      - secretName: atuin
+        hosts:
+          - atuin.herrington.services
+
+persistence:
+  atuin-config:
+    type: secret
+    name: atuin-config
+    globalMounts:
+      - path: /config

@@ -1,0 +1,35 @@
+controllers:
+  music-assistant:
+    strategy: RollingUpdate
+    containers:
+      app:
+        image:
+          repository: ghcr.io/music-assistant/server
+          tag: 2.5.1
+          pullPolicy: IfNotPresent
+
+service:
+  music-assistant:
+    controller: music-assistant
+    ports:
+      http:
+        port: 8095
+
+ingress:
+  music-assistant:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/enabled: "false"
+    hosts:
+      - host: music-assistant.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: music-assistant
+              port: http
+    tls:
+      - secretName: music-assistant
+        hosts:
+          - music-assistant.herrington.services

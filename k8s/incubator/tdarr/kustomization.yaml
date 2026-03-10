@@ -1,0 +1,102 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: tdarr
+
+resources:
+  - namespace.yaml
+  - service-lb.yaml
+
+helmCharts:
+  - name: tdarr
+    releaseName: tdarr
+    namespace: tdarr
+    version: 5.0.1
+    repo: https://k8s-home-lab.github.io/helm-charts/
+    valuesInline:
+      image:
+        tag: 2.18.01
+      node:
+        image:
+          tag: 2.18.01
+        resources:
+          requests:
+            gpu.intel.com/i915: "1"
+          limits:
+            gpu.intel.com/i915: "1"
+      env:
+        TZ: "America/Chicago"
+      persistence:
+        config:
+          enabled: true
+          mountPath: /config
+          storageClassName: freenas-iscsi-ssd-csi
+      ingress:
+        main:
+          enabled: true
+          annotations:
+            cert-manager.io/cluster-issuer: letsencrypt-prod
+            gethomepage.dev/description: Transcode media
+            gethomepage.dev/enabled: "true"
+            gethomepage.dev/group: Media
+            gethomepage.dev/icon: tdarr
+            gethomepage.dev/name: tdarr
+            gethomepage.dev/weight: "99"
+            uptimekuma.io/monitor: "true"
+            uptimekuma.io/name: "tdarr"
+            uptimekuma.io/type: "http"
+            uptimekuma.io/interval: "120"
+            nginx.ingress.kubernetes.io/proxy-body-size: "0"
+            nginx.org/client-max-body-size: "0"
+          hosts:
+            - host: tdarr.herrington.services
+              paths:
+                - path: /
+                  pathType: Prefix
+          tls:
+            - secretName: tdarr-tls
+              hosts:
+                - tdarr.herrington.services
+patches:
+  - target:
+      kind: Deployment
+      name: tdarr
+    patch: |-
+      - op: add
+        path: /spec/template/spec/volumes/-
+        value:
+          name: media
+          nfs:
+            server: chrisjen.herrington.services
+            path: /mnt/disk_pool/Media
+  - target:
+      kind: Deployment
+      name: tdarr
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/volumeMounts/-
+        value:
+          mountPath: /nas
+          name: media
+  - target:
+      kind: Deployment
+      name: tdarr
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/1/volumeMounts/-
+        value:
+          mountPath: /nas
+          name: media
+  - target:
+      kind: PersistentVolumeClaim
+      name: tdarr-config
+    patch: |-
+      - op: add
+        path: /spec/storageClassName
+        value: 'freenas-iscsi-ssd-csi'
+  - target:
+      kind: PersistentVolumeClaim
+      name: tdarr-config
+    patch: |-
+      - op: replace
+        path: /spec/resources/requests/storage
+        value: 50Gi

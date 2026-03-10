@@ -1,0 +1,56 @@
+controllers:
+  obsidian:
+    strategy: RollingUpdate
+    containers:
+      obsidian:
+        image:
+          repository: lscr.io/linuxserver/obsidian
+          tag: latest
+          pullPolicy: IfNotPresent
+        env:
+          TITLE: "Obsidian"
+
+service:
+  obsidian:
+    controller: obsidian
+    ports:
+      http:
+        port: 3000
+
+ingress:
+  obsidian:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/enabled: "false"
+      nginx.org/websocket-services: obsidian
+    hosts:
+      - host: obsidian.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: obsidian
+              port: http
+    tls:
+      - secretName: obsidian
+        hosts:
+          - obsidian.herrington.services
+
+persistence:
+  config:
+    type: persistentVolumeClaim
+    accessMode: ReadWriteOnce
+    size: 10Gi
+    advancedMounts:
+      obsidian:
+        obsidian:
+          - path: /config
+  vaults:
+    type: persistentVolumeClaim
+    accessMode: ReadWriteOnce
+    size: 50Gi
+    advancedMounts:
+      obsidian:
+        obsidian:
+          - path: /vaults

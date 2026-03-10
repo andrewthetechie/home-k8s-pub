@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    configmap.reloader.stakater.com/reload: wavelog
+    secret.reloader.stakater.com/reload: wavelog
+  labels:
+    app.kubernetes.io/instance: wavelog
+    app.kubernetes.io/name: wavelog
+  name: wavelog
+  namespace: wavelog
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: wavelog
+      app.kubernetes.io/name: wavelog
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: wavelog
+        app.kubernetes.io/name: wavelog
+    spec:
+      automountServiceAccountToken: true
+      containers:
+        - env:
+            - name: CI_ENV
+              value: "docker"
+          image: "ghcr.io/wavelog/wavelog:1.8"
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256M
+          name: wavelog
+          ports:
+            - containerPort: 80
+              name: http
+              protocol: TCP
+          volumeMounts:
+            - mountPath: "/var/www/html/application/config/docker"
+              name: wavelog-config
+              readOnly: true
+            - mountPath: /var/www/html/uploads
+              name: uploads
+            - mountPath: /var/www/html/userdata
+              name: user-data
+      volumes:
+        - name: wavelog-config
+          secret:
+            secretName: wavelog-config
+        - name: uploads
+          persistentVolumeClaim:
+            claimName: uploads
+        - name: user-data
+          persistentVolumeClaim:
+            claimName: user-data

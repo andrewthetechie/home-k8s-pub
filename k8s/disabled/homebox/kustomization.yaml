@@ -1,17 +1,14 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: openclaw
+namespace: homebox
 
 resources:
   - namespace.yaml
-  - litellm-config.yaml
-  - sealed-openclaw-keys.yaml
-  - sealed-git-ssh-key.yaml
 
 helmCharts:
   - name: app-template
-    releaseName: openclaw
-    namespace: openclaw
-    version: 4.3.0
+    releaseName: homebox
+    namespace: homebox
+    version: 3.3.2
     repo: https://bjw-s-labs.github.io/helm-charts
     valuesFile: values.yaml
