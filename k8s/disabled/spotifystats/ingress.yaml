@@ -1,0 +1,48 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: spotifystats
+  namespace: spotifystats
+  labels:
+    app: spotifystats
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    gethomepage.dev/description: Stats on my spotify listening
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/group: Misc
+    gethomepage.dev/icon: spotify
+    gethomepage.dev/name: SpotifyStats
+    uptimekuma.io/monitor: "true"
+    uptimekuma.io/name: "SpotifyStats"
+    uptimekuma.io/type: "http"
+    uptimekuma.io/interval: "120"
+    nginx.org/client-max-body-size: "20m"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - spotifystats.herrington.services
+        - api.spotifystats.herrington.services
+      secretName: spotifystats-tls-cert
+  rules:
+    - host: spotifystats.herrington.services
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: spotifystats-web-http
+                port:
+                  number: 80
+    - host: api.spotifystats.herrington.services
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: spotifystats-api-http
+                port:
+                  number: 80

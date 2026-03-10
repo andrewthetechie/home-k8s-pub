@@ -1,0 +1,37 @@
+controllers:
+  rss:
+    strategy: RollingUpdate
+    containers:
+      app:
+        image:
+          repository: miniflux/miniflux
+          tag: 2.2.3-distroless
+          pullPolicy: IfNotPresent
+        env:
+          
+
+service:
+  rss:
+    controller: rss
+    ports:
+      http:
+        port: 8080
+
+ingress:
+  rss:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/enabled: "false"
+    hosts:
+      - host: rss.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: rss
+              port: http
+    tls:
+      - secretName: rss
+        hosts:
+          - rss.herrington.services

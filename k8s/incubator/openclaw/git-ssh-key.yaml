@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: git-sync-ssh-key
+  namespace: openclaw
+type: kubernetes.io/ssh-auth
+stringData:
+  ssh-privatekey: |
+    -----BEGIN OPENSSH PRIVATE KEY-----
+    b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+    QyNTUxOQAAACCnSOxWePUmYk4twHQiEyC706ZEJIm3WxwinulJ9D4qcwAAALCR1U4ykdVO
+    MgAAAAtzc2gtZWQyNTUxOQAAACCnSOxWePUmYk4twHQiEyC706ZEJIm3WxwinulJ9D4qcw
+    AAAEAKp4LDYlJ3m4Mv2ywlbNxSPrQswChKQL8BK5TNg0FJBqdI7FZ49SZiTi3AdCITILvT
+    pkQkibdbHCKe6Un0PipzAAAAJmFoZXJyaW5ndG9uQG9sbGFtYS5oZXJyaW5ndG9uLnNlcn
+    ZpY2VzAQIDBAUGBw==
+    -----END OPENSSH PRIVATE KEY-----

@@ -1,0 +1,36 @@
+controllers:
+  barcodeapi:
+    strategy: RollingUpdate
+    containers:
+      app:
+        image:
+          repository: ghcr.io/andrewthetechie/home-barcode-api
+          tag: sha-a0ec2a93f7949204f49e94545455b63c153ad661
+          pullPolicy: IfNotPresent
+
+
+service:
+  barcodeapi:
+    controller: barcodeapi
+    ports:
+      http:
+        port: 8080
+
+ingress:
+  barcodeapi:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/enabled: "false"
+    hosts:
+      - host: barcode.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: barcodeapi
+              port: http
+    tls:
+      - secretName: barcodeapi
+        hosts:
+          - barcode.herrington.services

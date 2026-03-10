@@ -1,0 +1,8 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: wavelog
+  labels:
+    name: wavelog
+    app.kubernetes.io/instance: wavelog

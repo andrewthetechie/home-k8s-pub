@@ -1,0 +1,8 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: bootstrap-api
+  labels:
+    name: bootstrap-api
+

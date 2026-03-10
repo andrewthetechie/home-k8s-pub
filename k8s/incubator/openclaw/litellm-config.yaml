@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: litellm-config
+data:
+  config.yaml: |
+    model_list:
+      # --- Local Ollama models (M1 Studio) ---
+      - model_name: "yi"
+        litellm_params:
+          model: "ollama_chat/yi:latest"
+          api_base: "http://ollama.herrington.services:11434"
+          timeout: 10
+
+      - model_name: "qwen-coder"
+        litellm_params:
+          model: "ollama_chat/qwen2.5-coder:14b-base-q6_K"
+          api_base: "http://ollama.herrington.services:11434"
+          timeout: 30
+
+      - model_name: "deepseek-coder"
+        litellm_params:
+          model: "ollama_chat/deepseek-coder-v2:16b"
+          api_base: "http://ollama.herrington.services:11434"
+          timeout: 60
+
+      # --- Local Ollama models (M4 Mini) — same model names for load balancing ---
+      - model_name: "yi"
+        litellm_params:
+          model: "ollama_chat/yi:latest"
+          api_base: "http://ollama-m4.herrington.services:11434"
+          timeout: 10
+
+      - model_name: "qwen-coder"
+        litellm_params:
+          model: "ollama_chat/qwen2.5-coder:14b-base-q6_K"
+          api_base: "http://ollama-m4.herrington.services:11434"
+          timeout: 30
+
+      # --- Cloud fallbacks ---
+      - model_name: "yi"
+        litellm_params:
+          model: "openai/yi-lightning"
+          api_base: "https://api.z.ai/v1"
+          api_key: "os.environ/ZAI_API_KEY"
+          timeout: 30
+
+      - model_name: "qwen-coder"
+        litellm_params:
+          model: "nvidia_nim/qwen/qwen2.5-coder-32b-instruct"
+          api_key: "os.environ/NVIDIA_NIM_API_KEY"
+          timeout: 30
+
+    router_settings:
+      routing_strategy: "latency-based-routing"
+      num_retries: 3
+      timeout: 60
+      allowed_fails: 2
+      cooldown_time: 30
+
+    litellm_settings:
+      drop_params: true
+      set_verbose: false
