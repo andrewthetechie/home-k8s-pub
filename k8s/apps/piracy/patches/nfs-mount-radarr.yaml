@@ -3,8 +3,8 @@
   value:
     name: media
     nfs:
-      server: chrisjen.herrington.services
-      path: /mnt/disk_pool/Media/Movies
+      server: duarte.herrington.services
+      path: /mnt/Media/Movies
 - op: add
   path: /spec/template/spec/containers/0/volumeMounts/-
   value:

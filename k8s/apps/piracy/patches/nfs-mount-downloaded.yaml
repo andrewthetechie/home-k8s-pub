@@ -3,8 +3,8 @@
   value:
     name: downloads
     nfs:
-      server: chrisjen.herrington.services
-      path: /mnt/disk_pool/Media/downloaded
+      server: duarte.herrington.services
+      path: /mnt/Media/downloaded
 - op: add
   path: /spec/template/spec/containers/0/volumeMounts/-
   value:
