@@ -107,6 +107,11 @@ def get_isp_status(config):
             if debug:
                 log.debug("UDM login failed: %s %s", r.status_code, r.text[:200])
             return "Offline"
+        # UniFi OS may set cookies with Path=/api so they are not sent to /proxy/network/...
+        # Re-set cookies with path=/ so the health request receives them.
+        host = config["udm_ip"]
+        for c in session.cookies:
+            session.cookies.set(c.name, c.value, path="/", domain=host)
         r = session.get(f"{base}/proxy/network/api/s/default/stat/health", timeout=3)
         if debug:
             log.debug("UDM health status=%s", r.status_code)
