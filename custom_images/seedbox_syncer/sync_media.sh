@@ -21,6 +21,8 @@ OWNER_GROUP="${OWNER_GROUP:-root}"
 DAY_BWLIMIT="${DAY_BWLIMIT:-30m}"
 NIGHT_BWLIMIT="${NIGHT_BWLIMIT:-50m}"
 SSH_KEY_PATH="${SSH_KEY_PATH:-~/.ssh/id_rsa}"
+SLEEP_INTERVAL="${SLEEP_INTERVAL:-10}"
+ISP_DOWN_SLEEP_INTERVAL="${ISP_DOWN_SLEEP_INTERVAL:-60}"
 
 # Start the SSH master connection in the background
 ssh -M -S /tmp/ssh_mux_%h_%p_%r -fnN "$REMOTE_USER"@"$REMOTE_HOST"
@@ -28,6 +30,21 @@ ssh -M -S /tmp/ssh_mux_%h_%p_%r -fnN "$REMOTE_USER"@"$REMOTE_HOST"
 while true; do
     # Check if there are any files on the remote before running rsync
     # This is a 'lightweight' check over the existing SSH mux
+    echo 'Checking ISP'
+    ISP=$(/check_isp.sh)
+    echo "ISP: $ISP"
+    if [[ $ISP == "Offline" ]]; then
+        echo "ISP is offline, skipping sync for $ISP_DOWN_SLEEP_INTERVAL seconds"
+        sleep "$ISP_DOWN_SLEEP_INTERVAL"
+        continue
+    fi
+
+    if [[ $ISP == "WAN2" ]]; then
+        echo "WAN2 is active, skipping sync for $ISP_DOWN_SLEEP_INTERVAL seconds"
+        sleep "$ISP_DOWN_SLEEP_INTERVAL"
+        continue
+    fi
+
     echo "checking for remote files"
     if ssh -i "${SSH_KEY_PATH}" -S /tmp/ssh_mux_%h_%p_%r "$REMOTE_USER"@"$REMOTE_HOST" "ls -A $REMOTE_DIR" | grep -q .; then
         # Determine bandwidth limit based on time
@@ -56,5 +73,5 @@ while true; do
     
     # Very short sleep (e.g., 10 seconds)
     # Because of the Multiplexing, this 'check' is nearly instant
-    sleep 10
+    sleep "$SLEEP_INTERVAL"
 done
