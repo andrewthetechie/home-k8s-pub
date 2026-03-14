@@ -58,7 +58,7 @@ def _availability(obj):
 def parse_wan_status(health_data_list, threshold):
     """Given .data from health API, return 'WAN1' | 'WAN2' | 'Offline'."""
     for item in health_data_list or []:
-        if item.get("subsystem") != "wan":
+        if (item.get("subsystem") or "").lower() != "wan":
             continue
         stats = item.get("uptime_stats") or {}
         wan1 = _availability(stats.get("WAN"))
@@ -70,25 +70,59 @@ def parse_wan_status(health_data_list, threshold):
         return "Offline"
     return "Offline"
 
+def _normalize_health_data(data):
+    """Convert API health payload to list of items with subsystem + uptime_stats.
+    UniFi may return .data as array or as dict keyed by subsystem name.
+    """
+    raw = data if data is not None else []
+    if isinstance(raw, dict):
+        # e.g. {"wan": {"uptime_stats": {...}}, "wlan": {...}}
+        out = []
+        for name, obj in raw.items():
+            if isinstance(obj, dict):
+                item = dict(obj)
+                item.setdefault("subsystem", name)
+                out.append(item)
+        return out
+    if isinstance(raw, list):
+        return raw
+    return []
+
+
 def get_isp_status(config):
     """Call UDM API; return 'WAN1' | 'WAN2' | 'Offline'."""
     base = f"https://{config['udm_ip']}"
     session = requests.Session()
     session.verify = False
+    debug = config.get("debug")
     try:
         r = session.post(
             f"{base}/api/auth/login",
             json={"username": config["udm_username"], "password": config["udm_password"]},
             timeout=3,
         )
+        if debug:
+            log.debug("UDM login status=%s", r.status_code)
         if r.status_code != 200:
+            if debug:
+                log.debug("UDM login failed: %s %s", r.status_code, r.text[:200])
             return "Offline"
         r = session.get(f"{base}/proxy/network/api/s/default/stat/health", timeout=3)
+        if debug:
+            log.debug("UDM health status=%s", r.status_code)
         if r.status_code != 200:
+            if debug:
+                log.debug("UDM health failed: %s %s", r.status_code, r.text[:200])
             return "Offline"
-        data = r.json()
-        return parse_wan_status(data.get("data"), config["avail_threshold"])
-    except Exception:
+        body = r.json()
+        data = body.get("data")
+        health_list = _normalize_health_data(data)
+        if debug:
+            log.debug("health data type=%s items=%s", type(data).__name__, len(health_list))
+        return parse_wan_status(health_list, config["avail_threshold"])
+    except Exception as e:
+        if debug:
+            log.debug("get_isp_status error: %s", e, exc_info=True)
         return "Offline"
 
 def ssh_socket_path(config):
@@ -166,4 +200,37 @@ def main():
     log.info("Shutting down")
 
 if __name__ == "__main__":
+    if os.environ.get("ISP_DEBUG_RAW"):
+        # One-shot: print raw API response for debugging (run with required env vars set).
+        config = get_config()
+        base = f"https://{config['udm_ip']}"
+        session = requests.Session()
+        session.verify = False
+        print("=== Login ===")
+        r = session.post(
+            f"{base}/api/auth/login",
+            json={"username": config["udm_username"], "password": config["udm_password"]},
+            timeout=10,
+        )
+        print("Status:", r.status_code)
+        print("=== Health ===")
+        r2 = session.get(f"{base}/proxy/network/api/s/default/stat/health", timeout=10)
+        print("Status:", r2.status_code)
+        try:
+            data = r2.json()
+            print("Keys:", list(data.keys()) if isinstance(data, dict) else type(data))
+            inner = data.get("data")
+            print("data type:", type(inner).__name__)
+            if isinstance(inner, dict):
+                print("data keys:", list(inner.keys()))
+            print("data (repr, first 2000 chars):", repr(inner)[:2000])
+            print("=== Parsed ===")
+            health_list = _normalize_health_data(inner)
+            print("normalized items:", len(health_list))
+            result = parse_wan_status(health_list, config["avail_threshold"])
+            print("ISP result:", result)
+        except Exception as e:
+            print("Error:", e)
+            print("Body:", r2.text[:500])
+        raise SystemExit(0)
     main()
