@@ -4,27 +4,40 @@ set -euo pipefail
 : "${UDM_IP:?UDM_IP not set}"
 : "${UDM_USERNAME:?UDM_USERNAME not set}"
 : "${UDM_PASSWORD:?UDM_PASSWORD not set}"
+DEBUG="${DEBUG:-false}"
 
 # Minimum availability (0-100) to consider a WAN "active". Avoids flapping on noise.
 AVAIL_THRESHOLD="${AVAIL_THRESHOLD:-1.0}"
 
 COOKIE=$(mktemp)
-trap 'rm -f "$COOKIE"' EXIT
+LOGIN_OUT=$(mktemp)
+trap 'rm -f "$COOKIE" "$LOGIN_OUT"' EXIT
 
 # Login
 if ! curl -sk --max-time 3 \
   -X POST "https://${UDM_IP}/api/auth/login" \
   -H "Content-Type: application/json" \
   -d "{\"username\":\"${UDM_USERNAME}\",\"password\":\"${UDM_PASSWORD}\"}" \
-  -c "$COOKIE" >/dev/null
+  -c "$COOKIE" -o "$LOGIN_OUT"
 then
+  [[ "$DEBUG" == "true" ]] && echo "=== Login response ===" && cat "$LOGIN_OUT" && echo ""
   echo Offline
   exit 0
+fi
+if [[ "$DEBUG" == "true" ]]; then
+  echo "=== Login response ==="
+  cat "$LOGIN_OUT"
+  echo ""
 fi
 
 DATA=$(curl -sk --max-time 3 \
   "https://${UDM_IP}/proxy/network/api/s/default/stat/health" \
   -b "$COOKIE")
+
+if [[ "$DEBUG" == "true" ]]; then
+  echo "=== Health response ==="
+  echo "$DATA"
+fi
 
 # Parse health: WAN has no top-level .availability when down (only monitors); WAN2 has .availability when up.
 # Derive each WAN from .availability or max of monitors/alerting_monitors. Use (obj // {}) so missing WAN/WAN2 is safe.
