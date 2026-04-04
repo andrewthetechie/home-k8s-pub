@@ -9,7 +9,7 @@ helmCharts:
   - name: app-template
     releaseName: emulatorjs
     namespace: emulatorjs
-    version: 3.3.2
+    version: 4.6.2
     repo: https://bjw-s-labs.github.io/helm-charts
     valuesFile: values.yaml
 

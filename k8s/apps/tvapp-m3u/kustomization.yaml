@@ -9,6 +9,6 @@ helmCharts:
   - name: app-template
     releaseName: tvapp-m3u
     namespace: tvapp-m3u
-    version: 3.3.2
+    version: 4.6.2
     repo: https://bjw-s-labs.github.io/helm-charts
     valuesFile: values.yaml
