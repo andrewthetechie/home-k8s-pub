@@ -1,0 +1,71 @@
+# Copy this directory to ../config/ and replace CHANGEME_* placeholders with real values.
+# Never commit ../config/ — it is gitignored.
+
+- Infra:
+  - Pihole Primary:
+      href: https://pihole.example.com/admin
+      icon: si-pihole
+      description: Primary DNS Server
+      widget:
+        type: pihole
+        url: https://pihole.example.com/
+        key: CHANGEME_PIHOLE_API_KEY
+  - NAS:
+      href: https://nas.example.com
+      icon: si-truenas
+      description: Storage Server
+      widget:
+        type: truenas
+        url: https://nas.example.com
+        key: CHANGEME_TRUENAS_API_KEY
+- Piracy:
+  - SABnzbd:
+      href: https://sabnzbd.example.com/
+      description: Newsreader Client
+      icon: sabnzbd
+      widget:
+        type: sabnzbd
+        url: https://sabnzbd.example.com/
+        key: CHANGEME_SABNZBD_API_KEY
+  - ruTorrent:
+      href: https://rutorrent.example.com/
+      description: Torrent client
+      icon: rutorrent
+      weight: 0
+      widget:
+        type: rutorrent
+        url: https://rutorrent.example.com/
+        username: CHANGEME_RUTORRENT_USER
+        password: CHANGEME_RUTORRENT_PASSWORD
+  - Example Control Panel:
+      href: https://cp.example.com/
+      description: Control panel
+      icon: https://avatars.githubusercontent.com/u/25888645?s=280&v=4
+  - Example Client Area:
+      href: https://my.example.com/
+      description: Billing and support
+      icon: https://avatars.githubusercontent.com/u/25888645?s=280&v=4
+- Monitoring:
+  - UptimeKuma:
+      href: http://10.0.0.1:3001
+      icon: si-uptimekuma
+      description: Monitoring
+      widget:
+        type: uptimekuma
+        url: http://10.0.0.1:3001
+        slug: all
+- SmartHome:
+  - Cameras:
+      href: https://10.0.0.1/protect/dashboard/all
+      icon: mdi-camera-outline
+      description: Security Cameras
+  - Zigbee Coordinator:
+      href: http://zigbee.example.com/
+      icon: https://static-00.iconduck.com/assets.00/zigbee-icon-512x512-3txmp44z.png
+      description: Zigbee Coordinator
+- Media:
+  - Jellyfin:
+      href: http://jellyfin.example.com/
+      icon: si-jellyfin
+      description: Media Server
+      weight: 0

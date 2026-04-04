@@ -62,6 +62,7 @@ patches:
           nameservers:
             - 10.10.0.35
             - 10.10.99.2
+# Real files live in ./config/ (gitignored). Copy from config.example/ before build.
 configMapGenerator:
   - name: custom-homepage
     files:

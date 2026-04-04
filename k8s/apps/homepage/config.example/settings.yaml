@@ -1,0 +1,22 @@
+title: "Herrington Home"
+hideVersion: true
+statusStyle: 'dot'
+layout:
+  Media:
+    style: row
+    columns: 4
+  SmartHome:
+    style: row
+    columns: 4
+  Misc:
+    style: row
+    columns: 4
+  Piracy:
+    style: row
+    columns: 4
+  Monitoring:
+    style: row
+    columns: 4
+  Infra:
+    style: row
+    columns: 4

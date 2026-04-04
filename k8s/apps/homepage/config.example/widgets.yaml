@@ -1,0 +1,17 @@
+- search:
+    provider: google
+    target: _blank
+    weight: 10
+- kubernetes:
+    weight: 1
+    cluster:
+      cpu: true
+      label: cluster
+      memory: true
+      show: true
+      showLabel: true
+    nodes:
+      cpu: true
+      memory: true
+      show: true
+      showLabel: true
