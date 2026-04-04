@@ -12,10 +12,13 @@ helmCharts:
     version: 1.2.3
     repo: https://jameswynn.github.io/helm-charts
     valuesInline:
+      env:
+        - name: HOMEPAGE_ALLOWED_HOSTS
+          value: "home.herrington.services"
       enableRbac: true
       image:
         repository: ghcr.io/gethomepage/homepage
-        tag: v0.10.9
+        tag: v1.12.3
       ingress:
         main:
           enabled: true
@@ -26,10 +29,10 @@ helmCharts:
             uptimekuma.io/type: "http"
             uptimekuma.io/interval: "120"
           hosts:
-          - host: home.herrington.services
-            paths:
-              - path: /
-                pathType: Prefix
+            - host: home.herrington.services
+              paths:
+                - path: /
+                  pathType: Prefix
           tls:
             - secretName: heimdall-tls
               hosts:
@@ -62,7 +65,6 @@ patches:
           nameservers:
             - 10.10.0.35
             - 10.10.99.2
-# Real files live in ./config/ (gitignored). Copy from config.example/ before build.
 configMapGenerator:
   - name: custom-homepage
     files:
