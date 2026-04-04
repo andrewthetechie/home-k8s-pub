@@ -1,0 +1,83 @@
+controllers:
+  seer:
+    strategy: RollingUpdate
+    initContainers:
+      permissions:
+        image:
+          repository: alpine
+          tag: latest
+        command:
+          - /bin/sh
+          - -c
+          - chown 1000:1000 -R /app/config && chown 1000:1000 -R /app/config/db
+    containers:
+      app:
+        image:
+          repository: ghcr.io/seerr-team/seerr
+          tag: v3.1.0
+          pullPolicy: IfNotPresent
+
+service:
+  seer:
+    controller: seer
+    ports:
+      http:
+        port: 5055
+
+ingress:
+  seer:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/description: Request Movies or TV Shows
+      gethomepage.dev/enabled: "true"
+      gethomepage.dev/group: Media
+      gethomepage.dev/icon: sh-seerr
+      gethomepage.dev/name: Seer
+      gethomepage.dev/weight: "2"
+      uptimekuma.io/monitor: "true"
+      uptimekuma.io/name: "Seer"
+      uptimekuma.io/type: "http"
+      uptimekuma.io/interval: "120"
+    hosts:
+      - host: seer.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: seer
+              port: http
+      - host: request.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: seer
+              port: http
+    tls:
+      - secretName: seer
+        hosts:
+          - seer.herrington.services
+          - request.herrington.services
+
+persistence:
+  config:
+    type: persistentVolumeClaim
+    accessMode: ReadWriteOnce
+    size: 2Gi
+    advancedMounts:
+      seer:
+        permissions:
+          - path: /app/config
+        app:
+          - path: /app/config
+
+  db:
+    type: persistentVolumeClaim
+    accessMode: ReadWriteOnce
+    size: 20Gi
+    advancedMounts:
+      seer:
+        permissions:
+          - path: /app/config/db
+        app:
+          - path: /app/config/db
