@@ -11,6 +11,7 @@ metadata:
     nginx.org/proxy-connect-timeout: "180"
     nginx.org/proxy-read-timeout: "180"
     nginx.org/proxy-send-timeout: "180"
+    gethomepage.dev/app: home-assistant
     gethomepage.dev/description: Smarthome Manager
     gethomepage.dev/enabled: "true"
     gethomepage.dev/group: SmartHome

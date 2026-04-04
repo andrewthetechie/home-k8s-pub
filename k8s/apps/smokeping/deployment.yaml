@@ -15,6 +15,7 @@ spec:
     metadata:
       labels:
         app: smokeping
+        app.kubernetes.io/name: smokeping
     spec:
       containers:
         - name: smokeping

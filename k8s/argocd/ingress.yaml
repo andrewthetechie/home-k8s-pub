@@ -5,6 +5,7 @@ metadata:
   name: argocd-server-http-ingress
   namespace: argocd
   annotations:
+    gethomepage.dev/app: argocd-server
     gethomepage.dev/description: Manages K8S resources
     gethomepage.dev/enabled: "true"
     gethomepage.dev/group: Infra

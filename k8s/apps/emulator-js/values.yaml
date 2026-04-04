@@ -66,6 +66,7 @@ ingress:
     annotations:
       kubernetes.io/ingress.class: nginx
       cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/app: emulatorjs
       gethomepage.dev/description: Add roms to Emu
       gethomepage.dev/enabled: "true"
       gethomepage.dev/group: Misc

@@ -23,6 +23,7 @@ spec:
         k8s: https://github.com/Evantage-WS/lldap-kubernetes
       labels:
         app: lldap
+        app.kubernetes.io/name: https-ingress
     spec:
       containers:
         - env:

@@ -16,6 +16,7 @@ spec:
     metadata:
       labels:
         app: ersatztv
+        app.kubernetes.io/name: ersatztv
     spec:
       nodeSelector:
         kubernetes.io/arch: amd64
