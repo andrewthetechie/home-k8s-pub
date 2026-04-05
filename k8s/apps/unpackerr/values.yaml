@@ -1,0 +1,56 @@
+controllers:
+  unpackerr:
+    strategy: Recreate
+    type: deployment
+    replicas: 1
+    containers:
+      app:
+        image:
+          repository: golift/unpackerr
+          tag: "0.15.2"
+          pullPolicy: IfNotPresent
+        env:
+          UN_LOG_FILE: /downloads/unpackerr.log
+          UN_SONARR_0_URL: https://sonarr.herrington.services
+          UN_RADARR_0_URL: https://radarr.herrington.services
+          UN_SONARR_0_API_KEY:
+            valueFrom:
+              secretKeyRef:
+                name: unpackerr-arr-keys
+                key: sonarr_api_key
+          UN_RADARR_0_API_KEY:
+            valueFrom:
+              secretKeyRef:
+                name: unpackerr-arr-keys
+                key: radarr_api_key
+        probes:
+          liveness:
+            enabled: false
+          readiness:
+            enabled: false
+          startup:
+            enabled: false
+
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+
+service:
+  unpackerr:
+    enabled: false
+
+ingress: {}
+
+persistence:
+  downloads:
+    type: nfs
+    server: duarte.herrington.services
+    path: /mnt/Media/downloaded
+    advancedMounts:
+      unpackerr:
+        app:
+          - path: /downloads

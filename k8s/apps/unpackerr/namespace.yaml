@@ -1,0 +1,9 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: unpackerr
+  labels:
+    name: unpackerr
+    app.kubernetes.io/instance: unpackerr
+    pod-security.kubernetes.io/enforce: privileged

@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: unpackerr
+
+resources:
+  - namespace.yaml
+  - sealed-unpackerr-arr-keys.yaml
+
+helmCharts:
+  - name: app-template
+    releaseName: unpackerr
+    namespace: unpackerr
+    version: 4.6.2
+    repo: https://bjw-s-labs.github.io/helm-charts
+    valuesFile: values.yaml
