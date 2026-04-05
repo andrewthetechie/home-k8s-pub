@@ -1,0 +1,9 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: cleanuparr
+  labels:
+    name: cleanuparr
+    app.kubernetes.io/instance: cleanuparr
+    pod-security.kubernetes.io/enforce: privileged

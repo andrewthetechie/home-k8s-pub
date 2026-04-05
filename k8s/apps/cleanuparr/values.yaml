@@ -1,0 +1,98 @@
+controllers:
+  cleanuparr:
+    strategy: Recreate
+    containers:
+      app:
+        image:
+          repository: ghcr.io/cleanuparr/cleanuparr
+          tag: 2.9.3
+          pullPolicy: IfNotPresent
+        env:
+          PORT: "11011"
+          BASE_PATH: ""
+          PUID: "1000"
+          PGID: "1000"
+          UMASK: "022"
+          TZ: America/Chicago
+        probes:
+          liveness: &probe
+            enabled: true
+            type: HTTP
+            path: /health
+          readiness: *probe
+          startup:
+            <<: *probe
+            spec:
+              failureThreshold: 30
+              periodSeconds: 1
+
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+
+service:
+  cleanuparr:
+    controller: cleanuparr
+    ports:
+      http:
+        port: 11011
+
+ingress:
+  cleanuparr:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/description: Arr cleanup and automation
+      gethomepage.dev/enabled: "true"
+      gethomepage.dev/group: Piracy
+      gethomepage.dev/icon: mdi-broom
+      gethomepage.dev/name: Cleanuparr
+      gethomepage.dev/weight: "11"
+      uptimekuma.io/monitor: "true"
+      uptimekuma.io/name: "Cleanuparr"
+      uptimekuma.io/type: "http"
+      uptimekuma.io/interval: "120"
+      # NGINX Ingress (nginx.org): SignalR needs WebSockets + long-lived proxy; SSE fallback needs buffering off.
+      # Service name from Helm release (see: zigbee2mqtt/ingress.yaml, hass/ingress.yaml, ersatztv/ingress.yaml).
+      nginx.org/websocket-services: cleanuparr
+      nginx.org/proxy-buffering: "false"
+      nginx.org/proxy-connect-timeout: "60"
+      nginx.org/proxy-read-timeout: "3600"
+      nginx.org/proxy-send-timeout: "3600"
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+      nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+      nginx.org/client-max-body-size: "50m"
+    hosts:
+      - host: cleanuparr.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: cleanuparr
+              port: http
+    tls:
+      - secretName: cleanuparr-tls
+        hosts:
+          - cleanuparr.herrington.services
+
+persistence:
+  config:
+    type: persistentVolumeClaim
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    storageClass: freenas-iscsi-ssd-csi
+    globalMounts:
+      - path: /config
+  downloads:
+    type: nfs
+    server: duarte.herrington.services
+    path: /mnt/Media/downloaded
+    advancedMounts:
+      cleanuparr:
+        app:
+          - path: /downloads
