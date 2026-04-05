@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: profilarr
+
+resources:
+  - namespace.yaml
+
+helmCharts:
+  - name: app-template
+    releaseName: profilarr
+    namespace: profilarr
+    version: 4.6.1
+    repo: https://bjw-s-labs.github.io/helm-charts
+    valuesFile: values.yaml

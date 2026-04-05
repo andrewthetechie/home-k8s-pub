@@ -1,0 +1,64 @@
+controllers:
+  profilarr:
+    strategy: RollingUpdate
+    initContainers:
+      permissions:
+        image:
+          repository: alpine
+          tag: latest
+        command:
+          - /bin/sh
+          - -c
+          - chown 1000:1000 -R /config
+    containers:
+      app:
+        image:
+          repository: santiagosayshey/profilarr
+          tag: v1.1.4
+          pullPolicy: IfNotPresent
+        env:
+          PUID: "1000"
+          PGID: "1000"
+
+service:
+  profilarr:
+    controller: profilarr
+    ports:
+      http:
+        port: 6868
+
+ingress:
+  profilarr:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/description: Manage Quality Profiles for Arr apps
+      gethomepage.dev/enabled: "true"
+      gethomepage.dev/group: Piracy
+      gethomepage.dev/icon: sh-profilarr
+      gethomepage.dev/name: Profilarr
+      gethomepage.dev/weight: "10"
+      uptimekuma.io/monitor: "true"
+      uptimekuma.io/name: "Profilarr"
+      uptimekuma.io/type: "http"
+      uptimekuma.io/interval: "120"
+    hosts:
+      - host: profilarr.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: profilarr
+              port: http
+    tls:
+      - secretName: profilarr
+        hosts:
+          - profilarr.herrington.services
+
+persistence:
+  config:
+    type: persistentVolumeClaim
+    accessMode: ReadWriteOnce
+    size: 10Gi
+    globalMounts:
+      - path: /config
