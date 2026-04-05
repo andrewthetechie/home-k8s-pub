@@ -1,0 +1,6 @@
+# Homelab: run less often than default */2 to reduce churn
+schedule: "*/15 * * * *"
+
+# Optional: increase verbosity for first deploy; reduce after stable
+# cmdOptions:
+#   v: "3"

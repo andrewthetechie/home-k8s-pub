@@ -1,0 +1,18 @@
+# Upstream VPA is deployed separately (vertical-pod-autoscaler app).
+vpa:
+  enabled: false
+
+# Cluster already runs nauvoo-v2/manifests/infra/metrics-server
+metrics-server:
+  enabled: false
+
+dashboard:
+  replicaCount: 1
+  deployment:
+    podAnnotations:
+      argocd.argoproj.io/sync-wave: "10"
+
+controller:
+  deployment:
+    podAnnotations:
+      argocd.argoproj.io/sync-wave: "10"
