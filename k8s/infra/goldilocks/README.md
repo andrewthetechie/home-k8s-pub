@@ -8,7 +8,9 @@ Helm chart **[goldilocks](https://github.com/FairwindsOps/goldilocks)** from Fai
 
 ## Access
 
-Dashboard (ClusterIP) — after sync:
+**HTTPS (ingress):** `https://goldilocks.herrington.services` — `nginx` ingress class, TLS via cert-manager (`letsencrypt-prod`). Ensure DNS for `goldilocks.herrington.services` points at the ingress before syncing.
+
+**Local (port-forward):**
 
 ```bash
 kubectl -n goldilocks port-forward svc/goldilocks-dashboard 8080:80
@@ -19,8 +21,6 @@ Then open `http://localhost:8080`.
 ## Dependencies
 
 Goldilocks needs **VPA** (recommender and CRDs) healthy before recommendations appear in the UI. Sync order: deploy VPA first, then Goldilocks.
-
-Ingress is omitted here; add later with the cluster `nginx` ingress and cert-manager if you want external access.
 
 ## Enabling namespaces
 

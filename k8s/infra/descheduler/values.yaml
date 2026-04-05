@@ -4,3 +4,51 @@ schedule: "*/15 * * * *"
 # Optional: increase verbosity for first deploy; reduce after stable
 # cmdOptions:
 #   v: "3"
+
+# Chart default enables DefaultEvictor podProtection "PodsWithPVC", which requires
+# cluster-wide list/watch on persistentvolumeclaims — not granted by the chart RBAC.
+# Omit that extra so Descheduler matches the ClusterRole (see upstream chart defaults).
+deschedulerPolicy:
+  profiles:
+    - name: default
+      pluginConfig:
+        - name: DefaultEvictor
+          args:
+            podProtections:
+              defaultDisabled:
+                - "PodsWithLocalStorage"
+              extraEnabled: []
+        - name: RemoveDuplicates
+        - name: RemovePodsHavingTooManyRestarts
+          args:
+            podRestartThreshold: 100
+            includingInitContainers: true
+        - name: RemovePodsViolatingNodeAffinity
+          args:
+            nodeAffinityType:
+              - requiredDuringSchedulingIgnoredDuringExecution
+        - name: RemovePodsViolatingNodeTaints
+        - name: RemovePodsViolatingInterPodAntiAffinity
+        - name: RemovePodsViolatingTopologySpreadConstraint
+        - name: LowNodeUtilization
+          args:
+            thresholds:
+              cpu: 20
+              memory: 20
+              pods: 20
+            targetThresholds:
+              cpu: 50
+              memory: 50
+              pods: 50
+      plugins:
+        balance:
+          enabled:
+            - RemoveDuplicates
+            - RemovePodsViolatingTopologySpreadConstraint
+            - LowNodeUtilization
+        deschedule:
+          enabled:
+            - RemovePodsHavingTooManyRestarts
+            - RemovePodsViolatingNodeTaints
+            - RemovePodsViolatingNodeAffinity
+            - RemovePodsViolatingInterPodAntiAffinity

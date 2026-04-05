@@ -8,6 +8,22 @@ metrics-server:
 
 dashboard:
   replicaCount: 1
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    hosts:
+      - host: goldilocks.herrington.services
+        paths:
+          - path: /
+            type: Prefix
+    tls:
+      - secretName: goldilocks-dashboard-tls
+        hosts:
+          - goldilocks.herrington.services
   deployment:
     podAnnotations:
       argocd.argoproj.io/sync-wave: "10"
