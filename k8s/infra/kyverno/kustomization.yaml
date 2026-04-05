@@ -1,0 +1,25 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# Do not set `namespace:` here: Kustomize would add metadata.namespace to *all*
+# objects, including cluster-scoped resources (e.g. ClusterPolicy, CRDs). Helm
+# output is already scoped via helmCharts[].namespace below.
+
+resources:
+  - namespace.yaml
+
+helmCharts:
+  - name: kyverno
+    releaseName: kyverno
+    namespace: kyverno
+    version: 3.3.9
+    repo: https://kyverno.github.io/kyverno/
+    includeCRDs: true
+    valuesFile: values.yaml
+
+# Drop Helm hook test Pods (helm.sh/hook: test); wget HTTPS checks can hang; not needed for GitOps.
+patches:
+  - path: patches/delete-pod-admission-controller-metrics.yaml
+  - path: patches/delete-pod-cleanup-controller-liveness.yaml
+  - path: patches/delete-pod-cleanup-controller-metrics.yaml
+  - path: patches/delete-pod-cleanup-controller-readiness.yaml
+  - path: patches/delete-pod-reports-controller-metrics.yaml

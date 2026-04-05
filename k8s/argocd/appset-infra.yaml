@@ -5,6 +5,8 @@ metadata:
   name: infra
   namespace: argocd
 spec:
+  # Enables Go templating so we can set sync-wave for kyverno-policies (requires Argo CD 2.5+).
+  goTemplate: true
   generators:
     - git:
         repoURL: "git@github.com:andrewthetechie/home-k8s.git"
@@ -13,13 +15,16 @@ spec:
           - path: "nauvoo-v2/manifests/infra/*"
   template:
     metadata:
-      name: "{{ path.basename }}"
+      name: "{{ .path.basename }}"
+      annotations:
+        # Policies must apply after Kyverno CRDs/controllers exist (separate app: ../kyverno-policies/).
+        argocd.argoproj.io/sync-wave: '{{ if eq .path.basename "kyverno-policies" }}1{{ else }}0{{ end }}'
     spec:
       project: infra
       source:
         repoURL: "git@github.com:andrewthetechie/home-k8s.git"
         targetRevision: HEAD
-        path: "nauvoo-v2/manifests/infra/{{ path.basename }}"
+        path: "nauvoo-v2/manifests/infra/{{ .path.basename }}"
       destination:
         server: https://kubernetes.default.svc
       syncPolicy: 

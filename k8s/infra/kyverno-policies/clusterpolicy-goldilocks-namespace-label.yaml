@@ -1,0 +1,38 @@
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: goldilocks-default-namespace-label
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+    policies.kyverno.io/title: Default Goldilocks namespace label
+    policies.kyverno.io/category: Fairwinds
+    policies.kyverno.io/description: >-
+      Sets goldilocks.fairwinds.com/enabled=true on Namespaces except those
+      named kube-*; skips when the label is explicitly false.
+spec:
+  rules:
+    - name: add-goldilocks-enabled-label
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              operations:
+                - CREATE
+                - UPDATE
+      exclude:
+        any:
+          - resources:
+              names:
+                - "kube-*"
+      preconditions:
+        all:
+          - key: "{{ request.object.metadata.labels.\"goldilocks.fairwinds.com/enabled\" || '' }}"
+            operator: NotEquals
+            value: "false"
+      mutate:
+        patchStrategicMerge:
+          metadata:
+            labels:
+              goldilocks.fairwinds.com/enabled: "true"

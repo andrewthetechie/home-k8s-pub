@@ -1,0 +1,28 @@
+# Chart version is pinned in kustomization.yaml (helmCharts.version).
+# Kyverno app v1.13.x supports Kubernetes 1.28 per Kyverno 1.13 docs.
+
+# --- Config / uninstall ------------------------------------------------------------
+# When true, the chart renders a post-delete Job that uses kubectl (docker.io/bitnami).
+# Set false so GitOps/kustomize installs do not pull that image; Helm uninstall will
+# not run the ConfigMap cleanup hook (acceptable for this homelab).
+config:
+  preserve: false
+
+# --- Optional Helm hooks (default: bitnami/kubectl via docker.io) -----------------
+# This homelab’s registry mirror often cannot pull docker.io or registry.k8s.io
+# kubectl images. The hooks below are safe to skip for normal operation; they only
+# help with post-upgrade report cleanup and graceful Helm uninstall.
+# See: https://github.com/kyverno/kyverno/tree/main/charts/kyverno
+policyReportsCleanup:
+  enabled: false
+
+webhooksCleanup:
+  enabled: false
+
+# --- CRD migration post-upgrade Job ------------------------------------------------
+# Disables the migrate-resources Job for routine GitOps installs. Re-enable before
+# upgrading Kyverno across releases that change CRD storage versions.
+crds:
+  migration:
+    enabled: false
+
