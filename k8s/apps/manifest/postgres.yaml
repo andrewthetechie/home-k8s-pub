@@ -20,6 +20,12 @@ spec:
       defaultUsers: true
       extensions:
         vector: public
+      # Without explicit schemas the operator creates a default `data` schema first in
+      # search_path. Manifest migrations hard-code DROP INDEX on `public` (see
+      # HashApiKeys1771500000000), which breaks when TypeORM creates indexes in `data`.
+      schemas:
+        public:
+          defaultRoles: false
   resources:
     requests:
       cpu: 100m
