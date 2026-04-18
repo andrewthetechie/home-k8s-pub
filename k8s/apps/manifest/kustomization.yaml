@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: manifest
+
+resources:
+  - namespace.yaml
+  - postgres.yaml
+  - sealedsecret-manifest-auth.yaml
+
+helmCharts:
+  - name: app-template
+    releaseName: manifest
+    namespace: manifest
+    version: 4.3.0
+    repo: https://bjw-s-labs.github.io/helm-charts
+    valuesFile: values.yaml

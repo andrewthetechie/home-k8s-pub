@@ -1,0 +1,29 @@
+apiVersion: acid.zalan.do/v1
+kind: postgresql
+metadata:
+  name: manifest-db
+  namespace: manifest
+  labels:
+    team: manifest
+spec:
+  teamId: manifest
+  numberOfInstances: 2
+  postgresql:
+    version: "17"
+  volume:
+    size: 20Gi
+    storageClass: freenas-iscsi-ssd-csi
+  enableMasterLoadBalancer: false
+  enableConnectionPooler: false
+  preparedDatabases:
+    manifest:
+      defaultUsers: true
+      extensions:
+        vector: public
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
