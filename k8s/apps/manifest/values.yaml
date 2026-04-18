@@ -20,7 +20,9 @@ controllers:
                 name: manifest-owner-user.manifest-db.credentials.postgresql.acid.zalan.do
                 key: password
           - name: DATABASE_URL
-            value: postgresql://$(MANIFEST_PG_USER):$(MANIFEST_PG_PASSWORD)@manifest-db.manifest/manifest?sslmode=require
+            # Spilo/Zalando uses a cluster-local cert; node-postgres maps sslmode=require to verify-full (rejects self-signed).
+            # no-verify keeps TLS on the wire without verifying the server cert (in-cluster only).
+            value: postgresql://$(MANIFEST_PG_USER):$(MANIFEST_PG_PASSWORD)@manifest-db.manifest/manifest?sslmode=no-verify
           - name: NODE_ENV
             value: production
           - name: PORT
