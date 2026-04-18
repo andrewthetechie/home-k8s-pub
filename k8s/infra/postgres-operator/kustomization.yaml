@@ -9,7 +9,7 @@ helmCharts:
   - name: postgres-operator
     releaseName: postgres-operator
     namespace: pg-operator
-    version: 1.10.1
+    version: 1.15.1
     includeCRDs: true
     repo: https://opensource.zalando.com/postgres-operator/charts/postgres-operator
     valuesInline:
@@ -33,7 +33,7 @@ helmCharts:
   - name: postgres-operator-ui
     releaseName: postgres-operator-ui
     namespace: pg-operator
-    version: 1.10.1
+    version: 1.15.1
     repo: https://opensource.zalando.com/postgres-operator/charts/postgres-operator-ui
     valuesInline:
       envs:

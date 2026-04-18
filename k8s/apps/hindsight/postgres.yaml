@@ -1,0 +1,29 @@
+apiVersion: acid.zalan.do/v1
+kind: postgresql
+metadata:
+  name: hindsight-db
+  namespace: hindsight
+  labels:
+    team: hindsight
+spec:
+  teamId: hindsight
+  numberOfInstances: 2
+  postgresql:
+    version: "17"
+  volume:
+    size: 50Gi
+    storageClass: freenas-iscsi-ssd-csi
+  enableMasterLoadBalancer: false
+  enableConnectionPooler: false
+  preparedDatabases:
+    hindsight:
+      defaultUsers: true
+      extensions:
+        vector: public
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi

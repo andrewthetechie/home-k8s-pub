@@ -1,0 +1,53 @@
+existingSecret: hindsight-secret
+
+databaseUrl: "postgresql://hindsight_owner_user:$(POSTGRES_PASSWORD)@hindsight-db:5432/hindsight?sslmode=require"
+
+postgresql:
+  enabled: false
+  external:
+    host: hindsight-db
+    port: 5432
+    database: hindsight
+    username: hindsight_owner_user
+
+api:
+  replicaCount: 1
+  env:
+    HINDSIGHT_API_SKIP_LLM_VERIFICATION: "true"
+    HINDSIGHT_API_LLM_PROVIDER: openai
+    HINDSIGHT_API_LLM_MODEL: mock-model-replace-me
+    HINDSIGHT_API_LLM_BASE_URL: https://manifest-llm-not-configured.invalid/v1
+  resources:
+    requests:
+      cpu: "2"
+      memory: 4Gi
+    limits:
+      cpu: "8"
+      memory: 16Gi
+  persistence:
+    modelCache:
+      enabled: true
+      size: 15Gi
+      storageClass: freenas-iscsi-ssd-csi
+
+controlPlane:
+  replicaCount: 1
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: hindsight.herrington.services
+      paths:
+        - path: /
+          pathType: Prefix
+          service: controlPlane
+        - path: /api
+          pathType: Prefix
+          service: api
+  tls:
+    - secretName: hindsight-tls
+      hosts:
+        - hindsight.herrington.services

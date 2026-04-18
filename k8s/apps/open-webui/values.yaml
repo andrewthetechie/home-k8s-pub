@@ -1,0 +1,59 @@
+# Open WebUI Helm chart values — chart 13.3.1 / app 0.8.12
+# https://github.com/open-webui/helm-charts
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/open-webui/open-webui
+  tag: "0.8.12"
+  pullPolicy: IfNotPresent
+
+ollama:
+  enabled: false
+
+pipelines:
+  enabled: false
+
+tika:
+  enabled: false
+
+terminals:
+  enabled: false
+
+# Default in chart; explicit for spec clarity
+websocket:
+  enabled: true
+
+persistence:
+  enabled: true
+  size: 2Gi
+  accessModes:
+    - ReadWriteOnce
+  storageClass: freenas-iscsi-ssd-csi
+
+ingress:
+  enabled: true
+  class: nginx
+  host: oui.herrington.services
+  tls: true
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    gethomepage.dev/description: Chat UI for Manifest-backed models
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/group: AI
+    gethomepage.dev/icon: mdi-chat-outline
+    gethomepage.dev/name: Open WebUI
+    gethomepage.dev/weight: "6"
+    uptimekuma.io/monitor: "true"
+    uptimekuma.io/name: "Open WebUI"
+    uptimekuma.io/type: "http"
+    uptimekuma.io/interval: "120"
+    nginx.org/websocket-services: open-webui
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+
+enableOpenaiApi: true
+
+# Placeholders — replace with real Manifest URL/key or use openaiApiKeyExistingSecret
+openaiBaseApiUrl: "https://manifest.herrington.services/v1"
+openaiApiKey: "PLACEHOLDER_REPLACE_WITH_MANIFEST_KEY"

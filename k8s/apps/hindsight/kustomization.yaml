@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: hindsight
+
+resources:
+  - namespace.yaml
+  - sealedsecret-hindsight-postgres-bootstrap.yaml
+  - sealedsecret-hindsight-chart-credentials.yaml
+  - postgres.yaml
+
+helmCharts:
+  - name: hindsight
+    releaseName: hindsight
+    repo: oci://ghcr.io/vectorize-io/charts
+    version: 0.5.3
+    namespace: hindsight
+    valuesFile: values.yaml
