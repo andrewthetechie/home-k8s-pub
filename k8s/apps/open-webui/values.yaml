@@ -54,6 +54,8 @@ ingress:
 
 enableOpenaiApi: true
 
-# Placeholders — replace with real Manifest URL/key or use openaiApiKeyExistingSecret
+# Manifest OpenAI-compatible API (stable). Key lives in SealedSecret open-webui-manifest-apikey.
 openaiBaseApiUrl: "https://manifest.herrington.services/v1"
-openaiApiKey: "PLACEHOLDER_REPLACE_WITH_MANIFEST_KEY"
+openaiApiKey: ""
+openaiApiKeyExistingSecret: open-webui-manifest-apikey
+openaiApiKeyExistingSecretKey: OPENAI_API_KEY

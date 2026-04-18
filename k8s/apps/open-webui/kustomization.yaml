@@ -4,6 +4,7 @@ namespace: open-webui
 
 resources:
   - namespace.yaml
+  - sealed-secret-manifest-apikey.yaml
 
 helmCharts:
   - name: open-webui
