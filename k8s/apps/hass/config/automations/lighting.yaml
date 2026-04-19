@@ -609,7 +609,11 @@
   mode: single
 - id: "1731720406983"
   alias: Kitchen Lights Toggle On
-  description: ""
+  description: >-
+    Tap down (same gesture as "off" on single-action switches) to turn kitchen
+    lights on when they are already off. Requires the kitchen load to have been
+    off for a few seconds so a real "turn off from on" press does not immediately
+    re-trigger this automation.
   triggers:
     - domain: mqtt
       device_id: e435d4107048faee192e3dd667f5d4ca
@@ -622,6 +626,10 @@
       device_id: e435d4107048faee192e3dd667f5d4ca
       entity_id: e9cbc3bc7c0faf74053aa8b27683bf3c
       domain: light
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 3
   actions:
     - action: light.turn_on
       metadata: {}
