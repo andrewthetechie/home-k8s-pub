@@ -8,6 +8,9 @@ import subprocess
 import time
 
 import requests
+import urllib3
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 log = logging.getLogger(__name__)
@@ -55,8 +58,11 @@ def _availability(obj):
             vals.append(float(m["availability"]))
     return max(vals) if vals else 0.0
 
-def parse_wan_status(health_data_list, threshold):
-    """Given .data from health API, return 'WAN1' | 'WAN2' | 'Offline'."""
+def parse_wan_status_with_reason(health_data_list, threshold):
+    """Given .data from health API, return (status, reason).
+
+    status is 'WAN1' | 'WAN2' | 'Offline'. reason is None for WAN1, else a short explanation.
+    """
     for item in health_data_list or []:
         if (item.get("subsystem") or "").lower() != "wan":
             continue
@@ -64,11 +70,23 @@ def parse_wan_status(health_data_list, threshold):
         wan1 = _availability(stats.get("WAN"))
         wan2 = _availability(stats.get("WAN2"))
         if wan2 > threshold and wan1 <= threshold:
-            return "WAN2"
+            return (
+                "WAN2",
+                f"failover: WAN2 avail={wan2:.3g} WAN1 avail={wan1:.3g} (threshold={threshold:g})",
+            )
         if wan1 > threshold:
-            return "WAN1"
-        return "Offline"
-    return "Offline"
+            return "WAN1", None
+        return (
+            "Offline",
+            f"WAN parse: WAN1 avail={wan1:.3g} WAN2 avail={wan2:.3g} (need WAN1>{threshold:g} or WAN2-only failover)",
+        )
+    return "Offline", "WAN parse: no WAN subsystem in health payload after normalize"
+
+
+def parse_wan_status(health_data_list, threshold):
+    """Given .data from health API, return 'WAN1' | 'WAN2' | 'Offline'."""
+    status, _ = parse_wan_status_with_reason(health_data_list, threshold)
+    return status
 
 def _normalize_health_data(data):
     """Convert API health payload to list of items with subsystem + uptime_stats.
@@ -90,7 +108,10 @@ def _normalize_health_data(data):
 
 
 def get_isp_status(config):
-    """Call UDM API; return 'WAN1' | 'WAN2' | 'Offline'."""
+    """Call UDM API; return (status, reason).
+
+    status is 'WAN1' | 'WAN2' | 'Offline'. reason is None when WAN1 is selected; otherwise explains why.
+    """
     base = f"https://{config['udm_ip']}"
     session = requests.Session()
     session.verify = False
@@ -106,7 +127,7 @@ def get_isp_status(config):
         if r.status_code != 200:
             if debug:
                 log.debug("UDM login failed: %s %s", r.status_code, r.text[:200])
-            return "Offline"
+            return "Offline", f"UDM login HTTP {r.status_code}"
         # UniFi OS may set cookies with Path=/api so they are not sent to /proxy/network/...
         # Re-set cookies with path=/ so the health request receives them.
         host = config["udm_ip"]
@@ -118,17 +139,18 @@ def get_isp_status(config):
         if r.status_code != 200:
             if debug:
                 log.debug("UDM health failed: %s %s", r.status_code, r.text[:200])
-            return "Offline"
+            return "Offline", f"UDM health HTTP {r.status_code}"
         body = r.json()
         data = body.get("data")
         health_list = _normalize_health_data(data)
         if debug:
             log.debug("health data type=%s items=%s", type(data).__name__, len(health_list))
-        return parse_wan_status(health_list, config["avail_threshold"])
+        status, reason = parse_wan_status_with_reason(health_list, config["avail_threshold"])
+        return status, reason
     except Exception as e:
         if debug:
             log.debug("get_isp_status error: %s", e, exc_info=True)
-        return "Offline"
+        return "Offline", f"UDM request error: {type(e).__name__}: {e}"
 
 def ssh_socket_path(config):
     return f"/tmp/ssh_mux_{config['remote_host']}_22_{config['remote_user']}"
@@ -186,10 +208,15 @@ def main():
     log.info("Starting SSH master")
     start_ssh_master(config)
     while not shutdown[0]:
-        isp = get_isp_status(config)
+        isp, isp_reason = get_isp_status(config)
         log.debug("ISP: %s", isp)
         if isp in ("Offline", "WAN2"):
-            log.info("ISP %s, sleeping %s s", isp, config["isp_down_sleep_interval"])
+            log.info(
+                "ISP %s, sleeping %s s — %s",
+                isp,
+                config["isp_down_sleep_interval"],
+                isp_reason or "(no detail)",
+            )
             time.sleep(config["isp_down_sleep_interval"])
             continue
         if not has_remote_files(config, sock):

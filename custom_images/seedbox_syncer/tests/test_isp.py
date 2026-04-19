@@ -27,4 +27,22 @@ def test_get_isp_status_returns_wan1_on_success():
             json=lambda: {"data": [{"subsystem": "wan", "uptime_stats": {"WAN": {"availability": 99}, "WAN2": {}}}]}
         )
         req.Session.return_value = session
-        assert sync_media.get_isp_status(config) == "WAN1"
+        status, reason = sync_media.get_isp_status(config)
+        assert status == "WAN1"
+        assert reason is None
+
+
+def test_get_isp_status_offline_includes_login_http_reason():
+    config = {"udm_ip": "192.168.1.1", "udm_username": "u", "udm_password": "p", "avail_threshold": 1.0}
+    with patch("sync_media.requests") as req:
+        session = MagicMock()
+        session.post.return_value = MagicMock(status_code=503, cookies=MagicMock(get_dict=lambda: {}))
+        req.Session.return_value = session
+        status, reason = sync_media.get_isp_status(config)
+        assert status == "Offline"
+        assert "503" in reason
+
+
+def test_parse_wan_status_with_reason_wan1():
+    data = [{"subsystem": "wan", "uptime_stats": {"WAN": {"availability": 99}, "WAN2": {"availability": 0}}}]
+    assert sync_media.parse_wan_status_with_reason(data, 1.0) == ("WAN1", None)
