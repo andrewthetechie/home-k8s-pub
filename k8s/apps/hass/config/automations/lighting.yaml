@@ -427,7 +427,7 @@
   action:
     - service: script.goodnight
       data: {}
-    - service: script.holday_lights_off
+    - service: script.holiday_lights_off
       data: {}
   mode: single
 - id: "1726286514731"
