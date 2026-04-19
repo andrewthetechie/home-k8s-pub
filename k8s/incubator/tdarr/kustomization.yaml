@@ -2,6 +2,11 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: tdarr
 
+# Tdarr stores Options + node worker state in SQLite on the tdarr-data PVC. A new DB
+# defaults transcodeWorkerLimit/healthcheckWorkerLimit to 0 and can give every node
+# schedule hour transcodecpu/healthcheckcpu=0, so queues never drain. Raise worker
+# limits in the UI (Options tab + Nodes tab per docs.tdarr.io/docs/nodes/workers/).
+
 resources:
   - namespace.yaml
   - service-lb.yaml
@@ -10,26 +15,60 @@ helmCharts:
   - name: tdarr
     releaseName: tdarr
     namespace: tdarr
-    version: 5.0.1
+    version: 5.4.0
     repo: https://k8s-home-lab.github.io/helm-charts/
     valuesInline:
       image:
-        tag: 2.18.01
+        tag: "2.62.01"
       node:
+        enabled: true
         image:
-          tag: 2.18.01
+          repository: haveagitgat/tdarr_node
+          tag: "2.62.01"
         resources:
           requests:
-            gpu.intel.com/i915: "1"
+            cpu: "2"
+            memory: 4Gi
           limits:
-            gpu.intel.com/i915: "1"
+            cpu: "2"
+            memory: 4Gi
       env:
         TZ: "America/Chicago"
+        # Bundled Jellyfin FFmpeg in tdarr_node; empty env renders as <nil> and breaks transcodes.
+        ffmpegPath: "/app/Tdarr_Node/assets/app/ffmpeg/linux_x64/ffmpeg"
       persistence:
         config:
           enabled: true
+          type: pvc
           mountPath: /config
-          storageClassName: freenas-iscsi-ssd-csi
+          storageClass: freenas-iscsi-ssd-csi
+          accessMode: ReadWriteOnce
+          size: 50Gi
+        # Server DB, libraries, and most UI state live here; without this PVC
+        # everything under /app/server is ephemeral and is lost on pod restart.
+        data:
+          enabled: true
+          type: pvc
+          mountPath: /app/server
+          storageClass: freenas-iscsi-ssd-csi
+          accessMode: ReadWriteOnce
+          size: 50Gi
+        shared:
+          enabled: true
+          type: emptyDir
+          mountPath: /shared
+        tv:
+          enabled: true
+          type: nfs
+          server: duarte.herrington.services
+          path: /mnt/Media/TV
+          mountPath: /tv
+        movies:
+          enabled: true
+          type: nfs
+          server: duarte.herrington.services
+          path: /mnt/Media/Movies
+          mountPath: /movies
       ingress:
         main:
           enabled: true
@@ -56,27 +95,17 @@ helmCharts:
             - secretName: tdarr-tls
               hosts:
                 - tdarr.herrington.services
+
 patches:
+  # Chart sets serverIP=localhost; Node resolves that to ::1 while Tdarr_Server
+  # listens on IPv4 only, so the node gets ECONNREFUSED on ::1:8266.
   - target:
       kind: Deployment
       name: tdarr
     patch: |-
-      - op: add
-        path: /spec/template/spec/volumes/-
-        value:
-          name: media
-          nfs:
-            server: chrisjen.herrington.services
-            path: /mnt/disk_pool/Media
-  - target:
-      kind: Deployment
-      name: tdarr
-    patch: |-
-      - op: add
-        path: /spec/template/spec/containers/0/volumeMounts/-
-        value:
-          mountPath: /nas
-          name: media
+      - op: replace
+        path: /spec/template/spec/containers/1/env/2/value
+        value: "127.0.0.1"
   - target:
       kind: Deployment
       name: tdarr
@@ -84,19 +113,14 @@ patches:
       - op: add
         path: /spec/template/spec/containers/1/volumeMounts/-
         value:
-          mountPath: /nas
-          name: media
+          name: tv
+          mountPath: /tv
   - target:
-      kind: PersistentVolumeClaim
-      name: tdarr-config
+      kind: Deployment
+      name: tdarr
     patch: |-
       - op: add
-        path: /spec/storageClassName
-        value: 'freenas-iscsi-ssd-csi'
-  - target:
-      kind: PersistentVolumeClaim
-      name: tdarr-config
-    patch: |-
-      - op: replace
-        path: /spec/resources/requests/storage
-        value: 50Gi
+        path: /spec/template/spec/containers/1/volumeMounts/-
+        value:
+          name: movies
+          mountPath: /movies
