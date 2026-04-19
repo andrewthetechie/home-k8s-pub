@@ -1,0 +1,81 @@
+# Standalone Tdarr Node pods: connect to in-cluster Service `tdarr` (port 8266), unique
+# nodeID per pod (metadata.name). Scale independently: kubectl -n tdarr scale deployment/tdarr-node-worker --replicas=N
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tdarr-node-worker
+  labels:
+    app.kubernetes.io/name: tdarr-node-worker
+    app.kubernetes.io/instance: tdarr
+    app.kubernetes.io/component: transcode-worker
+spec:
+  replicas: 0
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tdarr-node-worker
+      app.kubernetes.io/instance: tdarr
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: tdarr-node-worker
+        app.kubernetes.io/instance: tdarr
+        app.kubernetes.io/component: transcode-worker
+    spec:
+      automountServiceAccountToken: true
+      serviceAccountName: default
+      containers:
+        - name: node
+          image: haveagitgat/tdarr_node:2.62.01
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: TZ
+              value: America/Chicago
+            - name: nodeID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: serverIP
+              value: tdarr
+            - name: serverPort
+              value: "8266"
+            - name: ffmpegPath
+              value: /app/Tdarr_Node/assets/app/ffmpeg/linux_x64/ffmpeg
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+          resources:
+            requests:
+              cpu: "2"
+              memory: 4Gi
+            limits:
+              cpu: "2"
+              memory: 4Gi
+          volumeMounts:
+            - name: node-config
+              mountPath: /app/configs
+            - name: shared
+              mountPath: /shared
+            - name: tv
+              mountPath: /tv
+            - name: movies
+              mountPath: /movies
+      volumes:
+        - name: node-config
+          emptyDir: {}
+        - name: shared
+          emptyDir: {}
+        - name: tv
+          nfs:
+            server: duarte.herrington.services
+            path: /mnt/Media/TV
+        - name: movies
+          nfs:
+            server: duarte.herrington.services
+            path: /mnt/Media/Movies

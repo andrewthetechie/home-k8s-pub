@@ -10,6 +10,8 @@ namespace: tdarr
 resources:
   - namespace.yaml
   - service-lb.yaml
+  # Scales independently of Helm Deployment/tdarr; replicas default 0 (scale when ready).
+  - tdarr-node-worker.yaml
 
 helmCharts:
   - name: tdarr
