@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: ha-mcp
+
+resources:
+  - namespace.yaml
+  - sealed-ha-mcp-secrets.yaml
+
+helmCharts:
+  - name: app-template
+    releaseName: ha-mcp
+    namespace: ha-mcp
+    version: 4.6.2
+    repo: https://bjw-s-labs.github.io/helm-charts
+    valuesFile: values.yaml

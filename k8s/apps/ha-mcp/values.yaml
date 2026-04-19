@@ -1,0 +1,48 @@
+controllers:
+  ha-mcp:
+    strategy: RollingUpdate
+    containers:
+      app:
+        image:
+          repository: ghcr.io/homeassistant-ai/ha-mcp
+          tag: latest
+          pullPolicy: IfNotPresent
+        args:
+          - ha-mcp-web
+        env:
+          TZ: America/Chicago
+          HOMEASSISTANT_URL: "http://hass-home-assistant.hass.svc.cluster.local:8123"
+          HOMEASSISTANT_TOKEN:
+            valueFrom:
+              secretKeyRef:
+                name: ha-mcp-secrets
+                key: HOMEASSISTANT_TOKEN
+
+service:
+  ha-mcp:
+    controller: ha-mcp
+    ports:
+      http:
+        port: 8086
+
+ingress:
+  ha-mcp:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      uptimekuma.io/monitor: "true"
+      uptimekuma.io/name: "ha-mcp"
+      uptimekuma.io/type: "http"
+      uptimekuma.io/interval: "120"
+    hosts:
+      - host: ha-mcp.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: ha-mcp
+              port: http
+    tls:
+      - secretName: ha-mcp
+        hosts:
+          - ha-mcp.herrington.services

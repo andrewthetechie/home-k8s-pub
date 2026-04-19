@@ -31,7 +31,7 @@ spec:
       serviceAccountName: default
       containers:
         - name: node
-          image: haveagitgat/tdarr_node:2.62.01
+          image: haveagitgat/tdarr_node:2.69.01
           imagePullPolicy: IfNotPresent
           env:
             - name: TZ

@@ -21,12 +21,12 @@ helmCharts:
     repo: https://k8s-home-lab.github.io/helm-charts/
     valuesInline:
       image:
-        tag: "2.62.01"
+        tag: "2.69.01"
       node:
         enabled: true
         image:
           repository: haveagitgat/tdarr_node
-          tag: "2.62.01"
+          tag: "2.69.01"
         resources:
           requests:
             cpu: "2"
