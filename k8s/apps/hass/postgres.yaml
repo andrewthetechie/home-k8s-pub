@@ -20,7 +20,7 @@ spec:
   databases:
     hass: hass
   volume:
-    size: "50Gi"
+    size: "70Gi"
     storageClass: freenas-iscsi-ssd-csi
   resources:
     requests:
