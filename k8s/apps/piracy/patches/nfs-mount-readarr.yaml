@@ -10,3 +10,15 @@
   value:
     mountPath: /books
     name: media
+- op: add
+  path: /spec/template/spec/volumes/-
+  value:
+    name: audiobooks
+    nfs:
+      server: duarte.herrington.services
+      path: /mnt/Media/Audio Books
+- op: add
+  path: /spec/template/spec/containers/0/volumeMounts/-
+  value:
+    mountPath: /audiobooks
+    name: audiobooks
