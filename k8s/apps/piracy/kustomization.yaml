@@ -170,47 +170,6 @@ helmCharts:
             - secretName: prowlarr-tls
               hosts:
                 - prowlarr.herrington.services
-  - name: readarr
-    releaseName: readarr
-    namespace: piracy
-    version: 6.4.2
-    repo: https://k8s-at-home.com/charts/
-    valuesInline:
-      image:
-        repository: linuxserver/readarr
-        tag: 0.4.18-nightly
-      env:
-        TZ: "America/Chicago"
-      persistence:
-        config:
-          enabled: true
-          mountPath: /config
-      ingress:
-        main:
-          enabled: true
-          annotations:
-            cert-manager.io/cluster-issuer: letsencrypt-prod
-            gethomepage.dev/description: Books PVR
-            gethomepage.dev/enabled: "true"
-            gethomepage.dev/group: Piracy
-            gethomepage.dev/icon: readarr
-            gethomepage.dev/name: Readarr
-            gethomepage.dev/weight: "3"
-            uptimekuma.io/monitor: "true"
-            uptimekuma.io/name: "Readarr"
-            uptimekuma.io/type: "http"
-            uptimekuma.io/interval: "120"
-            nginx.ingress.kubernetes.io/proxy-body-size: "50m"
-            nginx.org/client-max-body-size: "50m"
-          hosts:
-            - host: readarr.herrington.services
-              paths:
-                - path: /
-                  pathType: Prefix
-          tls:
-            - secretName: readarr-tls
-              hosts:
-                - readarr.herrington.services
 patches:
   - target:
       kind: Deployment
@@ -226,10 +185,6 @@ patches:
     path: patches/nfs-mount-lidarr.yaml
   - target:
       kind: Deployment
-      name: readarr
-    path: patches/nfs-mount-readarr.yaml
-  - target:
-      kind: Deployment
       name: radarr
     path: patches/nfs-mount-downloaded.yaml
   - target:
@@ -239,10 +194,6 @@ patches:
   - target:
       kind: Deployment
       name: lidarr
-    path: patches/nfs-mount-downloaded.yaml
-  - target:
-      kind: Deployment
-      name: readarr
     path: patches/nfs-mount-downloaded.yaml
   - target:
       kind: PersistentVolumeClaim
@@ -259,8 +210,4 @@ patches:
   - target:
       kind: PersistentVolumeClaim
       name: prowlarr-config
-    path: patches/pvc-ssd.yaml
-  - target:
-      kind: PersistentVolumeClaim
-      name: readarr-config
     path: patches/pvc-ssd.yaml
