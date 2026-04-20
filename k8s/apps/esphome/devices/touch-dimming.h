@@ -23,12 +23,19 @@
 #include "esphome/core/base_automation.h"
 #include "esphome/core/log.h"
 
+#include <cstdint>
 #include <string>
 
 using namespace esphome;
 
 using ScriptExecuteAction = script::ScriptExecuteAction<script::Script<>>;
 using ScriptStopAction = script::ScriptStopAction<script::SingleScript<>>;
+
+// ESPHome 2026.4+: DelayAction::set_delay uses TemplatableFn<uint32_t>, which only accepts
+// stateless callables (function pointers), not raw constants — see templatablefn blog post.
+namespace touch_dimming_detail {
+template<uint32_t Ms> uint32_t fixed_delay_ms() { return Ms; }
+}  // namespace touch_dimming_detail
 
 class TouchDimmer {
   static constexpr uint32_t dimStartDelayMs = 350;
@@ -67,7 +74,7 @@ class TouchDimmer {
   {
     // Wait to see if the 'touch' lasts for long enough:
     auto *startDelayAction = new DelayAction<>();
-    startDelayAction->set_delay(dimStartDelayMs + 50);  // Add a little margin.
+    startDelayAction->set_delay(&touch_dimming_detail::fixed_delay_ms<dimStartDelayMs + 50>);
 
     // Toggle the dimming direction:
     LambdaAction<> *toggleDimDirLambda = new LambdaAction<>([&]() -> void {
@@ -89,7 +96,7 @@ class TouchDimmer {
 
     // Perform a dim step every `dimPeriodMs` milliseconds:
     auto *dimDelayAction = new DelayAction<>();
-    dimDelayAction->set_delay(dimPeriodMs);
+    dimDelayAction->set_delay(&touch_dimming_detail::fixed_delay_ms<dimPeriodMs>);
 
     // Do the actual dimming:
     LambdaAction<> *dimStepLambda = new LambdaAction<>([&]() -> void {
