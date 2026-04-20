@@ -28,7 +28,7 @@ spec:
         - env:
             - name: ESPHOME_DASHBOARD_USE_PING
               value: "true"
-          image: "esphome/esphome:2026.04.1"
+          image: esphome/esphome:2026.4.1
           imagePullPolicy: IfNotPresent
           resources:
             requests:
@@ -79,7 +79,8 @@ spec:
         - command:
             - /bin/sh
             - -c
-            - cp /configs/*.h /config/; cp /configs/*.yaml /config/; cp /secrets/*.yaml /config/
+            - cp /configs/*.h /config/; cp /configs/*.yaml /config/; cp
+              /secrets/*.yaml /config/
           image: alpine:latest
           imagePullPolicy: IfNotPresent
           name: copy
