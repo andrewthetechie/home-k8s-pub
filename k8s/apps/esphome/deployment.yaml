@@ -28,7 +28,7 @@ spec:
         - env:
             - name: ESPHOME_DASHBOARD_USE_PING
               value: "true"
-          image: "esphome/esphome:2024.10.3"
+          image: "esphome/esphome:2026.04.1"
           imagePullPolicy: IfNotPresent
           resources:
             requests:
