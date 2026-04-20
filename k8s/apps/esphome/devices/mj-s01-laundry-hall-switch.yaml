@@ -2,7 +2,8 @@
 esphome:
   name: laundry_hall_switch
   friendly_name: Laundry Hall Light
-  platform: ESP8266
+
+esp8266:
   board: esp01_1m
 
 substitutions:

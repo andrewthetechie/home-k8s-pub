@@ -2,7 +2,8 @@
 esphome:
   name: andrew_office_closet
   friendly_name: Andrew Office Closet Light
-  platform: ESP8266
+
+esp8266:
   board: esp01_1m
 
 substitutions:

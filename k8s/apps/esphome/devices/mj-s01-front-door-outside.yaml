@@ -2,7 +2,8 @@
 esphome:
   name: front_door_outside
   friendly_name: Front Door Outside Light
-  platform: ESP8266
+
+esp8266:
   board: esp01_1m
 
 substitutions:

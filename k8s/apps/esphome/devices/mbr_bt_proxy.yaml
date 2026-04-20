@@ -1,6 +1,7 @@
 esphome:
   name: mbr-bt-proxy
-  platform: ESP32
+
+esp32:
   board: esp-wrover-kit
 
 ethernet:
