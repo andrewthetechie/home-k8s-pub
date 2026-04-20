@@ -19,7 +19,6 @@
 #include "esphome/components/esp32_touch/esp32_touch.h"
 #include "esphome/components/light/automation.h"
 #include "esphome/components/script/script.h"
-#include "esphome/core/application.h"
 #include "esphome/core/automation.h"
 #include "esphome/core/base_automation.h"
 #include "esphome/core/log.h"
@@ -32,8 +31,8 @@ using ScriptExecuteAction = script::ScriptExecuteAction<script::Script<>>;
 using ScriptStopAction = script::ScriptStopAction<script::SingleScript<>>;
 
 class TouchDimmer {
-  static constexpr uint64_t dimStartDelayMs = 350;
-  static constexpr uint64_t dimPeriodMs = 10;
+  static constexpr uint32_t dimStartDelayMs = 350;
+  static constexpr uint32_t dimPeriodMs = 10;
   static constexpr auto LOGTAG = "TouchDimming";
 
   std::string name;
@@ -69,7 +68,6 @@ class TouchDimmer {
     // Wait to see if the 'touch' lasts for long enough:
     auto *startDelayAction = new DelayAction<>();
     startDelayAction->set_delay(dimStartDelayMs + 50);  // Add a little margin.
-    App.register_component(startDelayAction);
 
     // Toggle the dimming direction:
     LambdaAction<> *toggleDimDirLambda = new LambdaAction<>([&]() -> void {
@@ -92,7 +90,6 @@ class TouchDimmer {
     // Perform a dim step every `dimPeriodMs` milliseconds:
     auto *dimDelayAction = new DelayAction<>();
     dimDelayAction->set_delay(dimPeriodMs);
-    App.register_component(dimDelayAction);
 
     // Do the actual dimming:
     LambdaAction<> *dimStepLambda = new LambdaAction<>([&]() -> void {
@@ -120,7 +117,7 @@ class TouchDimmer {
 
     // Construct the script:
     scriptDimStart = new script::SingleScript<>();
-    scriptDimStart->set_name(name + "__script_dimming_start");
+    scriptDimStart->set_name(LOG_STR("touch_dimming_start"));
 
     auto *dimStartAutom = new Automation<>(scriptDimStart);
     dimStartAutom->add_actions({startDelayAction, toggleDimDirLambda, whileAction});
@@ -133,7 +130,7 @@ class TouchDimmer {
 
     // Construct the script:
     scriptDimStop = new script::SingleScript<>();
-    scriptDimStop->set_name(name + "__script_dimming_stop");
+    scriptDimStop->set_name(LOG_STR("touch_dimming_stop"));
 
     auto *dimStopAutom = new Automation<>(scriptDimStop);
     dimStopAutom->add_actions({scriptStopAction});
