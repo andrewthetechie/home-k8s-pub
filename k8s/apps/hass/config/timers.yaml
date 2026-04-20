@@ -1,0 +1,4 @@
+# Default duration is overridden on each timer.start call.
+front_outside_manual_off:
+  name: Front outside manual release
+  duration: "02:00:00"

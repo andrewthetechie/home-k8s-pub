@@ -37,6 +37,8 @@ spotcast: !include spotcast.yaml
 rest_command: !include rest_commands.yaml
 climate: !include climate.yaml
 input_boolean: !include input_boolean.yaml
+timer: !include timers.yaml
+template: !include templates.yaml
 cloud:
 history:
 logger:

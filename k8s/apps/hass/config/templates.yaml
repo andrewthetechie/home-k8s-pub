@@ -1,0 +1,12 @@
+# Included as `template: !include templates.yaml` from configuration.yaml
+- binary_sensor:
+    - name: Front exterior motion combined
+      unique_id: front_exterior_motion_combined_v1
+      device_class: motion
+      state: >
+        {% if is_state('binary_sensor.front_door_motion', 'on')
+           or is_state('binary_sensor.garage_eaves_motion', 'on') %}
+        on
+        {% else %}
+        off
+        {% endif %}

@@ -10,3 +10,7 @@ server_room_ac:
   name: Server Room AC Switch
   icon: "mdi:air-conditioner"
   initial: false
+front_outside_automation_active:
+  name: Front outside lights held by motion/door automation
+  icon: "mdi:lightbulb-auto"
+  initial: false

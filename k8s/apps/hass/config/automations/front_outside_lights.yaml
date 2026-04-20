@@ -1,0 +1,252 @@
+# Front porch + garage outside (light.front_outside_lights).
+#
+# Motion / doors: night only, suppressed while the manual-release timer is
+# running (user turned lights on via switch, dashboard, or voice).
+#
+# Manual release: when the group turns on without automation owning it,
+# start a timer — 15 min while sun is up, 2 h after sundown until sunrise.
+# Physical wall switches always sync the group on/off (on anytime).
+- id: "fo_sw_on_v1"
+  alias: "Front outside lights — wall switches on"
+  description: >-
+    Either outside wall switch on turns on the whole group at any time of day.
+  triggers:
+    - trigger: state
+      entity_id:
+        - switch.front_door_outside_front_door_outside_light
+        - switch.garage_outside_garage_outside_light
+      to: "on"
+  actions:
+    - action: light.turn_on
+      target:
+        entity_id: light.front_outside_lights
+  mode: single
+
+- id: "fo_sw_off_v1"
+  alias: "Front outside lights — wall switches off"
+  description: >-
+    Either wall switch off turns off the group and cancels a pending manual
+    release timer.
+  triggers:
+    - trigger: state
+      entity_id:
+        - switch.front_door_outside_front_door_outside_light
+        - switch.garage_outside_garage_outside_light
+      to: "off"
+  actions:
+    - action: timer.cancel
+      target:
+        entity_id: timer.front_outside_manual_off
+    - action: light.turn_off
+      target:
+        entity_id: light.front_outside_lights
+  mode: single
+
+- id: "fo_manual_timer_start_v1"
+  alias: "Front outside lights — start manual release timer"
+  description: >-
+    Dashboard, Google Home, or switches (via group on): 15 min daytime, 2 h
+    night, unless motion/door automation currently owns the light.
+  triggers:
+    - trigger: state
+      entity_id: light.front_outside_lights
+      to: "on"
+  conditions:
+    - condition: state
+      entity_id: input_boolean.front_outside_automation_active
+      state: "off"
+  actions:
+    - if:
+        - condition: state
+          entity_id: sun.sun
+          state: above_horizon
+      then:
+        - action: timer.start
+          target:
+            entity_id: timer.front_outside_manual_off
+          data:
+            duration:
+              minutes: 15
+      else:
+        - action: timer.start
+          target:
+            entity_id: timer.front_outside_manual_off
+          data:
+            duration:
+              hours: 2
+  mode: restart
+
+- id: "fo_manual_timer_done_v1"
+  alias: "Front outside lights — manual timer elapsed"
+  description: Turn the group off when the manual release timer completes.
+  triggers:
+    - trigger: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.front_outside_manual_off
+  actions:
+    - if:
+        - condition: state
+          entity_id: light.front_outside_lights
+          state: "on"
+      then:
+        - action: light.turn_off
+          target:
+            entity_id: light.front_outside_lights
+  mode: single
+
+- id: "fo_light_off_cancel_timer_v1"
+  alias: "Front outside lights — cancel manual timer when group turns off"
+  triggers:
+    - trigger: state
+      entity_id: light.front_outside_lights
+      to: "off"
+  actions:
+    - action: timer.cancel
+      target:
+        entity_id: timer.front_outside_manual_off
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.front_outside_automation_active
+  mode: single
+
+- id: "fo_motion_v1"
+  alias: "Front outside lights — motion (cameras)"
+  description: >-
+    Front door and garage eaves camera motion. Night only; skipped while a
+    manual release timer is running. On while motion is active; off 5 minutes
+    after the combined motion sensor stays off.
+  triggers:
+    - trigger: state
+      entity_id: binary_sensor.front_exterior_motion_combined
+      to: "on"
+  conditions:
+    - condition: sun
+      after: sunset
+      before: sunrise
+    - condition: state
+      entity_id: timer.front_outside_manual_off
+      state: "idle"
+  actions:
+    - action: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.front_outside_automation_active
+    - action: light.turn_on
+      target:
+        entity_id: light.front_outside_lights
+    - wait_for_trigger:
+        - trigger: state
+          entity_id: binary_sensor.front_exterior_motion_combined
+          to: "off"
+          for:
+            hours: 0
+            minutes: 5
+            seconds: 0
+    - action: light.turn_off
+      target:
+        entity_id: light.front_outside_lights
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.front_outside_automation_active
+  mode: restart
+
+- id: "fo_garage_door_v1"
+  alias: "Front outside lights — garage door"
+  description: >-
+    After dark, opening the garage door turns on the group; lights go off 5
+    minutes after the door closes. Skipped while a manual release timer is
+    running.
+  triggers:
+    - trigger: state
+      entity_id: binary_sensor.0x00158d00099054b0_contact
+      from: "off"
+      to: "on"
+  conditions:
+    - condition: sun
+      after: sunset
+      before: sunrise
+    - condition: state
+      entity_id: timer.front_outside_manual_off
+      state: "idle"
+  actions:
+    - action: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.front_outside_automation_active
+    - action: light.turn_on
+      target:
+        entity_id: light.front_outside_lights
+    - wait_for_trigger:
+        - trigger: state
+          entity_id: binary_sensor.0x00158d00099054b0_contact
+          from: "on"
+          to: "off"
+    - delay:
+        hours: 0
+        minutes: 5
+        seconds: 0
+    - action: light.turn_off
+      target:
+        entity_id: light.front_outside_lights
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.front_outside_automation_active
+  mode: restart
+
+- id: "fo_front_door_v1"
+  alias: "Front outside lights — front door"
+  description: >-
+    After dark, opening the front door turns on outside lights. If kitchen and
+    living lights are off, also turns on the front inside switch. Lights go off
+    5 minutes after the front door closes. Skipped while a manual release timer
+    is running.
+  triggers:
+    - trigger: state
+      entity_id: binary_sensor.front_door_sensor_contact
+      from: "off"
+      to: "on"
+  conditions:
+    - condition: sun
+      after: sunset
+      before: sunrise
+    - condition: state
+      entity_id: timer.front_outside_manual_off
+      state: "idle"
+  actions:
+    - action: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.front_outside_automation_active
+    - action: light.turn_on
+      target:
+        entity_id: light.front_outside_lights
+    - if:
+        - condition: and
+          conditions:
+            - condition: state
+              entity_id: light.kitchen_lights
+              state: "off"
+            - condition: state
+              entity_id: light.living_room_lights
+              state: "off"
+            - condition: state
+              entity_id: light.living_room_fan_light
+              state: "off"
+      then:
+        - action: switch.turn_on
+          target:
+            entity_id: switch.front_door_inside_front_door_inside_light
+    - wait_for_trigger:
+        - trigger: state
+          entity_id: binary_sensor.front_door_sensor_contact
+          from: "on"
+          to: "off"
+    - delay:
+        hours: 0
+        minutes: 5
+        seconds: 0
+    - action: light.turn_off
+      target:
+        entity_id: light.front_outside_lights
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.front_outside_automation_active
+  mode: restart

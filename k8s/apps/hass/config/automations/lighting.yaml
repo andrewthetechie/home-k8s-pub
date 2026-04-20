@@ -111,54 +111,6 @@
       target:
         device_id: 9bb558f103cdb50f6ccc9f3e22b7565b
   mode: single
-- id: "1702170482832"
-  alias: Front Door Outside Light Switch
-  description: Turns on Garage Outside lights when front lights are turned on
-  trigger:
-    - platform: device
-      type: turned_on
-      device_id: 9c44d400c001402e0b9594c3bfe35f0f
-      entity_id: 46b3ac95efbc03f7857a6e1233a68b0d
-      domain: switch
-  condition: []
-  action:
-    - service: switch.turn_on
-      data: {}
-      target:
-        device_id: c5e27b8ae4f14d94dd4639eb65da4bf3
-  mode: single
-- id: "1702170644129"
-  alias: Front Door Outside Lights Off
-  description: Turns off all outside lights when the front door siwtch is turned off
-  trigger:
-    - platform: device
-      type: turned_off
-      device_id: 3eba65c05e61fef83bfa0547f1956962
-      entity_id: 21ff95cb2cac1c4ca2ead2adfc71eb56
-      domain: switch
-  condition: []
-  action:
-    - service: switch.turn_off
-      data: {}
-      target:
-        device_id: c5e27b8ae4f14d94dd4639eb65da4bf3
-  mode: single
-- id: "1702171178637"
-  alias: Front Door Outside Light On
-  description: Turn on the outside lights with the front door switch
-  trigger:
-    - platform: device
-      type: turned_on
-      device_id: 3eba65c05e61fef83bfa0547f1956962
-      entity_id: 21ff95cb2cac1c4ca2ead2adfc71eb56
-      domain: switch
-  condition: []
-  action:
-    - service: switch.turn_on
-      data: {}
-      target:
-        device_id: c5e27b8ae4f14d94dd4639eb65da4bf3
-  mode: single
 - id: "1702178730678"
   alias: Garage - Lights Off 2 hours
   description: Turn off Inside Garage Lights after 2 hours
@@ -183,20 +135,9 @@
   alias: Turn off Outside Lights after 3am
   description: Outside lights will get turns off after 3am when they've been on 30 minutes
   trigger:
-    - platform: device
-      type: turned_on
-      device_id: c5e27b8ae4f14d94dd4639eb65da4bf3
-      entity_id: a6fd7ba9a4db35a32ff9975a17b02cab
-      domain: switch
-      for:
-        hours: 0
-        minutes: 30
-        seconds: 0
-    - platform: device
-      type: turned_on
-      device_id: 3eba65c05e61fef83bfa0547f1956962
-      entity_id: 21ff95cb2cac1c4ca2ead2adfc71eb56
-      domain: switch
+    - platform: state
+      entity_id: light.front_outside_lights
+      to: "on"
       for:
         hours: 0
         minutes: 30
@@ -213,15 +154,10 @@
         - fri
         - sat
   action:
-    - service: switch.turn_off
+    - service: light.turn_off
       data: {}
       target:
-        device_id:
-          - c5e27b8ae4f14d94dd4639eb65da4bf3
-    - service: switch.turn_off
-      data: {}
-      target:
-        device_id: 3eba65c05e61fef83bfa0547f1956962
+        entity_id: light.front_outside_lights
   mode: single
 - id: "1723679348519"
   alias: Laundry Hall Light Motion
@@ -430,38 +366,6 @@
     - service: script.holiday_lights_off
       data: {}
   mode: single
-- id: "1726286514731"
-  alias: Garage Door Triggers Outside Lights After Dark
-  description: ""
-  trigger:
-    - type: opened
-      platform: device
-      device_id: 7dae4a8d5cbcc4b29b8dbba9c82a69e1
-      entity_id: 32c87f38e5630da372418730c22cda75
-      domain: binary_sensor
-  condition:
-    - condition: sun
-      before: sunrise
-      after: sunset
-  action:
-    - service: switch.turn_on
-      data: {}
-      target:
-        device_id:
-          - c5e27b8ae4f14d94dd4639eb65da4bf3
-          - 3eba65c05e61fef83bfa0547f1956962
-    - delay:
-        hours: 0
-        minutes: 10
-        seconds: 0
-        milliseconds: 0
-    - service: switch.turn_off
-      data: {}
-      target:
-        device_id:
-          - c5e27b8ae4f14d94dd4639eb65da4bf3
-          - 3eba65c05e61fef83bfa0547f1956962
-  mode: single
 - id: "1729724161281"
   alias: Server Room Light On
   description: ""
@@ -669,34 +573,6 @@
           device_id: 553a209d5c875a36d62352466f0705cf
           entity_id: 6fb220d1b8aa9f2f47029e0bc559e4d5
           domain: switch
-  mode: single
-- id: "173a2106209512"
-  alias: Front Door Motion Detected - Turn on Lights
-  description: "1734908362620"
-  triggers:
-    - type: turned_on
-      device_id: 37a04f3462e2173a8a54bb496d4bc63f
-      entity_id: 64a868d7b5d577378538946e29c8f816
-      domain: binary_sensor
-      trigger: device
-  conditions:
-    - condition: sun
-      before: sunrise
-      after: sunset
-  actions:
-    - type: turn_on
-      device_id: 3eba65c05e61fef83bfa0547f1956962
-      entity_id: 1655257281ca57b25336a54eb80b8943
-      domain: light
-    - delay:
-        hours: 0
-        minutes: 10
-        seconds: 0
-        milliseconds: 0
-    - type: turn_off
-      device_id: 3eba65c05e61fef83bfa0547f1956962
-      entity_id: 1655257281ca57b25336a54eb80b8943
-      domain: light
   mode: single
 - id: "1735427612125"
   alias: MBR Switch - Sarah Bedside

@@ -32,7 +32,9 @@ configMapGenerator:
       - config/rest_commands.yaml
       - config/climate.yaml
       - config/input_boolean.yaml
+      - config/timers.yaml
       - config/repo_data.yaml
+      - config/templates.yaml
     name: hass-configs
     options:
       disableNameSuffixHash: true
@@ -52,6 +54,7 @@ configMapGenerator:
       - config/automations/radio_rack.yaml
       - config/automations/kitchen.yaml
       - config/automations/holiday.yaml
+      - config/automations/front_outside_lights.yaml
     name: hass-automations
     options:
       disableNameSuffixHash: true
