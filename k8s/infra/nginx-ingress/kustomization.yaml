@@ -16,3 +16,4 @@ helmCharts:
       controller:
         kind: daemonset
         setAsDefaultIngress: true
+        enableSnippets: true
