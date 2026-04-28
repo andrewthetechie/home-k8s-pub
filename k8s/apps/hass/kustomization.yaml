@@ -36,12 +36,12 @@ configMapGenerator:
     name: hass-configs
     options:
       disableNameSuffixHash: true
-  - files:
-      - config/www/more-info-card.js
-      - config/www/slider-entity-row.js
-    name: hass-www
-    options:
-      disableNameSuffixHash: true
+  # - files:
+  #     - config/www/more-info-card.js
+  #     - config/www/slider-entity-row.js
+  #   name: hass-www
+  #   options:
+  #     disableNameSuffixHash: true
   - files:
       - config/automations/alerts.yaml
       - config/automations/climate.yaml
