@@ -33,7 +33,6 @@ script: !include scripts.yaml
 scene: !include scenes.yaml
 mqtt: !include mqtt.yaml
 recorder: !include recorder.yaml
-spotcast: !include spotcast.yaml
 rest_command: !include rest_commands.yaml
 climate: !include climate.yaml
 input_boolean: !include input_boolean.yaml

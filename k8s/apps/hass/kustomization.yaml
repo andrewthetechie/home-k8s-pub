@@ -5,7 +5,6 @@ namespace: hass
 resources:
   - namespace.yaml
   - postgres.yaml
-  - sealed-spotcast-secret.yaml
   - sealed-alarm-code-secret.yaml
   - secret-store.yaml
   - templated-secret.yaml

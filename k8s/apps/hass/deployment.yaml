@@ -24,20 +24,7 @@ spec:
     spec:
       automountServiceAccountToken: true
       containers:
-        - env:
-            - name: spotcast_sp_dc
-              valueFrom:
-                secretKeyRef:
-                  key: sp_dc
-                  name: spotcast-secrets
-            - name: spotcast_sp_key
-              valueFrom:
-                secretKeyRef:
-                  key: sp_key
-                  name: spotcast-secrets
-            - name: TZ
-              value: UTC
-          image: ghcr.io/home-assistant/home-assistant:2024.11
+        - image: ghcr.io/home-assistant/home-assistant:2024.12
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 3
@@ -101,7 +88,7 @@ spec:
           command:
             - /bin/sh
             - /scripts/init-hass.sh
-          image: python:3
+          image: python:3.13
           imagePullPolicy: IfNotPresent
           name: copy
           resources: {}
