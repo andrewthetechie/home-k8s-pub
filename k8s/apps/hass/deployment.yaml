@@ -24,7 +24,7 @@ spec:
     spec:
       automountServiceAccountToken: true
       containers:
-        - image: ghcr.io/home-assistant/home-assistant:2025.10
+        - image: ghcr.io/home-assistant/home-assistant:2026.2
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 3
