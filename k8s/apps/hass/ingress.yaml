@@ -8,7 +8,7 @@ metadata:
     nginx.org/websocket-services: hass-home-assistant
     nginx.org/proxy-buffering: "false"
     nginx.org/location-snippets: |
-      proxy_set_header Accept-Encoding "gzip";
+      proxy_set_header Accept-Encoding "identity";
     nginx.org/client-max-body-size: "0"
     nginx.org/proxy-connect-timeout: "180"
     nginx.org/proxy-read-timeout: "180"
