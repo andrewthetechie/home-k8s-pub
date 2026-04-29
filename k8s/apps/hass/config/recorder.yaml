@@ -2,6 +2,8 @@ db_url: !secret psql_string
 db_retry_wait: 15 # Wait 15 seconds before retrying
 # Batch commits (default 5s). 0 commits every flush and explodes WAL/state_attributes churn.
 commit_interval: 30
+db_max_open_conns: 5
+db_max_idle_conns: 2
 auto_purge: true
 auto_repack: true
 # 90d is fine if purge runs and writes are batched (commit_interval); monitor DB size and tighten excludes if needed.

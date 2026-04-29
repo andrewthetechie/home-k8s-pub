@@ -12,6 +12,14 @@ spec:
   teamId: "hass"
   postgresql:
     version: "15"
+    parameters:
+      shared_buffers: 256MB
+      work_mem: 16MB
+      tcp_keepalives_idle: "30"
+      tcp_keepalives_interval: "10"
+      tcp_keepalives_count: "5"
+      idle_in_transaction_session_timeout: "60000"
+      random_page_cost: "1.1"
   numberOfInstances: 1
   enableMasterLoadBalancer: false
   enableConnectionPooler: false
@@ -25,7 +33,7 @@ spec:
   resources:
     requests:
       cpu: 100m
-      memory: 100Mi
+      memory: 256Mi
     limits:
-      cpu: 500m
-      memory: 500Mi
+      cpu: "1"
+      memory: 1Gi

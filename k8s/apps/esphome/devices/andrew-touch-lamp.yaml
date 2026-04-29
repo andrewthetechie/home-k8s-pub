@@ -40,6 +40,8 @@ binary_sensor:
     name: "Touch Pad"
     pin: GPIO27
     threshold: 700
+    filters:
+      - delayed_on: 50ms
     on_click:
       - min_length: 15ms
         max_length: 1000ms
