@@ -1,0 +1,61 @@
+controllers:
+  discount-bandit:
+    strategy: RollingUpdate
+    containers:
+      app:
+        image:
+          repository: cybrarist/discount-bandit
+          tag: v4.0.4-beta
+          pullPolicy: IfNotPresent
+        env:
+          DB_CONNECTION: sqlite
+          APP_TIMEZONE: America/Chicago
+          THEME_COLOR: Red
+          APP_URL: "https://discounts.herrington.services"
+          ASSET_URL: "https://discounts.herrington.services"
+          CRON: "*/5 * * * *"
+        envFrom:
+          - secretRef:
+              name: discount-bandit-secret
+
+service:
+  discount-bandit:
+    controller: discount-bandit
+    ports:
+      http:
+        port: 80
+
+ingress:
+  discount-bandit:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/description: Track product deals and discounts
+      gethomepage.dev/enabled: "true"
+      gethomepage.dev/group: Misc
+      gethomepage.dev/icon: mdi-sale
+      gethomepage.dev/name: Discount Bandit
+    hosts:
+      - host: discounts.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: discount-bandit
+              port: http
+    tls:
+      - secretName: discount-bandit
+        hosts:
+          - discounts.herrington.services
+
+persistence:
+  database:
+    enabled: true
+    existingClaim: discount-bandit-database
+    globalMounts:
+      - path: /app/database/sqlite
+  database-dir:
+    enabled: true
+    type: emptyDir
+    globalMounts:
+      - path: /app/database

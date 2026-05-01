@@ -8,6 +8,6 @@ txtOwnerId: nauvoo
 # logs when ExternalDNS attempts to create TXT records.
 registry: noop
 extraArgs:
-  # Change this to the actual address of your Pi-hole web server
-  pihole-server: http://10.10.99.2
+  # Pi-hole v6 server
+  pihole-server: http://1.pihole.herrington.services
 extraEnvVarsSecret: pihole-password

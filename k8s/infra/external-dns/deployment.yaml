@@ -24,11 +24,12 @@ spec:
     spec:
       securityContext:
         fsGroup: 1001
+        runAsNonRoot: true
         runAsUser: 1001
       serviceAccountName: external-dns
       containers:
         - name: external-dns
-          image: docker.io/bitnami/external-dns:0.13.6-debian-11-r0
+          image: registry.k8s.io/external-dns/external-dns:v0.21.0
           imagePullPolicy: "IfNotPresent"
           args:
             # Generic arguments
@@ -37,15 +38,23 @@ spec:
             - --log-format=text
             - --domain-filter=nauvoo.herrington.services
             - --domain-filter=herrington.services
-            - --policy=upsert-only
-            - --provider=pihole
-            - --registry=noop
             - --interval=1m
             - --txt-owner-id=nauvoo
             - --source=service
             - --source=ingress
-              # Extra arguments
-            - --pihole-server=https://1.pihole.herrington.services/
+            # Extra arguments
+            # Pihole only supports A/AAAA/CNAME records so there is no mechanism to track ownership.
+            # You don't need to set this flag, but if you leave it unset, you will receive warning
+            # logs when ExternalDNS attempts to create TXT records.
+            - --registry=noop
+            # IMPORTANT: If you have records that you manage manually in Pi-hole, set
+            # the policy to upsert-only so they do not get deleted.
+            - --policy=upsert-only
+            - --provider=pihole
+            # Switch to pihole V6 API
+            - --pihole-api-version=6
+            # Change this to the actual address of your Pi-hole web server
+            - --pihole-server=http://1.pihole.herrington.services
           envFrom:
             - secretRef:
                 name: pihole-password

@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: discount-bandit
+
+resources:
+  - namespace.yaml
+  - pvc.yaml
+  - sealedsecret-discount-bandit.yaml
+
+helmCharts:
+  - name: app-template
+    releaseName: discount-bandit
+    namespace: discount-bandit
+    version: 4.3.0
+    repo: https://bjw-s-labs.github.io/helm-charts
+    valuesFile: values.yaml
+    kubeVersion: "1.28.1"
