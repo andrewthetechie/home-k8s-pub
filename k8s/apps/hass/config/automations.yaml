@@ -90,3 +90,28 @@
       entity_id: 8786725c5d003cda803fcf4eaf81e1b0
       domain: switch
   mode: single
+- id: "1777666400001"
+  alias: Bedroom Curtains - Close After Dark
+  description: >-
+    If it is after dark and the bedroom curtains are open, close them
+    automatically.
+  triggers:
+    - trigger: sun
+      event: sunset
+  conditions:
+    - condition: or
+      conditions:
+        - condition: state
+          entity_id: cover.curtain_3_004a
+          state: "open"
+        - condition: state
+          entity_id: cover.curtain_3_6c6d
+          state: "open"
+  actions:
+    - action: cover.close_cover
+      data: {}
+      target:
+        entity_id:
+          - cover.curtain_3_004a
+          - cover.curtain_3_6c6d
+  mode: single
