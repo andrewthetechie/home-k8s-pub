@@ -12,3 +12,4 @@ helmCharts:
     version: 4.6.2
     repo: https://bjw-s-labs.github.io/helm-charts
     valuesFile: values.yaml
+    kubeVersion: "1.28.1"
