@@ -1,0 +1,35 @@
+defaultPodOptions:
+  dnsConfig:
+    nameservers:
+      - 10.10.0.35
+    options:
+      - name: ndots
+        value: "2"
+    searches:
+      - herrington.services
+  dnsPolicy: None 
+controllers:
+  nebulasync:
+    strategy: RollingUpdate
+    containers:
+      app:
+        image:
+          repository: ghcr.io/lovelaze/nebula-sync
+          tag: v0.11.1
+          pullPolicy: IfNotPresent
+        env:
+          FULL_SYNC: "true"
+          RUN_GRAVITY: "true"
+          CRON: "0/5 * * * *"
+          NS_DEBUG: "true"
+          CLIENT_SKIP_TLS_VERIFICATION: "true"
+          PRIMARY:
+            valueFrom:
+              secretKeyRef:
+                name: nebulasync
+                key: PRIMARY
+          REPLICAS:
+            valueFrom:
+              secretKeyRef:
+                name: nebulasync
+                key: REPLICAS
