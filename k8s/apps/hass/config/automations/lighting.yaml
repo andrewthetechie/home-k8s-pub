@@ -491,7 +491,11 @@
   mode: single
 - id: "1731720478003"
   alias: Living Room Lights Toggle
-  description: ""
+  description: >-
+    Tap down (same gesture as "off" on single-action switches) to turn living
+    room lights on when they are already off. Requires the living room load to
+    have been off for a few seconds so a real "turn off from on" press does not
+    immediately re-trigger this automation.
   triggers:
     - domain: mqtt
       device_id: 6152020e0378864c4a20113579228fc7
@@ -504,6 +508,10 @@
       device_id: 6152020e0378864c4a20113579228fc7
       entity_id: 523ea3f7acdbc9ba1dea2502aa888eb2
       domain: light
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 3
   actions:
     - action: light.turn_on
       metadata: {}
