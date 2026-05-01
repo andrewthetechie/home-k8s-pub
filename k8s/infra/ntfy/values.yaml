@@ -1,0 +1,100 @@
+controllers:
+  ntfy:
+    strategy: RollingUpdate
+    containers:
+      app:
+        command:
+          - /bin/sh
+          - -c
+          - |
+            export NTFY_DATABASE_URL="postgresql://${NTFY_PG_USER}:${NTFY_PG_PASSWORD}@ntfy-db.ntfy/ntfy?sslmode=require"
+            exec ntfy serve
+        image:
+          repository: binwiederhier/ntfy
+          tag: v2.22
+          pullPolicy: IfNotPresent
+        env:
+          NTFY_BASE_URL: "https://ntfy.herrington.services"
+          NTFY_BEHIND_PROXY: "true"
+          NTFY_AUTH_DEFAULT_ACCESS: "deny-all"
+          NTFY_ENABLE_LOGIN: "true"
+          NTFY_REQUIRE_LOGIN: "true"
+          NTFY_ATTACHMENT_CACHE_DIR: "/var/cache/ntfy/attachments"
+          NTFY_ATTACHMENT_FILE_SIZE_LIMIT: "5m"
+          NTFY_ATTACHMENT_TOTAL_SIZE_LIMIT: "1g"
+          NTFY_ATTACHMENT_EXPIRY_DURATION: "24h"
+          NTFY_CACHE_DURATION: "24h"
+          NTFY_UPSTREAM_BASE_URL: "https://ntf.herrington.services"
+          NTFY_AUTH_ACCESS: "*:up*:write-only"
+          NTFY_WEB_PUSH_PUBLIC_KEY:
+            valueFrom:
+              secretKeyRef:
+                name: ntfy-keys
+                key: NTFY_WEB_PUSH_PUBLIC_KEY
+          NTFY_WEB_PUSH_PRIVATE_KEY:
+            valueFrom:
+              secretKeyRef:
+                name: ntfy-keys
+                key: NTFY_WEB_PUSH_PRIVATE_KEY
+          NTFY_WEB_PUSH_EMAIL_ADDRESS:
+            valueFrom:
+              secretKeyRef:
+                name: ntfy-keys
+                key: NTFY_WEB_PUSH_EMAIL_ADDRESS
+          NTFY_AUTH_USERS:
+            valueFrom:
+              secretKeyRef:
+                name: ntfy-keys
+                key: NTFY_AUTH_USERS
+          NTFY_PG_USER:
+            valueFrom:
+              secretKeyRef:
+                name: ntfy-owner-user.ntfy-db.credentials.postgresql.acid.zalan.do
+                key: username
+          NTFY_PG_PASSWORD:
+            valueFrom:
+              secretKeyRef:
+                name: ntfy-owner-user.ntfy-db.credentials.postgresql.acid.zalan.do
+                key: password
+
+service:
+  ntfy:
+    controller: ntfy
+    ports:
+      http:
+        port: 80
+
+ingress:
+  ntfy:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/description: Push notification service
+      gethomepage.dev/enabled: "true"
+      gethomepage.dev/group: Infra
+      gethomepage.dev/icon: mdi-bell
+      gethomepage.dev/name: Ntfy
+      uptimekuma.io/monitor: "true"
+      uptimekuma.io/name: "Ntfy"
+      uptimekuma.io/type: "http"
+      uptimekuma.io/interval: "120"
+    hosts:
+      - host: ntfy.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: ntfy
+              port: http
+    tls:
+      - secretName: ntfy-tls
+        hosts:
+          - ntfy.herrington.services
+
+persistence:
+  attachments:
+    type: persistentVolumeClaim
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    globalMounts:
+      - path: /var/cache/ntfy/attachments

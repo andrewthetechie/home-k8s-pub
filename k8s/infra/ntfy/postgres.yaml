@@ -1,0 +1,27 @@
+apiVersion: acid.zalan.do/v1
+kind: postgresql
+metadata:
+  name: ntfy-db
+  namespace: ntfy
+  labels:
+    team: ntfy
+spec:
+  teamId: ntfy
+  numberOfInstances: 1
+  postgresql:
+    version: "17"
+  volume:
+    size: 10Gi
+    storageClass: freenas-iscsi-ssd-csi
+  enableMasterLoadBalancer: false
+  enableConnectionPooler: false
+  preparedDatabases:
+    ntfy:
+      defaultUsers: true
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
