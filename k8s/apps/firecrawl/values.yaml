@@ -1,0 +1,75 @@
+# Firecrawl Helm Values — vendored chart v0.2.0
+# https://github.com/firecrawl/firecrawl/tree/main/examples/kubernetes/firecrawl-helm
+
+# Use official x86_64 images
+image:
+  repository: ghcr.io/firecrawl/firecrawl
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+playwright:
+  repository: ghcr.io/firecrawl/playwright-service
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+# Disable bundled nuq-postgres — we use PostgresOperator instead
+nuqPostgres:
+  enabled: false
+
+# Reduce API resources for homelab capacity
+api:
+  replicaCount: 1
+  resources:
+    requests:
+      memory: "2G"
+      cpu: "500m"
+    limits:
+      memory: "3G"
+      cpu: "1000m"
+
+# Enable RabbitMQ (bundled)
+rabbitmq:
+  enabled: true
+
+# Enable extract worker
+extractWorker:
+  enabled: true
+
+# Enable nuq prefetch worker
+nuqPrefetchWorker:
+  enabled: true
+
+# Reduce nuq-worker replicas and resources (cluster capacity constraints)
+nuqWorker:
+  replicaCount: 2
+  resources:
+    requests:
+      memory: "1G"
+      cpu: "500m"
+    limits:
+      memory: "2G"
+      cpu: "1000m"
+
+# Enable resource limits
+resources:
+  enabled: true
+
+# Configuration — NUQ_DATABASE_URL is set via kustomize patch
+config:
+  USE_DB_AUTHENTICATION: "false"
+  IS_KUBERNETES: "true"
+  ENV: "production"
+  LOGGING_LEVEL: "INFO"
+  PORT: "3002"
+  HOST: "0.0.0.0"
+  NUM_WORKERS_PER_QUEUE: "8"
+  NUQ_DATABASE_URL: ""
+  NUQ_DATABASE_URL_LISTEN: ""
+
+secret:
+  BULL_AUTH_KEY: ""
+
+service:
+  api:
+    type: ClusterIP
+    port: 3002

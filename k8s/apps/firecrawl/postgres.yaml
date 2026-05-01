@@ -1,0 +1,53 @@
+apiVersion: acid.zalan.do/v1
+kind: postgresql
+metadata:
+  name: firecrawl-db
+  namespace: firecrawl
+  labels:
+    team: firecrawl
+spec:
+  teamId: firecrawl
+  numberOfInstances: 2
+  postgresql:
+    version: "17"
+    parameters:
+      # Pre-configure parameters that nuq.sql otherwise sets via ALTER SYSTEM SET.
+      # Setting them here avoids needing a DB restart after the init job runs.
+      checkpoint_completion_target: "0.9"
+      checkpoint_timeout: "15min"
+      max_wal_size: "16GB"
+      min_wal_size: "4GB"
+      bgwriter_lru_maxpages: "1000"
+      bgwriter_lru_multiplier: "4"
+      bgwriter_delay: "50ms"
+      bgwriter_flush_after: "512kB"
+      effective_io_concurrency: "200"
+      maintenance_io_concurrency: "100"
+      wal_buffers: "64MB"
+      wal_writer_delay: "10ms"
+      wal_writer_flush_after: "1MB"
+      commit_delay: "10"
+      commit_siblings: "5"
+      # pg_cron: allow extension to be created in the firecrawl database
+      # instead of the default postgres database.
+      cron.database_name: "firecrawl"
+  volume:
+    size: 20Gi
+    storageClass: freenas-iscsi-ssd-csi
+  enableMasterLoadBalancer: false
+  enableConnectionPooler: false
+  preparedDatabases:
+    firecrawl:
+      defaultUsers: true
+      extensions:
+        pgcrypto: public
+      schemas:
+        public:
+          defaultRoles: true
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi

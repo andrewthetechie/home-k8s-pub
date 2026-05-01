@@ -1,0 +1,59 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: firecrawl-db-init
+  namespace: firecrawl
+  labels:
+    app: firecrawl
+    job: db-init
+spec:
+  backoffLimit: 6
+  template:
+    metadata:
+      labels:
+        app: firecrawl
+        job: db-init
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: init
+          image: postgres:17-alpine
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Waiting for database to be ready..."
+              until pg_isready -h firecrawl-db -p 5432 -U postgres; do
+                echo "Database not ready yet, waiting..."
+                sleep 2
+              done
+              echo "Database is ready. Running nuq.sql schema..."
+              PGPASSWORD=$POSTGRES_PASSWORD psql \
+                -h firecrawl-db \
+                -p 5432 \
+                -U postgres \
+                -d firecrawl \
+                -f /schema/nuq.sql
+              echo "Schema initialization complete."
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres.firecrawl-db.credentials.postgresql.acid.zalan.do
+                  key: password
+            - name: PGHOST
+              value: firecrawl-db
+            - name: PGPORT
+              value: "5432"
+            - name: PGDATABASE
+              value: firecrawl
+            - name: PGUSER
+              value: postgres
+          volumeMounts:
+            - name: schema
+              mountPath: /schema
+              readOnly: true
+      volumes:
+        - name: schema
+          configMap:
+            name: firecrawl-nuq-schema

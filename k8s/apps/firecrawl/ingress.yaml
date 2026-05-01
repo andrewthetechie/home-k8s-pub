@@ -1,0 +1,34 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: firecrawl
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    gethomepage.dev/description: Web scraping and crawling API
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/group: AI
+    gethomepage.dev/icon: mdi-spider-web
+    gethomepage.dev/name: Firecrawl
+    gethomepage.dev/weight: "10"
+    uptimekuma.io/monitor: "true"
+    uptimekuma.io/name: "Firecrawl"
+    uptimekuma.io/type: http
+    uptimekuma.io/interval: "120"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - firecrawl.herrington.services
+      secretName: firecrawl-tls-cert
+  rules:
+    - host: firecrawl.herrington.services
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: firecrawl-firecrawl-api
+                port:
+                  number: 3002
