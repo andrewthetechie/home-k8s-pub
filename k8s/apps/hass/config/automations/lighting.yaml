@@ -481,6 +481,9 @@
       device_id: 553a209d5c875a36d62352466f0705cf
       entity_id: 5c265e66f4ce4f820a31b1bf755a990c
       domain: light
+    - condition: state
+      entity_id: input_boolean.bedtime
+      state: "on"
   actions:
     - action: light.turn_off
       metadata: {}
@@ -679,6 +682,49 @@
       target:
         device_id: 1aff6d81460377c7c1b7a72e85f95156
   mode: single
+- id: "1777666082518"
+  alias: Bedroom Motion Nightlight
+  description: >-
+    When room occupancy goes from unoccupied to occupied after dark while bed is
+    unoccupied and bedtime is not active, turn on under-bed lights with
+    orangey-red glow for 5 minutes then fade off over 45 seconds.
+  triggers:
+    - trigger: state
+      entity_id:
+        - binary_sensor.mbr_motion
+      from: "off"
+      to: "on"
+  conditions:
+    - condition: state
+      entity_id: input_boolean.bedtime
+      state: "off"
+    - condition: state
+      entity_id: binary_sensor.mbr_is_dark
+      state: "on"
+    - condition: state
+      entity_id: binary_sensor.master_bed_presence_bed_occupied_either
+      state: "off"
+  actions:
+    - action: light.turn_on
+      target:
+        entity_id: light.bed_lights
+      data:
+        rgb_color:
+          - 255
+          - 80
+          - 20
+        brightness_pct: 40
+        transition: 2
+    - delay:
+        hours: 0
+        minutes: 5
+        seconds: 0
+    - action: light.turn_off
+      target:
+        entity_id: light.bed_lights
+      data:
+        transition: 45
+  mode: restart
 - id: "1735427899807"
   alias: MBR Switch - Bed Lights
   description: ""
