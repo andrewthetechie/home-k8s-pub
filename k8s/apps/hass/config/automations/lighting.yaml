@@ -691,19 +691,22 @@
   triggers:
     - trigger: state
       entity_id:
-        - binary_sensor.mbr_motion
-      from: "off"
-      to: "on"
+        - binary_sensor.0x0ceff6fffe163e80_occupancy
+      from:
+        - "off"
+      to:
+        - "on"
   conditions:
     - condition: state
       entity_id: input_boolean.bedtime
       state: "off"
     - condition: state
-      entity_id: binary_sensor.mbr_is_dark
-      state: "on"
-    - condition: state
-      entity_id: binary_sensor.master_bed_presence_bed_occupied_either
-      state: "off"
+      entity_id: binary_sensor.master_bed_presence_bed_occupied_both
+      state:
+        - "off"
+    - condition: sun
+      after: sunset
+      before: sunrise
   actions:
     - action: light.turn_on
       target:
