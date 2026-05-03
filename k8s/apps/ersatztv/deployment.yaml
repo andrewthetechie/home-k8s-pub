@@ -48,5 +48,5 @@ spec:
             claimName: ersatztv-config-pvc
         - name: media
           nfs:
-            server: chrisjen.herrington.services
-            path: /mnt/disk_pool/Media
+            server: duarte.herrington.services
+            path: /mnt/Media
