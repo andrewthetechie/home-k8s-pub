@@ -701,7 +701,7 @@
       entity_id: input_boolean.bedtime
       state: "off"
     - condition: state
-      entity_id: binary_sensor.master_bed_presence_bed_occupied_both
+      entity_id: binary_sensor.master_bed_presence_bed_occupied_either
       state:
         - "off"
     - condition: sun
@@ -727,7 +727,7 @@
         entity_id: light.bed_lights
       data:
         transition: 45
-  mode: restart
+  mode: single
 - id: "1735427899807"
   alias: MBR Switch - Bed Lights
   description: ""
