@@ -14,9 +14,10 @@ api:
   replicaCount: 1
   env:
     HINDSIGHT_API_SKIP_LLM_VERIFICATION: "true"
-    HINDSIGHT_API_LLM_PROVIDER: openai
-    HINDSIGHT_API_LLM_MODEL: mock-model-replace-me
-    HINDSIGHT_API_LLM_BASE_URL: https://manifest-llm-not-configured.invalid/v1
+    HINDSIGHT_API_LLM_PROVIDER: groq
+    #HINDSIGHT_API_LLM_PROVIDER: openai
+    #HINDSIGHT_API_LLM_MODEL: mock-model-replace-me
+    #HINDSIGHT_API_LLM_BASE_URL: https://manifest-llm-not-configured.invalid/v1
   resources:
     requests:
       cpu: "2"
