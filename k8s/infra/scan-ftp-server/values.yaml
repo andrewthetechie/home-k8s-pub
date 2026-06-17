@@ -1,0 +1,50 @@
+controllers:
+  scan-ftp-server:
+    strategy: Recreate
+    containers:
+      app:
+        image:
+          repository: delfer/alpine-ftp-server
+          tag: latest
+          pullPolicy: IfNotPresent
+        env:
+          # name|password|home|uid  (vsftpd user created at /ftp/scan)
+          USERS: "scan|password12|/ftp/scan|1000"
+          ADDRESS: "10.10.98.252" # PASV advertised address = the LB IP
+          MIN_PORT: "21000"
+          MAX_PORT: "21010"
+
+service:
+  scan-ftp:
+    controller: scan-ftp-server
+    type: LoadBalancer
+    externalTrafficPolicy: Local
+    loadBalancerIP: 10.10.98.252
+    annotations:
+      external-dns.alpha.kubernetes.io/hostname: scan-ftp.herrington.services
+    ports:
+      ftp:
+        port: 21
+        protocol: TCP
+      # passive data ports must each be published on the LB service
+      pasv-21000: { port: 21000, protocol: TCP }
+      pasv-21001: { port: 21001, protocol: TCP }
+      pasv-21002: { port: 21002, protocol: TCP }
+      pasv-21003: { port: 21003, protocol: TCP }
+      pasv-21004: { port: 21004, protocol: TCP }
+      pasv-21005: { port: 21005, protocol: TCP }
+      pasv-21006: { port: 21006, protocol: TCP }
+      pasv-21007: { port: 21007, protocol: TCP }
+      pasv-21008: { port: 21008, protocol: TCP }
+      pasv-21009: { port: 21009, protocol: TCP }
+      pasv-21010: { port: 21010, protocol: TCP }
+
+persistence:
+  scans:
+    type: nfs
+    server: duarte.herrington.services
+    path: /mnt/storage/Scans
+    advancedMounts:
+      scan-ftp-server:
+        app:
+          - path: /ftp/scan

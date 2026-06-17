@@ -1,0 +1,7 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: scan-ftp-server
+  labels:
+    name: scan-ftp-server
