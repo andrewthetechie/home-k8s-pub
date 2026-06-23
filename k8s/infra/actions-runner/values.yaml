@@ -2,7 +2,7 @@ githubConfigUrl: https://github.com/andrewthetechie/lawncare-saas
 githubConfigSecret: arc-github-app
 
 minRunners: 0
-maxRunners: 2
+maxRunners: 4
 
 runnerScaleSetName: lawncare-saas
 
@@ -10,6 +10,7 @@ runnerScaleSetName: lawncare-saas
 # build images or use docker/docker-compose steps.
 containerMode:
   type: "dind"
+
 
 # Explicitly reference the controller SA so the chart can create RoleBindings
 # when the controller is in a different namespace (arc-systems).
