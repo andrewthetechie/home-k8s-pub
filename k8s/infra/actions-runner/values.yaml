@@ -18,3 +18,9 @@ containerMode:
 controllerServiceAccount:
   namespace: arc-systems
   name: arc-controller-gha-rs-controller
+
+template:
+  spec:
+    containers:
+      - name: runner
+        image: ghcr.io/actions/actions-runner@sha256:08c30b0a7105f64bddfc485d2487a22aa03932a791402393352fdf674bda2c29

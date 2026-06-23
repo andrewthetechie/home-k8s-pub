@@ -1,1 +1,6 @@
 timezone: America/Chicago
+
+replicaCount: 2
+
+webhook:
+  failurePolicy: Ignore
