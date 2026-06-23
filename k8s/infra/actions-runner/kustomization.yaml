@@ -1,15 +1,18 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: actions-runner
+namespace: arc-runners
 
 resources:
   - namespace.yaml
-  - sealed-actions-runner.yaml
+  # sealed-arc-github-app.yaml must be created before uncommenting this line.
+  # See SETUP.md for instructions.
+  - sealed-arc-github-app.yaml
 
 helmCharts:
-  - name: app-template
-    releaseName: actions-runner
-    namespace: actions-runner
-    version: 4.6.2
-    repo: https://bjw-s-labs.github.io/helm-charts
+  - name: gha-runner-scale-set
+    repo: oci://ghcr.io/actions/actions-runner-controller-charts
+    releaseName: arc-lawncare-saas
+    namespace: arc-runners
+    # Keep in sync with arc-controller version in ../arc-controller/kustomization.yaml
+    version: 0.14.2
     valuesFile: values.yaml

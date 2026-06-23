@@ -1,8 +1,7 @@
 ---
-kind: Namespace
 apiVersion: v1
+kind: Namespace
 metadata:
-  name: actions-runner
+  name: arc-runners
   labels:
-    name: actions-runner
-
+    pod-security.kubernetes.io/enforce: privileged

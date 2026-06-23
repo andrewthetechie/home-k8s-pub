@@ -17,8 +17,11 @@ spec:
     metadata:
       name: "{{ .path.basename }}"
       annotations:
-        # Policies must apply after Kyverno CRDs/controllers exist (separate app: ../kyverno-policies/).
-        argocd.argoproj.io/sync-wave: '{{ if eq .path.basename "kyverno-policies" }}1{{ else }}0{{ end }}'
+        # Wave ordering:
+        #   0 (default): most infra, including arc-controller (installs ARC CRDs)
+        #   1: actions-runner (runner scale set — needs ARC CRDs from arc-controller)
+        #      kyverno-policies (needs Kyverno CRDs from kyverno)
+        argocd.argoproj.io/sync-wave: '{{ if or (eq .path.basename "kyverno-policies") (eq .path.basename "actions-runner") }}1{{ else }}0{{ end }}'
     spec:
       project: infra
       source:

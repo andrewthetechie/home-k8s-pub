@@ -1,29 +1,19 @@
-controllers:
-  actionsrunner:
-    strategy: RollingUpdate
-    containers:
-      app:
-        image:
-          repository: myoung34/github-runner
-          tag: 2.321.0-ubuntu-noble
-          pullPolicy: IfNotPresent
-        resources:
-          limits:
-            cpu: 2
-            memory: 512Mi
-          requests:
-            cpu: 2
-            memory: 256Mi
-        env:
-          RUNNER_SCOPE: repo
-          REPO_URL: https://github.com/andrewthetechie/home-k8s
-          LABELS: home-k8s
-          RUNNER_NAME:
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.name
-          ACCESS_TOKEN:
-            valueFrom:
-              secretKeyRef:
-                name: actions-runner
-                key: ACCESS_TOKEN
+githubConfigUrl: https://github.com/andrewthetechie/lawncare-saas
+githubConfigSecret: arc-github-app
+
+minRunners: 0
+maxRunners: 2
+
+runnerScaleSetName: lawncare-saas
+
+# DinD gives each runner pod its own Docker daemon, required for jobs that
+# build images or use docker/docker-compose steps.
+containerMode:
+  type: "dind"
+
+# Explicitly reference the controller SA so the chart can create RoleBindings
+# when the controller is in a different namespace (arc-systems).
+# SA name follows the pattern: {controllerReleaseName}-gha-rs-controller (chart truncates the name)
+controllerServiceAccount:
+  namespace: arc-systems
+  name: arc-controller-gha-rs-controller
