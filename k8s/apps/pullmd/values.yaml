@@ -1,3 +1,11 @@
+defaultPodOptions:
+  securityContext:
+    runAsUser: 100
+    runAsGroup: 101
+    runAsNonRoot: true
+    fsGroup: 101
+    fsGroupChangePolicy: OnRootMismatch
+
 controllers:
   pullmd:
     strategy: RollingUpdate
