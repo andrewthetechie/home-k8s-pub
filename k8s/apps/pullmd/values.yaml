@@ -5,13 +5,15 @@ controllers:
       app:
         image:
           repository: ghcr.io/aeternalabshq/pullmd
-          tag: 1.1.3
+          tag: 3.2.0
           pullPolicy: IfNotPresent
         env:
           TZ: America/Chicago
           PUBLIC_URL: "https://pullmd.herrington.services"
           TRAFILATURA_URL: "http://pullmd-trafilatura:8001/extract"
           PLAYWRIGHT_URL: "http://pullmd-playwright:8002/render"
+          MARKITDOWN_URL: "http://pullmd-markitdown:8003/convert"
+          CACHE_DB: /data/cache.db
 
   trafilatura:
     strategy: RollingUpdate
@@ -19,16 +21,28 @@ controllers:
       app:
         image:
           repository: ghcr.io/aeternalabshq/pullmd-trafilatura
-          tag: 1.1.3
+          tag: 3.2.0
           pullPolicy: IfNotPresent
-
+  markitdown:
+    strategy: RollingUpdate
+    containers:
+      app:
+        image:
+          repository: ghcr.io/aeternalabshq/pullmd-markitdown
+          tag: 3.2.0
+          pullPolicy: IfNotPresent
+        resources:
+          requests:
+            memory: "512Mi"
+          limits:
+            memory: "1Gi"
   playwright:
     strategy: RollingUpdate
     containers:
       app:
         image:
           repository: ghcr.io/aeternalabshq/pullmd-playwright
-          tag: 1.1.3
+          tag: 3.2.0
           pullPolicy: IfNotPresent
         resources:
           requests:
@@ -49,6 +63,11 @@ service:
     ports:
       http:
         port: 8001
+  markitdown:
+    controller: markitdown
+    ports:
+      http:
+        port: 8003
   playwright:
     controller: playwright
     ports:
