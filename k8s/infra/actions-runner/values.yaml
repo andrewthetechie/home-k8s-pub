@@ -2,7 +2,7 @@ githubConfigUrl: https://github.com/andrewthetechie/lawncare-saas
 githubConfigSecret: arc-github-app
 
 minRunners: 0
-maxRunners: 4
+maxRunners: 6
 
 runnerScaleSetName: lawncare-saas
 
