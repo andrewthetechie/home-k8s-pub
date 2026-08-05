@@ -16,3 +16,15 @@ helmCharts:
     # Keep in sync with arc-controller version in ../arc-controller/kustomization.yaml
     version: 0.14.2
     valuesFile: values.yaml
+  - name: gha-runner-scale-set
+    repo: oci://ghcr.io/actions/actions-runner-controller-charts
+    releaseName: arc-womens-fantasy-sports
+    namespace: arc-runners
+    version: 0.14.2
+    valuesFile: values-womens-fantasy-sports.yaml
+  - name: gha-runner-scale-set
+    repo: oci://ghcr.io/actions/actions-runner-controller-charts
+    releaseName: arc-writers-app
+    namespace: arc-runners
+    version: 0.14.2
+    valuesFile: values-writers-app.yaml

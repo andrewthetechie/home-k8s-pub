@@ -1,0 +1,26 @@
+githubConfigUrl: https://github.com/andrewthetechie/writers-app
+githubConfigSecret: arc-github-app
+
+minRunners: 0
+maxRunners: 8
+
+runnerScaleSetName: writers-app
+
+# DinD gives each runner pod its own Docker daemon, required for jobs that
+# build images or use docker/docker-compose steps.
+containerMode:
+  type: "dind"
+
+
+# Explicitly reference the controller SA so the chart can create RoleBindings
+# when the controller is in a different namespace (arc-systems).
+# SA name follows the pattern: {controllerReleaseName}-gha-rs-controller (chart truncates the name)
+controllerServiceAccount:
+  namespace: arc-systems
+  name: arc-controller-gha-rs-controller
+
+template:
+  spec:
+    containers:
+      - name: runner
+        image: ghcr.io/actions/actions-runner@sha256:08c30b0a7105f64bddfc485d2487a22aa03932a791402393352fdf674bda2c29
