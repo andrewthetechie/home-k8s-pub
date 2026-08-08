@@ -1,12 +1,9 @@
-# Nightly scale-to-zero GC for registry-local.
+# Nightly GC for registry-local.
 #
-# The registry now uses an RWO iSCSI PVC, so GC can no longer mount the same
-# volume from a second pod while the registry runs. Instead the orchestrator:
-#   1. scales the Deployment to 0 (frees the PVC),
-#   2. applies the executor Job from the registry-gc ConfigMap
-#      (mounts the PVC, runs `registry garbage-collect --delete-untagged`),
-#   3. waits for it, deletes it, and scales the Deployment back to 1.
-# The EXIT trap guarantees the registry comes back even on failure.
+# Applies the executor Job from the registry-gc ConfigMap; the executor
+# schedules on the registry pod's node (podAffinity) so it can mount the RWO
+# iSCSI PVC while the registry keeps running. See registry-gc.yaml for why
+# scale-to-zero was rejected (ArgoCD selfHeal races the scale-down).
 apiVersion: batch/v1
 kind: CronJob
 metadata:
@@ -31,14 +28,10 @@ spec:
                   set -euo pipefail
                   NS=registry-cache
                   D=registry-local
-                  trap 'kubectl -n "$NS" scale deploy/"$D" --replicas=1 --request-timeout=30s >/dev/null 2>&1 || true' EXIT
-                  kubectl -n "$NS" scale deploy/"$D" --replicas=0 --request-timeout=30s
-                  kubectl -n "$NS" wait --for=delete pod -l app="$D" --timeout=300s >/dev/null 2>&1 || true
                   kubectl -n "$NS" delete job "$D-gc-exec" --ignore-not-found --wait=false >/dev/null 2>&1 || true
                   kubectl -n "$NS" apply -f /gc/"$D".yaml
                   kubectl -n "$NS" wait --for=condition=complete job/"$D-gc-exec" --timeout=900s
                   kubectl -n "$NS" delete job "$D-gc-exec" --ignore-not-found --wait=false >/dev/null 2>&1 || true
-                  sleep 15   # let the volume detach before the registry re-attaches
               volumeMounts:
                 - name: executors
                   mountPath: /gc

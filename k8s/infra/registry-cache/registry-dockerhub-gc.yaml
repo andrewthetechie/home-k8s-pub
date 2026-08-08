@@ -1,4 +1,4 @@
-# Nightly scale-to-zero GC for registry-dockerhub (pull-through proxy cache).
+# Nightly GC for registry-dockerhub (pull-through proxy cache).
 # Same design as registry-local-gc.yaml; see that file for the mechanism.
 apiVersion: batch/v1
 kind: CronJob
@@ -24,14 +24,10 @@ spec:
                   set -euo pipefail
                   NS=registry-cache
                   D=registry-dockerhub
-                  trap 'kubectl -n "$NS" scale deploy/"$D" --replicas=1 --request-timeout=30s >/dev/null 2>&1 || true' EXIT
-                  kubectl -n "$NS" scale deploy/"$D" --replicas=0 --request-timeout=30s
-                  kubectl -n "$NS" wait --for=delete pod -l app="$D" --timeout=300s >/dev/null 2>&1 || true
                   kubectl -n "$NS" delete job "$D-gc-exec" --ignore-not-found --wait=false >/dev/null 2>&1 || true
                   kubectl -n "$NS" apply -f /gc/"$D".yaml
                   kubectl -n "$NS" wait --for=condition=complete job/"$D-gc-exec" --timeout=900s
                   kubectl -n "$NS" delete job "$D-gc-exec" --ignore-not-found --wait=false >/dev/null 2>&1 || true
-                  sleep 15   # let the volume detach before the registry re-attaches
               volumeMounts:
                 - name: executors
                   mountPath: /gc

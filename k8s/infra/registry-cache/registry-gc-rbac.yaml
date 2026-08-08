@@ -1,7 +1,7 @@
-# RBAC for the nightly scale-to-zero registry GC orchestrators. The CronJob pod
-# scales the registry Deployment to 0 (so its RWO PVC detaches), applies the
-# executor Job (which mounts the PVC and runs `registry garbage-collect`), waits
-# for it, then scales the Deployment back to 1.
+# RBAC for the nightly registry GC orchestrators. The CronJob pod applies the
+# executor Job from the registry-gc ConfigMap (scheduled on the registry's node
+# via podAffinity so it can mount the RWO PVC while the registry keeps
+# running), waits for it to finish, then deletes it.
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -14,15 +14,9 @@ metadata:
   name: registry-gc
   namespace: registry-cache
 rules:
-  - apiGroups: ["apps"]
-    resources: ["deployments", "deployments/scale"]
-    verbs: ["get", "patch"]
-  - apiGroups: [""]
-    resources: ["pods"]
-    verbs: ["get", "list", "watch"]
   - apiGroups: ["batch"]
     resources: ["jobs"]
-    verbs: ["get", "list", "watch", "create", "delete"]
+    verbs: ["get", "list", "watch", "create", "patch", "delete"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
