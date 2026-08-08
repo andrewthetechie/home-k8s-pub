@@ -14,7 +14,7 @@ helmCharts:
     valuesInline:
       image:
         repository: linuxserver/radarr
-        tag: 6.1.0-nightly
+        tag: 6.4.2-nightly
       env:
         TZ: "America/Chicago"
       persistence:
