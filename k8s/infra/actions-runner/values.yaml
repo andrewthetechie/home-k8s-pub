@@ -21,7 +21,26 @@ controllerServiceAccount:
 
 template:
   spec:
+    volumes:
+      - name: buildkitd-config
+        configMap:
+          name: buildkitd-config
     containers:
       - name: runner
         image: ghcr.io/actions/actions-runner@sha256:08c30b0a7105f64bddfc485d2487a22aa03932a791402393352fdf674bda2c29
         command: ["/home/runner/run.sh"]
+        env:
+          - name: BUILDKIT_HOST
+            value: tcp://127.0.0.1:1234
+      - name: buildkitd
+        image: moby/buildkit@sha256:cc57b34ee82bceb170a81e573b57df67f7d77f6ce0dfc46b9596f5203e8b1e17  # v0.17.2
+        args:
+          - --addr
+          - tcp://0.0.0.0:1234
+          - --config
+          - /etc/buildkit/buildkitd.toml
+        securityContext:
+          privileged: true
+        volumeMounts:
+          - name: buildkitd-config
+            mountPath: /etc/buildkit
