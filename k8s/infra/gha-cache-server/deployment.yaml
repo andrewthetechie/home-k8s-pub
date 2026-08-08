@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gha-cache-server
+  namespace: gha-cache
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate          # RWO db volume; never run two pods
+  selector:
+    matchLabels: { app: gha-cache-server }
+  template:
+    metadata:
+      labels: { app: gha-cache-server }
+    spec:
+      containers:
+        - name: cache-server
+          # 9.7.0 (latest stable as of 2026-08); env vars verified against
+          # https://gha-cache-server.falcondev.io/getting-started
+          image: ghcr.io/falcondev-oss/github-actions-cache-server@sha256:bdec54f3324ba4bf974067d60c946a4b6ba850969ae5afa211b1c841886491a1
+          ports:
+            - containerPort: 3000
+          env:
+            - { name: API_BASE_URL,   value: "https://actions-cache.herrington.services" }
+            - { name: NITRO_PORT,     value: "3000" }
+            - { name: STORAGE_DRIVER, value: "filesystem" }
+            - { name: STORAGE_FILESYSTEM_PATH, value: "/data/cache" }
+            - { name: DB_DRIVER,      value: "sqlite" }
+            - { name: DB_SQLITE_PATH, value: "/db/cache-server.db" }
+            - { name: CACHE_CLEANUP_OLDER_THAN_DAYS, value: "30" }
+            - { name: ENABLE_DIRECT_DOWNLOADS, value: "false" }
+          volumeMounts:
+            - { name: blobs, mountPath: /data/cache }
+            - { name: db,    mountPath: /db }
+      volumes:
+        - name: blobs
+          persistentVolumeClaim: { claimName: gha-cache-blobs }
+        - name: db
+          persistentVolumeClaim: { claimName: gha-cache-db }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gha-cache-server
+  namespace: gha-cache
+spec:
+  selector: { app: gha-cache-server }
+  ports:
+    - port: 3000
+      targetPort: 3000

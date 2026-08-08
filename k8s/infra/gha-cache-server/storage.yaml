@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: gha-cache-blobs
+spec:
+  capacity: { storage: 300Gi }        # advisory only; NFS does not enforce
+  accessModes: [ReadWriteMany]
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  mountOptions: [nfsvers=4.1, noatime, nconnect=8]
+  nfs:
+    server: duarte.herrington.services
+    path: /mnt/storage/runners-cache/gha-cache
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gha-cache-blobs
+  namespace: gha-cache
+spec:
+  accessModes: [ReadWriteMany]
+  storageClassName: ""
+  volumeName: gha-cache-blobs
+  resources:
+    requests: { storage: 300Gi }
+---
+# SQLite metadata DB goes on block storage, deliberately NOT the NFS share:
+# NFS advisory locking is unreliable and a corrupted DB invalidates the whole
+# cache index.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gha-cache-db
+  namespace: gha-cache
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: freenas-iscsi-ssd-csi
+  resources:
+    requests: { storage: 5Gi }
