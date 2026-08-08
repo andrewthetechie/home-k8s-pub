@@ -6,7 +6,7 @@ metadata:
 spec:
   replicas: 1
   strategy:
-    type: Recreate          # RWO db volume; never run two pods
+    type: Recreate          # RWO volumes (db + blobs); never run two pods
   selector:
     matchLabels: { app: gha-cache-server }
   template:

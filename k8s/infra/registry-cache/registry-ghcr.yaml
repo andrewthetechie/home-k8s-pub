@@ -6,7 +6,7 @@ metadata:
 spec:
   replicas: 1
   strategy:
-    type: Recreate          # NFS-backed; never run two writers
+    type: Recreate          # RWO iSCSI volume; never run two pods
   selector:
     matchLabels: { app: registry-ghcr }
   template:

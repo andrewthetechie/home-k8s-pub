@@ -1,25 +1,15 @@
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: registry-ghcr
-spec:
-  capacity: { storage: 200Gi }        # advisory only; NFS does not enforce
-  accessModes: [ReadWriteMany]
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: ""
-  mountOptions: [nfsvers=4.1, noatime, nconnect=8]
-  nfs:
-    server: duarte.herrington.services
-    path: /mnt/storage/runners-cache/registry-ghcr
----
+# Registry blob store. Was a static NFS PV on duarte; duarte NFS stalls were
+# killing cache writes, and a single-replica registry never needed RWX. Now a
+# dynamic iSCSI zvol on chrisjen (freenas-iscsi-csi). Cache data is disposable:
+# loss just re-warms from upstream. Kept bounded by the nightly scale-to-zero
+# GC cronjobs (registry-*-gc).
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: registry-ghcr
   namespace: registry-cache
 spec:
-  accessModes: [ReadWriteMany]
-  storageClassName: ""
-  volumeName: registry-ghcr
+  accessModes: [ReadWriteOnce]
+  storageClassName: freenas-iscsi-csi
   resources:
     requests: { storage: 200Gi }

@@ -10,4 +10,8 @@ resources:
   - registry-ghcr.yaml
   - storage-local.yaml
   - registry-local.yaml
+  - registry-gc-rbac.yaml
+  - registry-gc.yaml
   - registry-local-gc.yaml
+  - registry-dockerhub-gc.yaml
+  - registry-ghcr-gc.yaml

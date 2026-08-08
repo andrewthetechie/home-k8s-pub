@@ -1,0 +1,151 @@
+# Shared pieces for the nightly scale-to-zero registry GC:
+#  - config.yml: offline garbage-collect config (the registry image's baked-in
+#    config has storage.delete disabled, which makes GC fail on its first sweep)
+#  - <registry>.yaml: executor Job templates. The orchestrator CronJob scales
+#    the registry to 0, applies the executor (which mounts the RWO PVC), waits
+#    for GC to complete, then scales back to 1. Executors are runtime-only; they
+#    must NOT be listed in kustomization.yaml.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: registry-gc
+  namespace: registry-cache
+data:
+  config.yml: |
+    version: 0.1
+    log:
+      fields:
+        service: registry
+    storage:
+      delete:
+        enabled: true
+      filesystem:
+        rootdirectory: /var/lib/registry
+  registry-local.yaml: |
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: registry-local-gc-exec
+      namespace: registry-cache
+    spec:
+      ttlSecondsAfterFinished: 600
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: Never
+          initContainers:
+            # GC's mark phase fails with "Path not found: /docker/registry/v2/repositories"
+            # when the store is empty; ensure the tree exists before running.
+            - name: ensure-repos-dir
+              image: busybox:1.36
+              command: ["/bin/sh", "-c"]
+              args: ["mkdir -p /var/lib/registry/docker/registry/v2/repositories /var/lib/registry/docker/registry/v2/blobs"]
+              volumeMounts:
+                - name: data
+                  mountPath: /var/lib/registry
+          containers:
+            - name: gc
+              image: registry:2.8.3
+              command:
+                - registry
+                - garbage-collect
+                - --delete-untagged
+                - /etc/docker/registry/config.yml
+              volumeMounts:
+                - name: data
+                  mountPath: /var/lib/registry
+                - name: config
+                  mountPath: /etc/docker/registry/config.yml
+                  subPath: config.yml
+                  readOnly: true
+          volumes:
+            - name: data
+              persistentVolumeClaim:
+                claimName: registry-local
+            - name: config
+              configMap:
+                name: registry-gc
+  registry-dockerhub.yaml: |
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: registry-dockerhub-gc-exec
+      namespace: registry-cache
+    spec:
+      ttlSecondsAfterFinished: 600
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: Never
+          initContainers:
+            - name: ensure-repos-dir
+              image: busybox:1.36
+              command: ["/bin/sh", "-c"]
+              args: ["mkdir -p /var/lib/registry/docker/registry/v2/repositories /var/lib/registry/docker/registry/v2/blobs"]
+              volumeMounts:
+                - name: data
+                  mountPath: /var/lib/registry
+          containers:
+            - name: gc
+              image: registry:2.8.3
+              command:
+                - registry
+                - garbage-collect
+                - --delete-untagged
+                - /etc/docker/registry/config.yml
+              volumeMounts:
+                - name: data
+                  mountPath: /var/lib/registry
+                - name: config
+                  mountPath: /etc/docker/registry/config.yml
+                  subPath: config.yml
+                  readOnly: true
+          volumes:
+            - name: data
+              persistentVolumeClaim:
+                claimName: registry-dockerhub
+            - name: config
+              configMap:
+                name: registry-gc
+  registry-ghcr.yaml: |
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: registry-ghcr-gc-exec
+      namespace: registry-cache
+    spec:
+      ttlSecondsAfterFinished: 600
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: Never
+          initContainers:
+            - name: ensure-repos-dir
+              image: busybox:1.36
+              command: ["/bin/sh", "-c"]
+              args: ["mkdir -p /var/lib/registry/docker/registry/v2/repositories /var/lib/registry/docker/registry/v2/blobs"]
+              volumeMounts:
+                - name: data
+                  mountPath: /var/lib/registry
+          containers:
+            - name: gc
+              image: registry:2.8.3
+              command:
+                - registry
+                - garbage-collect
+                - --delete-untagged
+                - /etc/docker/registry/config.yml
+              volumeMounts:
+                - name: data
+                  mountPath: /var/lib/registry
+                - name: config
+                  mountPath: /etc/docker/registry/config.yml
+                  subPath: config.yml
+                  readOnly: true
+          volumes:
+            - name: data
+              persistentVolumeClaim:
+                claimName: registry-ghcr
+            - name: config
+              configMap:
+                name: registry-gc
