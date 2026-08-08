@@ -6,3 +6,4 @@ resources:
   - namespace.yaml
   - storage.yaml
   - deployment.yaml
+  - ingress.yaml
