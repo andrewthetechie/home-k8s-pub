@@ -40,7 +40,7 @@ template:
           - name: CUSTOM_ACTIONS_RESULTS_URL
             value: "https://actions-cache.herrington.services/"
       - name: buildkitd
-        image: moby/buildkit@sha256:cc57b34ee82bceb170a81e573b57df67f7d77f6ce0dfc46b9596f5203e8b1e17  # v0.17.2
+        image: moby/buildkit@sha256:28a898719c18a33f4e8000685287fa36fd0dd9560c6440227d3a732d79bb41d8  # v0.32.2
         args:
           - --addr
           - tcp://0.0.0.0:1234
