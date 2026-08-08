@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: registry-cache
+
+resources:
+  - namespace.yaml
+  - storage-dockerhub.yaml
+  - registry-dockerhub.yaml
+  - storage-ghcr.yaml
+  - registry-ghcr.yaml
+  - storage-local.yaml
+  - registry-local.yaml
+  - registry-local-gc.yaml

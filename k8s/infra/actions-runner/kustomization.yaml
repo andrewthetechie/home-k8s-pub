@@ -4,6 +4,7 @@ namespace: arc-runners
 
 resources:
   - namespace.yaml
+  - buildkitd-config.yaml
   # sealed-arc-github-app.yaml must be created before uncommenting this line.
   # See SETUP.md for instructions.
   - sealed-arc-github-app.yaml

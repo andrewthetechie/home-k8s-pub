@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: registry-dockerhub
+  namespace: registry-cache
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate          # NFS-backed; never run two writers
+  selector:
+    matchLabels: { app: registry-dockerhub }
+  template:
+    metadata:
+      labels: { app: registry-dockerhub }
+    spec:
+      containers:
+        - name: registry
+          image: registry:2.8.3
+          ports:
+            - containerPort: 5000
+          env:
+            - name: REGISTRY_PROXY_REMOTEURL
+              value: "https://registry-1.docker.io"
+            - name: REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY
+              value: /var/lib/registry
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/registry
+          readinessProbe:
+            httpGet: { path: /v2/, port: 5000 }
+          livenessProbe:
+            httpGet: { path: /v2/, port: 5000 }
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: registry-dockerhub
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: registry-dockerhub
+  namespace: registry-cache
+spec:
+  selector: { app: registry-dockerhub }
+  ports:
+    - port: 5000
+      targetPort: 5000
