@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: supabase
+
+resources:
+  - namespace.yaml
+  - sealed-secret-credentials.yaml
+
+helmCharts:
+  - name: supabase
+    releaseName: supabase
+    namespace: supabase
+    version: 0.5.6
+    repo: https://supabase-community.github.io/supabase-kubernetes
+    valuesFile: values.yaml

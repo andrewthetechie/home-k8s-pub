@@ -1,0 +1,133 @@
+secret:
+  jwt:
+    secretRef: supabase-credentials
+    secretRefKey:
+      anonKey: jwt-anon-key
+      serviceKey: jwt-service-key
+      secret: jwt-secret
+
+  db:
+    database: postgres
+    secretRef: supabase-credentials
+    secretRefKey:
+      password: db-password
+
+  dashboard:
+    username: supabase
+    secretRef: supabase-credentials
+    secretRefKey:
+      password: dashboard-password
+
+  analytics:
+    secretRef: supabase-credentials
+    secretRefKey:
+      publicAccessToken: analytics-public-token
+      privateAccessToken: analytics-private-token
+
+  smtp:
+    secretRef: supabase-credentials
+    secretRefKey:
+      username: smtp-username
+      password: smtp-password
+
+  realtime:
+    secretRef: supabase-credentials
+    secretRefKey:
+      secretKeyBase: realtime-secret-key-base
+
+  meta:
+    secretRef: supabase-credentials
+    secretRefKey:
+      cryptoKey: meta-crypto-key
+
+  s3:
+    secretRef: supabase-credentials
+    secretRefKey:
+      keyId: s3-key-id
+      accessKey: s3-access-key
+
+environment:
+  auth:
+    API_EXTERNAL_URL: https://supabase.herrington.services
+    GOTRUE_SITE_URL: https://supabase.herrington.services
+    GOTRUE_MAILER_AUTOCONFIRM: "true"
+    GOTRUE_SMTP_ADMIN_EMAIL: andrew.the.techie@gmail.com
+    GOTRUE_SMTP_HOST: ""
+    GOTRUE_SMTP_PORT: "587"
+    GOTRUE_SMTP_SENDER_NAME: Supabase
+
+  studio:
+    SUPABASE_PUBLIC_URL: https://supabase.herrington.services
+    DEFAULT_ORGANIZATION_NAME: Herrington
+    DEFAULT_PROJECT_NAME: Home
+    NEXT_ANALYTICS_BACKEND_PROVIDER: postgres
+
+persistence:
+  db:
+    enabled: true
+    size: 10Gi
+  storage:
+    enabled: true
+    size: 10Gi
+  functions:
+    enabled: true
+    size: 1Gi
+  imgproxy:
+    enabled: true
+    size: 1Gi
+  snippets:
+    enabled: true
+    size: 1Gi
+  deno:
+    enabled: true
+    size: 1Gi
+
+# Disable autoscaling — homelab single-replica
+autoscaling:
+  analytics:
+    enabled: false
+  auth:
+    enabled: false
+  db:
+    enabled: false
+  functions:
+    enabled: false
+  imgproxy:
+    enabled: false
+  kong:
+    enabled: false
+  meta:
+    enabled: false
+  minio:
+    enabled: false
+  realtime:
+    enabled: false
+  rest:
+    enabled: false
+  storage:
+    enabled: false
+  studio:
+    enabled: false
+  vector:
+    enabled: false
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/name: Supabase
+    gethomepage.dev/group: Misc
+    gethomepage.dev/icon: si-supabase
+    gethomepage.dev/description: Open source Firebase alternative
+  hosts:
+    - host: supabase.herrington.services
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: supabase-tls-cert
+      hosts:
+        - supabase.herrington.services
