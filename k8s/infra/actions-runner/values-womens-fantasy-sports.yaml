@@ -21,6 +21,18 @@ controllerServiceAccount:
 
 template:
   spec:
+    # Spread this scale set's runner pods across nodes. A CI fan-out (e.g. 4
+    # playwright shards) landing on one node saturates its disk/CPU with
+    # concurrent multi-GB `docker load`/untar, stretching the "Load images"
+    # step from ~4 min to 11-14 min per shard (observed 2026-08-09, all 4
+    # shards on alex; one shard hit the 15-min job timeout as a result).
+    topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            actions.github.com/scale-set-name: womens-fantasy-sports
     volumes:
       - name: buildkitd-config
         configMap:

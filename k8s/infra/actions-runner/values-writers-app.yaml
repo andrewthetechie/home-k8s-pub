@@ -21,6 +21,15 @@ controllerServiceAccount:
 
 template:
   spec:
+    # Spread this scale set's runner pods across nodes; concurrent multi-GB
+    # docker loads from a CI fan-out on one node saturate its disk/CPU.
+    topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            actions.github.com/scale-set-name: writers-app
     volumes:
       - name: buildkitd-config
         configMap:
