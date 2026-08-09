@@ -225,32 +225,3 @@
               media-source://tts/cloud?message=Someone%20is%20at%20the%20door&language=en-AU&voice=NatashaNeural
       action: media_player.play_media
   mode: single
-- id: "db_size_alert"
-  alias: Database - Postgres Volume High
-  description: >-
-    Alerts when the recorder Postgres database grows above 75GB (75% of the
-    100Gi volume). The purge and auto_repack need write headroom - if the
-    volume fills, the purge fails and the DB grows unbounded (the failure
-    that filled the 70Gi volume in Aug 2026). If this fires repeatedly,
-    tighten recorder excludes or reduce purge_keep_days.
-  trigger:
-    - platform: numeric_state
-      entity_id: sensor.hass_db_size_gb
-      above: 75
-      for:
-        hours: 1
-  condition: []
-  action:
-    - service: notify.mobile_app_andrew_phone
-      data:
-        title: Home Assistant Database Warning
-        message: >-
-          Postgres DB is {{ states('sensor.hass_db_size_gb') }} GB (limit
-          100GB). Recorder purge may fail soon - check recorder excludes.
-    - service: persistent_notification.create
-      data:
-        title: Database Warning
-        message: >-
-          Postgres DB is {{ states('sensor.hass_db_size_gb') }} GB. Purge may
-          fail soon - check recorder excludes.
-  mode: single
