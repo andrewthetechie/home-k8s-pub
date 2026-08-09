@@ -4,6 +4,9 @@ This directory uses the [Actions Runner Controller](https://github.com/actions/a
 AutoscalingRunnerSet architecture to run self-hosted runners for `andrewthetechie/lawncare-saas`.
 Runners scale to zero when idle and up to 2 when jobs are queued.
 
+> Note: this README is stale. Current tuning is per-repo `minRunners: 1, maxRunners: 12`
+> (see the values files in this directory).
+
 ArgoCD will auto-sync this app but the runners will not authenticate until you complete the steps below.
 
 ---
