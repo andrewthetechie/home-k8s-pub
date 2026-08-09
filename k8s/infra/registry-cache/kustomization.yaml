@@ -10,11 +10,11 @@ resources:
   - registry-ghcr.yaml
   - storage-local.yaml
   - registry-local.yaml
-  - registry-gc-rbac.yaml
-  - registry-gc.yaml
-  - registry-local-gc.yaml
-  - registry-dockerhub-gc.yaml
-  - registry-ghcr-gc.yaml
   - storage-mcr.yaml
   - registry-mcr.yaml
-  - registry-mcr-gc.yaml
+  - registry-wipe-rbac.yaml
+  - registry-wipe.yaml
+  - registry-dockerhub-wipe.yaml
+  - registry-ghcr-wipe.yaml
+  - registry-mcr-wipe.yaml
+  - registry-local-wipe.yaml

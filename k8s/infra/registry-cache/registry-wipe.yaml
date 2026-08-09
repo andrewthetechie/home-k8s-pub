@@ -1,0 +1,169 @@
+# Shared pieces for the weekly registry wipe:
+#  - <registry>.yaml: executor Job templates. The orchestrator CronJob applies
+#    the executor, which schedules on the registry pod's node (podAffinity) so
+#    it can mount the RWO PVC while the registry keeps running — RWO allows
+#    multiple pods on the same node. The executor deletes the entire registry
+#    data tree; the orchestrator then restarts the registry Deployment to
+#    flush its in-memory blob descriptor cache (without that restart the
+#    registry keeps serving stale Content-Length headers for deleted blobs).
+#
+# Why wipe instead of `registry garbage-collect`: GC's sweep races the live
+# registry and deletes blob data files that repository links still reference.
+# The registry then answers GETs with 200 + Content-Length but zero body
+# ("short read: expected N bytes but got 0" in buildkit/containerd), and the
+# stale in-memory descriptor prevents proxy fallback to upstream. A full wipe
+# has no mark/sweep race; all four registries are disposable caches.
+#
+# Note: scale-to-zero wipe was rejected — ArgoCD selfHeal reverts `replicas`
+# within minutes, racing the executor's volume attach. Executors are
+# runtime-only; they must NOT be listed in kustomization.yaml.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: registry-wipe
+  namespace: registry-cache
+data:
+  registry-dockerhub.yaml: |
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: registry-dockerhub-wipe-exec
+      namespace: registry-cache
+    spec:
+      ttlSecondsAfterFinished: 600
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: Never
+          affinity:
+            podAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector:
+                    matchLabels:
+                      app: registry-dockerhub
+                  topologyKey: kubernetes.io/hostname
+                  namespaces: [registry-cache]
+          containers:
+            - name: wipe
+              image: busybox:1.36
+              command: ["/bin/sh", "-c"]
+              args:
+                - >
+                  rm -rf /var/lib/registry/docker &&
+                  mkdir -p /var/lib/registry/docker/registry/v2/repositories
+                  /var/lib/registry/docker/registry/v2/blobs
+              volumeMounts:
+                - name: data
+                  mountPath: /var/lib/registry
+          volumes:
+            - name: data
+              persistentVolumeClaim:
+                claimName: registry-dockerhub
+  registry-ghcr.yaml: |
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: registry-ghcr-wipe-exec
+      namespace: registry-cache
+    spec:
+      ttlSecondsAfterFinished: 600
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: Never
+          affinity:
+            podAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector:
+                    matchLabels:
+                      app: registry-ghcr
+                  topologyKey: kubernetes.io/hostname
+                  namespaces: [registry-cache]
+          containers:
+            - name: wipe
+              image: busybox:1.36
+              command: ["/bin/sh", "-c"]
+              args:
+                - >
+                  rm -rf /var/lib/registry/docker &&
+                  mkdir -p /var/lib/registry/docker/registry/v2/repositories
+                  /var/lib/registry/docker/registry/v2/blobs
+              volumeMounts:
+                - name: data
+                  mountPath: /var/lib/registry
+          volumes:
+            - name: data
+              persistentVolumeClaim:
+                claimName: registry-ghcr
+  registry-mcr.yaml: |
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: registry-mcr-wipe-exec
+      namespace: registry-cache
+    spec:
+      ttlSecondsAfterFinished: 600
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: Never
+          affinity:
+            podAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector:
+                    matchLabels:
+                      app: registry-mcr
+                  topologyKey: kubernetes.io/hostname
+                  namespaces: [registry-cache]
+          containers:
+            - name: wipe
+              image: busybox:1.36
+              command: ["/bin/sh", "-c"]
+              args:
+                - >
+                  rm -rf /var/lib/registry/docker &&
+                  mkdir -p /var/lib/registry/docker/registry/v2/repositories
+                  /var/lib/registry/docker/registry/v2/blobs
+              volumeMounts:
+                - name: data
+                  mountPath: /var/lib/registry
+          volumes:
+            - name: data
+              persistentVolumeClaim:
+                claimName: registry-mcr
+  registry-local.yaml: |
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: registry-local-wipe-exec
+      namespace: registry-cache
+    spec:
+      ttlSecondsAfterFinished: 600
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: Never
+          affinity:
+            podAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector:
+                    matchLabels:
+                      app: registry-local
+                  topologyKey: kubernetes.io/hostname
+                  namespaces: [registry-cache]
+          containers:
+            - name: wipe
+              image: busybox:1.36
+              command: ["/bin/sh", "-c"]
+              args:
+                - >
+                  rm -rf /var/lib/registry/docker &&
+                  mkdir -p /var/lib/registry/docker/registry/v2/repositories
+                  /var/lib/registry/docker/registry/v2/blobs
+              volumeMounts:
+                - name: data
+                  mountPath: /var/lib/registry
+          volumes:
+            - name: data
+              persistentVolumeClaim:
+                claimName: registry-local

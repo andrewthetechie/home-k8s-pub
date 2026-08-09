@@ -1,0 +1,38 @@
+# RBAC for the weekly registry wipe orchestrators. The CronJob pod applies the
+# executor Job from the registry-wipe ConfigMap (scheduled on the registry's
+# node via podAffinity so it can mount the RWO PVC while the registry keeps
+# running), waits for it to finish, then restarts the registry Deployment to
+# flush its in-memory blob descriptor cache, and finally deletes the executor.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: registry-wipe
+  namespace: registry-cache
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: registry-wipe
+  namespace: registry-cache
+rules:
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["get", "list", "watch", "create", "patch", "delete"]
+  # rollout restart (patch) + rollout status (get) on the registry Deployments
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: registry-wipe
+  namespace: registry-cache
+subjects:
+  - kind: ServiceAccount
+    name: registry-wipe
+    namespace: registry-cache
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: registry-wipe

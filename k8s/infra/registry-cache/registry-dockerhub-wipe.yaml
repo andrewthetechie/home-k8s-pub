@@ -1,0 +1,44 @@
+# Weekly wipe of registry-dockerhub. Replaces nightly GC, whose mark/sweep races
+# the live registry and poisons it (deleted blob files + stale in-memory
+# descriptors -> 200 responses with empty bodies). See registry-wipe.yaml for
+# the mechanism and WIPE.md for how to run a wipe manually at any time.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: registry-dockerhub-wipe
+  namespace: registry-cache
+spec:
+  schedule: "30 4 * * 0"
+  timeZone: "America/Chicago"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: registry-wipe
+          containers:
+            - name: wipe-orchestrator
+              image: alpine/k8s:1.28.1
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -euo pipefail
+                  NS=registry-cache
+                  D=registry-dockerhub
+                  kubectl -n "$NS" delete job "$D-wipe-exec" --ignore-not-found --wait=false >/dev/null 2>&1 || true
+                  kubectl -n "$NS" apply -f /wipe/"$D".yaml
+                  kubectl -n "$NS" wait --for=condition=complete job/"$D-wipe-exec" --timeout=600s
+                  # Restart the registry to flush its in-memory blob descriptor
+                  # cache; the PVC now holds an empty data tree.
+                  kubectl -n "$NS" rollout restart deploy/"$D"
+                  kubectl -n "$NS" rollout status deploy/"$D" --timeout=300s
+                  kubectl -n "$NS" delete job "$D-wipe-exec" --ignore-not-found --wait=false >/dev/null 2>&1 || true
+              volumeMounts:
+                - name: executors
+                  mountPath: /wipe
+          volumes:
+            - name: executors
+              configMap:
+                name: registry-wipe
