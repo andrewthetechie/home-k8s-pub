@@ -1,0 +1,12 @@
+# Monitors the Postgres database size (Home Assistant recorder volume).
+# Alerts via automations/alerts.yaml when it approaches the 100Gi volume limit.
+# Threshold rationale: purge/auto_repack need write headroom - if the volume
+# fills to 100%, the recorder purge fails and the DB grows unbounded (the
+# exact failure this monitor exists to catch).
+- platform: sql
+  db_url: !secret psql_string
+  queries:
+    - name: Hass DB Size GB
+      query: "SELECT pg_database_size('hass') / 1073741824.0 AS size_gb;"
+      column: size_gb
+      unit_of_measurement: GB

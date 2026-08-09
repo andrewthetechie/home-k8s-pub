@@ -20,6 +20,14 @@ spec:
       tcp_keepalives_count: "5"
       idle_in_transaction_session_timeout: "60000"
       random_page_cost: "1.1"
+      # HA recorder tables are INSERT-heavy (170k rows/day). Default scale factors
+      # (0.2 insert / 0.05 vacuum) meant autovacuum never fired on the big tables
+      # until they were millions of rows over threshold, letting bloat accumulate.
+      # Aggressive thresholds keep vacuum engaged on this single-purpose DB.
+      autovacuum_vacuum_scale_factor: "0.01"
+      autovacuum_vacuum_insert_scale_factor: "0.01"
+      autovacuum_analyze_scale_factor: "0.01"
+      autovacuum_vacuum_cost_limit: "1000"
   numberOfInstances: 1
   enableMasterLoadBalancer: false
   enableConnectionPooler: false

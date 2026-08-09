@@ -23,6 +23,10 @@ exclude:
     - sensor.load_*m
     - sensor.time*
     - sensor.uptime*
+    # Noisy zigbee/light config entities - report state every few seconds (210k-400k rows each)
+    - select.andrew_office_zigbee_plug_*
+    - select.living_room_lights_*
+    - select.0xb43a31fffe350700_*
   entities:
     - sun.sun # Don't record sun data
     - sensor.last_boot # Comes from 'systemmonitor' sensor platform
@@ -34,5 +38,12 @@ exclude:
     - sensor.memory_use_percent
     - sensor.processor_use
     - weather.openweathermap
+    # Top DB-write offenders (404k states each) - high-frequency zigbee reporting
+    - sensor.andrew_office_zigbee_plug_power
+    - switch.andrew_office_zigbee_plug
+    - sensor.andrew_office_zigbee_plug_energy
+    - sensor.my_opengarage_distance
+    - sensor.living_room_lights_action
+    - light.living_room_lights
   event_types:
     - call_service # Don't record service calls
