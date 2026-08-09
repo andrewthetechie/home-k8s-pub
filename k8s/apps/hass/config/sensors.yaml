@@ -3,10 +3,18 @@
 # Threshold rationale: purge/auto_repack need write headroom - if the volume
 # fills to 100%, the recorder purge fails and the DB grows unbounded (the
 # exact failure this monitor exists to catch).
-- platform: sql
-  db_url: !secret psql_string
-  queries:
-    - name: Hass DB Size GB
-      query: "SELECT pg_database_size('hass') / 1073741824.0 AS size_gb;"
-      column: size_gb
-      unit_of_measurement: GB
+# Uses command_line because YAML-configured `sql` platform sensors are no
+# longer supported in this HA version (silently skipped with a repairs issue).
+- platform: command_line
+  name: Hass DB Size GB
+  command: |
+    python3 -c "
+    import yaml, psycopg2
+    conn = psycopg2.connect(yaml.safe_load(open(\"/config/secrets.yaml\"))[\"psql_string\"])
+    cur = conn.cursor()
+    cur.execute(\"SELECT pg_database_size(%s)/1073741824.0\", (\"hass\",))
+    print(round(cur.fetchone()[0], 2))
+    conn.close()
+    "
+  unit_of_measurement: GB
+  scan_interval: 1800
