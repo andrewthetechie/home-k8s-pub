@@ -23,10 +23,7 @@ db:
 # REDIS_PORT / REDIS_PASSWORD into the proxy and renders a
 # general_settings.coordination_redis block into the config automatically.
 redis:
-  enabled: true
-  architecture: standalone
-  image:
-    repository: bitnamilegacy/redis
+  enabled: false 
 
 # Master key lives in the sealed secret (key: masterkey). The chart injects it
 # as PROXY_MASTER_KEY, referenced by general_settings.master_key below.
