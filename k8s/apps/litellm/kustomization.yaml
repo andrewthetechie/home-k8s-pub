@@ -14,3 +14,41 @@ helmCharts:
     version: 1.95.1
     repo: oci://ghcr.io/berriai
     valuesFile: values.yaml
+
+# The chart's Service uses a named targetPort (http). The NGINX Ingress
+# Controller resolves named ports by scanning pods that match the Service
+# selector, and it errors out when it finds a pod without that port name.
+# The helm test pods (litellm-test-connection, litellm-env-test) and the
+# migrations Job pods all carry the app's selector labels but define no
+# ports, so endpoint resolution failed and nginx fell back to 127.0.0.1:8181
+# (502 Bad Gateway). Use a numeric targetPort so the controller can resolve
+# endpoints directly, and drop the helm test pods (they are helm-test hooks
+# that ArgoCD deploys as regular pods, where they just sit in Error state).
+patches:
+  - target:
+      kind: Service
+      name: litellm
+    patch: |-
+      - op: replace
+        path: /spec/ports/0/targetPort
+        value: 4000
+  - target:
+      kind: Pod
+      name: litellm-test-connection
+    patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        name: litellm-test-connection
+        namespace: litellm
+  - target:
+      kind: Pod
+      name: litellm-env-test
+    patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        name: litellm-env-test
+        namespace: litellm
