@@ -39,6 +39,16 @@ environmentSecrets:
 envVars:
   STORE_MODEL_IN_DB: "True"
 
+# The migrations Job retries until the Zalando operator has provisioned the
+# postgres cluster. Do NOT run it as an ArgoCD PreSync hook: hooks run before
+# normal resources, so the postgres CR would never be applied and the hook
+# would block the sync forever. As a normal resource it just retries.
+migrationJob:
+  hooks:
+    argocd:
+      enabled: false
+  backoffLimit: 30
+
 proxy_config:
   model_list: []
   general_settings:
