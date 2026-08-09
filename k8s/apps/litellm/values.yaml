@@ -25,6 +25,8 @@ db:
 redis:
   enabled: true
   architecture: standalone
+  image:
+    repository: bitnamilegacy/redis
 
 # Master key lives in the sealed secret (key: masterkey). The chart injects it
 # as PROXY_MASTER_KEY, referenced by general_settings.master_key below.
