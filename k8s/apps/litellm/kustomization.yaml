@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: litellm
+
+resources:
+  - namespace.yaml
+  - postgres.yaml
+  - sealed-litellm-secrets.yaml
+
+helmCharts:
+  - name: litellm-helm
+    releaseName: litellm
+    namespace: litellm
+    version: 1.95.0
+    repo: oci://ghcr.io/berriai
+    valuesFile: values.yaml

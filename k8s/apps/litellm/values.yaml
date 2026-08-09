@@ -1,0 +1,64 @@
+replicaCount: 1
+
+image:
+  repository: ghcr.io/berriai/litellm-database
+  tag: "1.95.0"
+  pullPolicy: IfNotPresent
+
+# Use the Zalando postgres operator cluster (postgres.yaml) instead of the
+# chart's bundled postgres. The operator creates a credentials secret named
+# litellm.litellm-db.credentials.postgresql.acid.zalan.do once the cluster
+# is up; the proxy will crash-loop until that exists — expected on first sync.
+db:
+  useExisting: true
+  deployStandalone: false
+  endpoint: "litellm-db.litellm.svc.cluster.local"
+  database: litellm
+  secret:
+    name: litellm.litellm-db.credentials.postgresql.acid.zalan.do
+    usernameKey: username
+    passwordKey: password
+
+# Enable the bundled Bitnami Redis subchart. The chart wires REDIS_HOST /
+# REDIS_PORT / REDIS_PASSWORD into the proxy and renders a
+# general_settings.coordination_redis block into the config automatically.
+redis:
+  enabled: true
+  architecture: standalone
+
+# Master key lives in the sealed secret (key: masterkey). The chart injects it
+# as PROXY_MASTER_KEY, referenced by general_settings.master_key below.
+masterkeySecretName: litellm-secrets
+masterkeySecretKey: masterkey
+
+# Export LITELLM_SALT_KEY (and anything else in the sealed secret) as env vars.
+environmentSecrets:
+  - litellm-secrets
+
+# Manage models/keys from the Admin UI instead of the config file.
+envVars:
+  STORE_MODEL_IN_DB: "True"
+
+proxy_config:
+  model_list: []
+  general_settings:
+    master_key: os.environ/PROXY_MASTER_KEY
+
+service:
+  type: ClusterIP
+  port: 4000
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: litellm.herrington.services
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: litellm-tls
+      hosts:
+        - litellm.herrington.services
