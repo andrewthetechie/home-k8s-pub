@@ -1,0 +1,32 @@
+# RBAC for the nightly gha-cache-restart CronJob. Scoped to the gha-cache
+# namespace; the pod only needs to read and patch its own Deployment.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gha-cache-restart
+  namespace: gha-cache
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: gha-cache-restart
+  namespace: gha-cache
+rules:
+  # rollout restart (patch) + rollout status (get) on the Deployment
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: gha-cache-restart
+  namespace: gha-cache
+subjects:
+  - kind: ServiceAccount
+    name: gha-cache-restart
+    namespace: gha-cache
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: gha-cache-restart

@@ -7,3 +7,5 @@ resources:
   - storage.yaml
   - deployment.yaml
   - ingress.yaml
+  - restart.yaml
+  - restart-rbac.yaml

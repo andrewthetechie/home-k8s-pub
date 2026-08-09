@@ -1,0 +1,34 @@
+# Nightly restart of the gha-cache-server Deployment. The server keeps its
+# sqlite DB and blob state open in-process; a daily restart at 2am drains any
+# stale handles and forces a fresh pod (strategy: Recreate + RWO volumes mean
+# the old pod is fully terminated before the new one starts).
+#
+# RBAC for the pod lives in restart-rbac.yaml: `rollout restart` issues a
+# PATCH on the Deployment's pod template, `rollout status` reads it back.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: gha-cache-restart
+  namespace: gha-cache
+spec:
+  schedule: "0 2 * * *"
+  timeZone: "America/Chicago"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: gha-cache-restart
+          containers:
+            - name: restart
+              image: alpine/k8s:1.28.1
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -euo pipefail
+                  NS=gha-cache
+                  D=gha-cache-server
+                  kubectl -n "$NS" rollout restart deploy/"$D"
+                  kubectl -n "$NS" rollout status deploy/"$D" --timeout=300s
