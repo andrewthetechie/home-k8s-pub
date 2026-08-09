@@ -29,6 +29,33 @@ spec:
             - { name: DB_SQLITE_PATH, value: "/db/cache-server.db" }
             - { name: CACHE_CLEANUP_OLDER_THAN_DAYS, value: "30" }
             - { name: ENABLE_DIRECT_DOWNLOADS, value: "false" }
+          # 2026-08-09 incident: bobbi's iSCSI stack flapped mid-uploads, the
+          # blob ext4 went into an IO-error state, and the server 500'd chunk
+          # PUTs for ~50min while the pod stayed "Running" (no probes). An
+          # HTTP health check can't see EIO — the HTTP stack serves fine while
+          # storage writes fail — so liveness exercises both mounts directly.
+          # A stalled fs makes the write hang -> timeoutSeconds -> failure;
+          # hard EIO fails immediately. ~90-135s of bad writes triggers a
+          # container restart (reopens the wedged sqlite handle; if the mount
+          # itself is broken, the nightly restart CronJob forces a remount).
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - >-
+                  echo ok > /data/cache/.liveness && sync &&
+                  grep -q ok /data/cache/.liveness &&
+                  touch /db/.liveness &&
+                  rm -f /data/cache/.liveness /db/.liveness
+            periodSeconds: 30
+            timeoutSeconds: 15
+            failureThreshold: 3
+          readinessProbe:
+            httpGet: { path: /health, port: 3000 }
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
           volumeMounts:
             - { name: blobs, mountPath: /data/cache }
             - { name: db,    mountPath: /db }
