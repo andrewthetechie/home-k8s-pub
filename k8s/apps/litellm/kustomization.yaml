@@ -11,6 +11,6 @@ helmCharts:
   - name: litellm-helm
     releaseName: litellm
     namespace: litellm
-    version: 1.95.0
+    version: 1.95.1
     repo: oci://ghcr.io/berriai
     valuesFile: values.yaml
