@@ -1,0 +1,14 @@
+# Registry blob store. Dynamic iSCSI zvol on chrisjen (freenas-iscsi-csi),
+# same as the other registry mirrors. Cache data is disposable: loss just
+# re-warms from upstream. Kept bounded by the nightly GC cronjobs
+# (registry-*-gc).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: registry-mcr
+  namespace: registry-cache
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: freenas-iscsi-csi
+  resources:
+    requests: { storage: 200Gi }

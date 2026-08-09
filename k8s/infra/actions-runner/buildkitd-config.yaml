@@ -11,12 +11,18 @@ data:
     [registry."ghcr.io"]
       mirrors = ["registry-ghcr.registry-cache.svc.cluster.local:5000"]
 
+    [registry."mcr.microsoft.com"]
+      mirrors = ["registry-mcr.registry-cache.svc.cluster.local:5000"]
+
     # Each plain-HTTP host needs its own section declaring http = true,
     # including the mirror hosts named above.
     [registry."registry-dockerhub.registry-cache.svc.cluster.local:5000"]
       http = true
 
     [registry."registry-ghcr.registry-cache.svc.cluster.local:5000"]
+      http = true
+
+    [registry."registry-mcr.registry-cache.svc.cluster.local:5000"]
       http = true
 
     [registry."registry-local.registry-cache.svc.cluster.local:5000"]

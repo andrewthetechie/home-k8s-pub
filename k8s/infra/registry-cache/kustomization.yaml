@@ -15,3 +15,6 @@ resources:
   - registry-local-gc.yaml
   - registry-dockerhub-gc.yaml
   - registry-ghcr-gc.yaml
+  - storage-mcr.yaml
+  - registry-mcr.yaml
+  - registry-mcr-gc.yaml
