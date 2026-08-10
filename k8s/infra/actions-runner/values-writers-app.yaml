@@ -1,7 +1,6 @@
 githubConfigUrl: https://github.com/andrewthetechie/writers-app
 githubConfigSecret: arc-github-app
 
-minRunners: 1
 maxRunners: 4
 
 runnerScaleSetName: writers-app
