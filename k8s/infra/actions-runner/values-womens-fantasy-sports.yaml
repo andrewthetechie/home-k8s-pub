@@ -37,6 +37,9 @@ template:
       - name: buildkitd-config
         configMap:
           name: buildkitd-config
+      - name: dind-daemon-config
+        configMap:
+          name: dind-daemon-config
     containers:
       - name: runner
         # falcondev fork of the actions runner: reads CUSTOM_ACTIONS_RESULTS_URL
@@ -63,3 +66,31 @@ template:
         volumeMounts:
           - name: buildkitd-config
             mountPath: /etc/buildkit
+      # Override the chart-injected dind container to mount daemon.json, giving
+      # dind: (1) trust for registry-local (required for shard image pulls after
+      # prepare-images pushes built images there) and (2) registry-dockerhub as
+      # a docker.io mirror so `docker compose pull` hits the LAN instead of Hub.
+      # Chart-managed volumes (dind-sock, dind-externals, work) must be listed
+      # explicitly when overriding the container spec, as the chart won't inject
+      # them if it finds an existing dind entry in template.spec.containers.
+      - name: dind
+        image: docker:dind
+        args:
+          - dockerd
+          - --host=unix:///var/run/docker.sock
+          - --group=$(DOCKER_GROUP_GID)
+        env:
+          - name: DOCKER_GROUP_GID
+            value: "123"
+        securityContext:
+          privileged: true
+        volumeMounts:
+          - name: work
+            mountPath: /home/runner/_work
+          - name: dind-sock
+            mountPath: /var/run
+          - name: dind-externals
+            mountPath: /home/runner/externals
+          - name: dind-daemon-config
+            mountPath: /etc/docker/daemon.json
+            subPath: daemon.json

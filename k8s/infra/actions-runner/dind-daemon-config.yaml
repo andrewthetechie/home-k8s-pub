@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dind-daemon-config
+  namespace: arc-runners
+data:
+  daemon.json: |
+    {
+      "insecure-registries": [
+        "registry-local.registry-cache.svc.cluster.local:5000",
+        "registry-dockerhub.registry-cache.svc.cluster.local:5000",
+        "registry-ghcr.registry-cache.svc.cluster.local:5000",
+        "registry-mcr.registry-cache.svc.cluster.local:5000"
+      ],
+      "registry-mirrors": [
+        "http://registry-dockerhub.registry-cache.svc.cluster.local:5000"
+      ]
+    }
