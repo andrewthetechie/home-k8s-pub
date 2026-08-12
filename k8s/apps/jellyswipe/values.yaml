@@ -1,0 +1,52 @@
+controllers:
+  jellyswipe:
+    strategy: RollingUpdate
+    containers:
+      app:
+        image:
+          repository: ghcr.io/andrewthetechie/jelly-swipe
+          tag: main-cf1e57d08fcb51c2c00a424a4746120eba09d34f
+          pullPolicy: IfNotPresent
+        env:
+          JELLYFIN_URL: https://jf.herrington.services
+          JELLYFIN_USERNAME: andrew
+          ALLOW_PRIVATE_JELLYFIN: "1"
+          JELLYFIN_API_KEY:
+            valueFrom:
+              secretKeyRef:
+                name: jellyswipe-secrets
+                key: JELLYFIN_API_KEY
+          SESSION_SECRET:
+            valueFrom:
+              secretKeyRef:
+                name: jellyswipe-secrets
+                key: SESSION_SECRET
+          TMDB_ACCESS_TOKEN:
+            valueFrom:
+              secretKeyRef:
+                name: jellyswipe-secrets
+                key: TMDB_ACCESS_TOKEN
+service:
+  jellyswipe:
+    controller: jellyswipe
+    ports:
+      http:
+        port: 5005
+ingress:
+  jellyswipe:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/enabled: "false"
+    hosts:
+      - host: jellyswipe.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: jellyswipe
+              port: http
+    tls:
+      - secretName: jellyswipe
+        hosts:
+          - jellyswipe.herrington.services
