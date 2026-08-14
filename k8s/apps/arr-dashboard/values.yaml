@@ -1,0 +1,66 @@
+controllers:
+  arr-dashboard:
+    strategy: RollingUpdate
+    containers:
+      app:
+        image:
+          repository: khak1s/arr-dashboard
+          tag: 2.23.0
+          pullPolicy: IfNotPresent
+        env:
+          # WebAuthn/Passkeys - bind to the actual deployment URL
+          WEBAUTHN_RP_ID: arr.herrington.services
+          WEBAUTHN_ORIGIN: https://arr.herrington.services
+        probes:
+          liveness: &probe
+            enabled: true
+            type: HTTP
+            path: /health
+          readiness: *probe
+          startup:
+            <<: *probe
+            spec:
+              failureThreshold: 30
+              periodSeconds: 2
+
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 911
+    runAsGroup: 911
+    fsGroup: 911
+    fsGroupChangePolicy: OnRootMismatch
+
+service:
+  arr-dashboard:
+    controller: arr-dashboard
+    ports:
+      http:
+        port: 3000
+
+ingress:
+  arr-dashboard:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    hosts:
+      - host: arr.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: arr-dashboard
+              port: http
+    tls:
+      - secretName: arr-dashboard-tls
+        hosts:
+          - arr.herrington.services
+
+persistence:
+  config:
+    type: persistentVolumeClaim
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    storageClass: freenas-iscsi-ssd-csi
+    globalMounts:
+      - path: /config
