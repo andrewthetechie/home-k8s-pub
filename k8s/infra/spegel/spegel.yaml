@@ -6,49 +6,11 @@ metadata:
   name: spegel
   namespace: spegel
   labels:
-    helm.sh/chart: spegel-v0.0.27
+    helm.sh/chart: spegel-0.7.4
     app.kubernetes.io/name: spegel
     app.kubernetes.io/instance: spegel
-    app.kubernetes.io/version: "v0.0.27"
+    app.kubernetes.io/version: "v0.7.4"
     app.kubernetes.io/managed-by: Helm
----
-# Source: spegel/templates/rbac.yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: spegel
-  namespace: spegel
-  labels:
-    helm.sh/chart: spegel-v0.0.27
-    app.kubernetes.io/name: spegel
-    app.kubernetes.io/instance: spegel
-    app.kubernetes.io/version: "v0.0.27"
-    app.kubernetes.io/managed-by: Helm
-rules:
-  - apiGroups: ["coordination.k8s.io"]
-    resources: ["leases"]
-    verbs: ["get", "list", "watch", "create", "update"]
----
-# Source: spegel/templates/rbac.yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: spegel
-  namespace: spegel
-  labels:
-    helm.sh/chart: spegel-v0.0.27
-    app.kubernetes.io/name: spegel
-    app.kubernetes.io/instance: spegel
-    app.kubernetes.io/version: "v0.0.27"
-    app.kubernetes.io/managed-by: Helm
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: spegel
-subjects:
-  - kind: ServiceAccount
-    name: spegel
-    namespace: spegel
 ---
 # Source: spegel/templates/service.yaml
 apiVersion: v1
@@ -58,13 +20,14 @@ metadata:
   namespace: spegel
   labels:
     app.kubernetes.io/component: metrics
-    helm.sh/chart: spegel-v0.0.27
+    helm.sh/chart: spegel-0.7.4
     app.kubernetes.io/name: spegel
     app.kubernetes.io/instance: spegel
-    app.kubernetes.io/version: "v0.0.27"
+    app.kubernetes.io/version: "v0.7.4"
     app.kubernetes.io/managed-by: Helm
 spec:
   selector:
+    app.kubernetes.io/component: spegel
     app.kubernetes.io/name: spegel
     app.kubernetes.io/instance: spegel
   ports:
@@ -80,16 +43,17 @@ metadata:
   name: spegel-registry
   namespace: spegel
   labels:
-    helm.sh/chart: spegel-v0.0.27
+    helm.sh/chart: spegel-0.7.4
     app.kubernetes.io/name: spegel
     app.kubernetes.io/instance: spegel
-    app.kubernetes.io/version: "v0.0.27"
+    app.kubernetes.io/version: "v0.7.4"
     app.kubernetes.io/managed-by: Helm
   annotations:
-    service.kubernetes.io/topology-aware-hints: auto
+    service.kubernetes.io/topology-mode: "auto"
 spec:
   type: NodePort
   selector:
+    app.kubernetes.io/component: spegel
     app.kubernetes.io/name: spegel
     app.kubernetes.io/instance: spegel
   ports:
@@ -99,6 +63,26 @@ spec:
       nodePort: 30021
       protocol: TCP
 ---
+# Source: spegel/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: spegel-bootstrap
+  namespace: spegel
+  labels:
+    helm.sh/chart: spegel-0.7.4
+    app.kubernetes.io/name: spegel
+    app.kubernetes.io/instance: spegel
+    app.kubernetes.io/version: "v0.7.4"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  selector:
+    app.kubernetes.io/component: spegel
+    app.kubernetes.io/name: spegel
+    app.kubernetes.io/instance: spegel
+  clusterIP: None
+  publishNotReadyAddresses: true
+---
 # Source: spegel/templates/daemonset.yaml
 apiVersion: apps/v1
 kind: DaemonSet
@@ -106,10 +90,11 @@ metadata:
   name: spegel
   namespace: spegel
   labels:
-    helm.sh/chart: spegel-v0.0.27
+    app.kubernetes.io/component: spegel
+    helm.sh/chart: spegel-0.7.4
     app.kubernetes.io/name: spegel
     app.kubernetes.io/instance: spegel
-    app.kubernetes.io/version: "v0.0.27"
+    app.kubernetes.io/version: "v0.7.4"
     app.kubernetes.io/managed-by: Helm
 spec:
   revisionHistoryLimit: 10
@@ -117,11 +102,13 @@ spec:
     {}
   selector:
     matchLabels:
+      app.kubernetes.io/component: spegel
       app.kubernetes.io/name: spegel
       app.kubernetes.io/instance: spegel
   template:
     metadata:
       labels:
+        app.kubernetes.io/component: spegel
         app.kubernetes.io/name: spegel
         app.kubernetes.io/instance: spegel
     spec:
@@ -131,15 +118,15 @@ spec:
       priorityClassName: system-node-critical
       initContainers:
       - name: configuration
-        image: "ghcr.io/spegel-org/spegel@sha256:e10014e197dd47c6297eaaa6d326b25d53b69c2a1461c430a862a959d0eb32fd"
+        image: "ghcr.io/spegel-org/spegel@sha256:26c60b05e08ac738e8442bc389c5780bff0e1d8153956e45d810a2f1008cf56f"
         imagePullPolicy: IfNotPresent
         securityContext:
-            {}
+            readOnlyRootFilesystem: true
         args:
           - configuration
           - --log-level=INFO
           - --containerd-registry-config-path=/etc/cri/conf.d/hosts
-          - --registries
+          - --mirrored-registries
           - "https://cgr.dev"
           - "https://docker.io"
           - "https://ghcr.io"
@@ -150,27 +137,30 @@ spec:
           - "https://registry.k8s.io"
           - "https://k8s.gcr.io"
           - "https://lscr.io"
-          - --mirror-registries
+          - --mirror-targets
           - http://$(NODE_IP):30020
           - http://$(NODE_IP):30021
           - --resolve-tags=true
-          - --append-mirrors=false
+          - --prepend-existing=false
         env:
         - name: NODE_IP
           valueFrom:
             fieldRef:
               fieldPath: status.hostIP
         resources:
-          {}
+          limits:
+            memory: 128Mi
+          requests:
+            memory: 128Mi
         volumeMounts:
           - name: containerd-config
             mountPath: /etc/cri/conf.d/hosts
       containers:
       - name: registry
-        image: "ghcr.io/spegel-org/spegel@sha256:e10014e197dd47c6297eaaa6d326b25d53b69c2a1461c430a862a959d0eb32fd"
+        image: "ghcr.io/spegel-org/spegel@sha256:26c60b05e08ac738e8442bc389c5780bff0e1d8153956e45d810a2f1008cf56f"
         imagePullPolicy: IfNotPresent
         securityContext:
-            {}
+            readOnlyRootFilesystem: true
         args:
           - registry
           - --log-level=INFO
@@ -179,7 +169,7 @@ spec:
           - --registry-addr=:5000
           - --router-addr=:5001
           - --metrics-addr=:9090
-          - --registries
+          - --mirrored-registries
           - "https://cgr.dev"
           - "https://docker.io"
           - "https://ghcr.io"
@@ -192,14 +182,17 @@ spec:
           - "https://lscr.io"
           - --containerd-sock=/run/containerd/containerd.sock
           - --containerd-namespace=k8s.io
-          - --containerd-registry-config-path=/etc/cri/conf.d/hosts
-          - --bootstrap-kind=kubernetes
-          - --leader-election-namespace=spegel
-          - --leader-election-name=spegel-leader-election
-          - --resolve-latest-tag=true
-          - --local-addr=$(NODE_IP):30020
+          - --bootstrap-kind=dns
+          - --dns-bootstrap-domain=spegel-bootstrap.spegel.svc.cluster.local.
           - --containerd-content-path=/var/lib/containerd/io.containerd.content.v1.content
+          - --debug-web-enabled=true
+          - --data-dir=/var/lib/spegel
         env:
+        - name: GOMEMLIMIT
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.memory
+              divisor: 1
         - name: NODE_IP
           valueFrom:
             fieldRef:
@@ -209,9 +202,12 @@ spec:
             containerPort: 5000
             hostPort: 30020
             protocol: TCP
-          - name: router
+          - name: router-tcp
             containerPort: 5001
             protocol: TCP
+          - name: router-quic
+            containerPort: 5001
+            protocol: UDP
           - name: metrics
             containerPort: 9090
             protocol: TCP
@@ -221,21 +217,30 @@ spec:
           periodSeconds: 3
           failureThreshold: 60
           httpGet:
-            path: /healthz
+            path: /readyz
             port: registry
         readinessProbe:
           httpGet:
-            path: /healthz
+            path: /readyz
             port: registry
         volumeMounts:
+          - name: spegel-data
+            mountPath: /var/lib/spegel
           - name: containerd-sock
             mountPath: /run/containerd/containerd.sock
           - name: containerd-content
             mountPath: /var/lib/containerd/io.containerd.content.v1.content
             readOnly: true
         resources:
-          {}
+          limits:
+            memory: 128Mi
+          requests:
+            memory: 128Mi
       volumes:
+        - name: spegel-data
+          hostPath:
+            path: /var/lib/spegel
+            type: DirectoryOrCreate
         - name: containerd-sock
           hostPath:
             path: /run/containerd/containerd.sock

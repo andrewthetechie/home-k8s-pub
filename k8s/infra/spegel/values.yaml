@@ -1,2 +1,26 @@
+image:
+  repository: ghcr.io/spegel-org/spegel
+  # Pinned to the v0.7.4 image digest (chart appVersion v0.7.4)
+  digest: "sha256:26c60b05e08ac738e8442bc389c5780bff0e1d8153956e45d810a2f1008cf56f"
 spegel:
+  # CRITICAL: Talos uses /etc/cri/conf.d/hosts, NOT the new default /etc/containerd/certs.d
   containerdRegistryConfigPath: /etc/cri/conf.d/hosts
+  # Registries to mirror (was --registries in v0.0.27)
+  mirroredRegistries:
+    - https://cgr.dev
+    - https://docker.io
+    - https://ghcr.io
+    - https://quay.io
+    - https://mcr.microsoft.com
+    - https://public.ecr.aws
+    - https://gcr.io
+    - https://registry.k8s.io
+    - https://k8s.gcr.io
+    - https://lscr.io
+  # Was --append-mirrors=false in v0.0.27
+  prependExisting: false
+service:
+  registry:
+    # Preserve current nodePort/hostPort
+    nodePort: 30021
+    hostPort: 30020
