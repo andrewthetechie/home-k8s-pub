@@ -10,18 +10,17 @@ helmCharts:
     includeCRDs: true
     namespace: node-feature-discovery
     releaseName: node-feature-discovery
-    version: 0.16.3
+    version: 0.19.0
     repo: https://kubernetes-sigs.github.io/node-feature-discovery/charts
     valuesInline:
+      # NOTE: master.resourceLabels was removed upstream in chart 0.19.0 (silently ignored).
+      # It was inert on this cluster (no matching labels/resources) and the GPU extended
+      # resources are covered by the intel-device-plugin `intel-gpu-platform-labeling`
+      # NodeFeatureRule. Migrate to a NodeFeatureRule here if ever needed again.
       master:
         extraLabelNs:
           - gpu.intel.com
           - sgx.intel.com
-        resourceLabels:
-          - gpu.intel.com/millicores
-          - gpu.intel.com/memory.max
-          - gpu.intel.com/tiles
-          - sgx.intel.com/epc
       worker:
         sources:
           usb:
