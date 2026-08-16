@@ -6,13 +6,14 @@ helmCharts:
   - name: intel-device-plugins-operator
     releaseName: intel-device-plugins-operator
     namespace: kube-system
-    version: 0.30.0
+    version: 0.34.1
     repo: https://intel.github.io/helm-charts/
     includeCRDs: True
+    valuesFile: operator-values.yaml
   - name: intel-device-plugins-gpu
     releaseName: intel-device-plugins-gpu
     namespace: kube-system
-    version: 0.30.0
+    version: 0.34.1
     repo: https://intel.github.io/helm-charts/
     includeCRDs: True
     valuesInline:

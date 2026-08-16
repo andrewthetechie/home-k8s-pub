@@ -1,0 +1,10 @@
+# Values for the intel-device-plugins-operator Helm chart.
+#
+# Since chart 0.30.x the GPU plugin chart no longer renders a DaemonSet
+# directly. It renders a GpuDevicePlugin CR that the operator reconciles
+# into the intel-gpu-plugin DaemonSet. The operator's device controllers
+# are disabled by default, so the GPU controller MUST be enabled here or
+# the DaemonSet (and intel.com/gpu devices) will never be created.
+manager:
+  devices:
+    gpu: true
