@@ -1,6 +1,6 @@
 # Vertical Pod Autoscaler (VPA)
 
-Static manifests vendored from [kubernetes/autoscaler](https://github.com/kubernetes/autoscaler) at git tag **`vertical-pod-autoscaler-1.6.0`** (VPA container images `registry.k8s.io/autoscaling/*:1.6.0`).
+Static manifests vendored from [kubernetes/autoscaler](https://github.com/kubernetes/autoscaler) at git tag **`vertical-pod-autoscaler-1.7.1`** (VPA container images `registry.k8s.io/autoscaling/*:1.7.1`).
 
 ## Regenerating `vpa-generated.yaml`
 
@@ -8,9 +8,9 @@ On a machine with `bash` and `kubectl`:
 
 ```bash
 WORKDIR=$(mktemp -d)
-git clone --depth 1 --branch vertical-pod-autoscaler-1.6.0 https://github.com/kubernetes/autoscaler.git "$WORKDIR/autoscaler"
+git clone --depth 1 --branch vertical-pod-autoscaler-1.7.1 https://github.com/kubernetes/autoscaler.git "$WORKDIR/autoscaler"
 cd "$WORKDIR/autoscaler/vertical-pod-autoscaler"
-REGISTRY=registry.k8s.io/autoscaling TAG=1.6.0 ./hack/vpa-process-yamls.sh print > vpa-print.yaml
+REGISTRY=registry.k8s.io/autoscaling TAG=1.7.1 ./hack/vpa-process-yamls.sh print > vpa-print.yaml
 ```
 
 Copy `vpa-print.yaml` to this directory as `vpa-generated.yaml`. Do **not** commit the TLS Secret into that file; TLS is GitOps-managed via `sealed-vpa-tls-certs.yaml`.
