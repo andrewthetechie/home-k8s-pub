@@ -6,10 +6,12 @@ helmCharts:
   - name: kube-state-metrics
     releaseName: kube-state-metrics
     namespace: kube-system
-    version: 5.13.0
+    version: 5.29.0
     includeCRDs: true
     repo: https://prometheus-community.github.io/helm-charts
     valuesInline:
+      image:
+        tag: v2.14.0
       service:
         annotations:
           external-dns.alpha.kubernetes.io/hostname: metrics.nauvoo.herrington.services
