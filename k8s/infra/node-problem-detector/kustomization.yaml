@@ -6,9 +6,9 @@ helmCharts:
   - name: node-problem-detector
     releaseName: node-problem-detector
     namespace: kube-system
-    version: 2.3.10
+    version: 2.3.14
     includeCRDs: true
     repo: https://charts.deliveryhero.io/
     valuesInline:
       image:
-        tag: v0.8.14
+        tag: v0.8.19
