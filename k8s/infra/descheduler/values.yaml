@@ -5,19 +5,18 @@ schedule: "*/15 * * * *"
 # cmdOptions:
 #   v: "3"
 
-# Chart default enables DefaultEvictor podProtection "PodsWithPVC", which requires
+# Chart default enables DefaultEvictor protection for PVC pods, which requires
 # cluster-wide list/watch on persistentvolumeclaims — not granted by the chart RBAC.
-# Omit that extra so Descheduler matches the ClusterRole (see upstream chart defaults).
+# ignorePvcPods: true protects PVC-backed pods without needing PVC list/watch (see
+# upstream chart defaults and the v0.30 DefaultEvictor field model).
 deschedulerPolicy:
   profiles:
     - name: default
       pluginConfig:
         - name: DefaultEvictor
           args:
-            podProtections:
-              defaultDisabled:
-                - "PodsWithLocalStorage"
-              extraEnabled: []
+            ignorePvcPods: true
+            evictLocalStoragePods: true
         - name: RemoveDuplicates
         - name: RemovePodsHavingTooManyRestarts
           args:
