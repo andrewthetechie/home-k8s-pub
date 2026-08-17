@@ -8,6 +8,6 @@ resources:
 helmCharts:
   - name: external-secrets
     namespace: eso
-    version: 0.10.0
+    version: 2.9.0
     repo: https://charts.external-secrets.io
     includeCRDs: true
