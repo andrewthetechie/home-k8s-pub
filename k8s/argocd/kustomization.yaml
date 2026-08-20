@@ -26,9 +26,15 @@ helmCharts:
       global:
         deploymentAnnotations:
           configmap.reloader.stakater.com/reload: argocd-cm,argocd-rbac-cm
+        image:
+          tag: v2.14.21
       server:
         extraArgs:
           - --insecure
-        rbacConfig:
+      configs:
+        rbac:
           policy.default: role:admin
-    version: 7.7.7
+      redis:
+        image:
+          tag: 7.4.1-alpine
+    version: 7.9.1
