@@ -38,7 +38,16 @@ ingress:
     className: nginx
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-prod
-      gethomepage.dev/enabled: "false"
+      gethomepage.dev/description: Find something to watch
+      gethomepage.dev/enabled: "true"
+      gethomepage.dev/group: Media
+      gethomepage.dev/icon: sh-jellydash
+      gethomepage.dev/name: JellySwipe
+      uptimekuma.io/monitor: "true"
+      uptimekuma.io/name: "JellySwipe"
+      uptimekuma.io/type: "http"
+      uptimekuma.io/interval: "120"
+    hosts:
     hosts:
       - host: jellyswipe.herrington.services
         paths:
