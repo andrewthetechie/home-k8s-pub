@@ -137,8 +137,11 @@ spec:
           - "https://registry.k8s.io"
           - "https://k8s.gcr.io"
           - "https://lscr.io"
+          # hostPort 30020 is dead on this cluster (connection refused). containerd
+          # aborts resolution on the first mirror host and never reaches the upstream
+          # registry, which breaks ALL first-time ghcr pulls. The NodePort service
+          # spegel-registry:30021 works, so it is the sole mirror target.
           - --mirror-targets
-          - http://$(NODE_IP):30020
           - http://$(NODE_IP):30021
           - --resolve-tags=true
           - --prepend-existing=false
