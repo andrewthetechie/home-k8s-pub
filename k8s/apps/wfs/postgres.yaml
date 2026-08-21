@@ -1,0 +1,30 @@
+apiVersion: acid.zalan.do/v1
+kind: postgresql
+metadata:
+  name: wfs-db
+  namespace: wfs
+  labels:
+    team: wfs
+    app.kubernetes.io/instance: wfs
+    app.kubernetes.io/name: womens-fantasy-sports
+spec:
+  teamId: wfs
+  postgresql:
+    version: "18"
+  numberOfInstances: 1
+  enableMasterLoadBalancer: false
+  enableConnectionPooler: false
+  users:
+    wfs: []
+  databases:
+    wfs: wfs
+  volume:
+    size: 10Gi
+    storageClass: freenas-iscsi-ssd-csi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi

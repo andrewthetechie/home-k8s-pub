@@ -1,0 +1,63 @@
+# Template for the deploy-homelab workflow.
+# Not applied by ArgoCD (not listed in kustomization.yaml resources).
+# The workflow substitutes $TAG and pipes this through `kubectl apply -f -`.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: wfs-migrate-${TAG}
+  namespace: wfs
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      imagePullSecrets:
+        - name: wfs-ghcr-pull-secret
+      containers:
+        - name: migrate
+          image: ghcr.io/andrewthetechie/womens-fantasy-sports/backend:${TAG}
+          command:
+            - bash
+            - scripts/prestart.sh
+          env:
+            - name: ENVIRONMENT
+              value: staging
+            - name: DOMAIN
+              value: wfs.herrington.services
+            - name: FRONTEND_HOST
+              value: https://wfs.herrington.services
+            - name: BACKEND_CORS_ORIGINS
+              value: https://wfs.herrington.services
+            - name: POSTGRES_SERVER
+              value: wfs-db
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_DB
+              value: wfs
+            - name: PROTECTED_DB_NAME
+              value: womens-fantasy-sports-production
+            - name: LIVE_SCORING_ENABLED
+              value: "false"
+            - name: RECONCILIATION_DELAY_HOURS
+              value: "24"
+            - name: POST_FINAL_LOOKBACK_HOURS
+              value: "72"
+            - name: HOCKEYTECH_SEASON_ID_OVERRIDE
+              value: "8"
+            - name: HOCKEYTECH_TARGET_SEASON
+              value: 2026-27
+            - name: OTEL_SERVICE_NAME
+              value: wfs-backend
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: wfs.wfs-db.credentials.postgresql.acid.zalan.do
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: wfs.wfs-db.credentials.postgresql.acid.zalan.do
+                  key: password
+          envFrom:
+            - secretRef:
+                name: wfs-secrets
+      backoffLimit: 0

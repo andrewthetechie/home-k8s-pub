@@ -1,0 +1,334 @@
+# app-template values for the womens-fantasy-sports dev deployment.
+# The frontend image is built separately with homelab build-args by the
+# deploy-homelab workflow; its Deployment starts at 0 replicas until that
+# workflow produces and promotes the first image.
+defaultPodOptions:
+  imagePullSecrets:
+    - name: wfs-ghcr-pull-secret
+
+controllers:
+  backend:
+    strategy: RollingUpdate
+    replicas: 1
+    containers:
+      app:
+        image:
+          repository: ghcr.io/andrewthetechie/womens-fantasy-sports/backend
+          tag: 054a6c29135852b4e0556c09306a53bd82f45f31
+          pullPolicy: IfNotPresent
+        command:
+          - fastapi
+          - run
+          - --workers
+          - "4"
+        env:
+          ENVIRONMENT: staging
+          DOMAIN: wfs.herrington.services
+          FRONTEND_HOST: https://wfs.herrington.services
+          BACKEND_CORS_ORIGINS: https://wfs.herrington.services
+          POSTGRES_SERVER: wfs-db
+          POSTGRES_PORT: "5432"
+          POSTGRES_DB: wfs
+          PROTECTED_DB_NAME: womens-fantasy-sports-production
+          LIVE_SCORING_ENABLED: "false"
+          RECONCILIATION_DELAY_HOURS: "24"
+          POST_FINAL_LOOKBACK_HOURS: "72"
+          HOCKEYTECH_SEASON_ID_OVERRIDE: "8"
+          HOCKEYTECH_TARGET_SEASON: 2026-27
+          OTEL_SERVICE_NAME: wfs-backend
+          POSTGRES_USER:
+            valueFrom:
+              secretKeyRef:
+                name: wfs.wfs-db.credentials.postgresql.acid.zalan.do
+                key: username
+          POSTGRES_PASSWORD:
+            valueFrom:
+              secretKeyRef:
+                name: wfs.wfs-db.credentials.postgresql.acid.zalan.do
+                key: password
+        envFrom:
+          - secretRef:
+              name: wfs-secrets
+        probes:
+          liveness:
+            enabled: true
+            type: HTTP
+            path: /api/v1/utils/health-check/
+            port: 8000
+          readiness:
+            enabled: true
+            type: HTTP
+            path: /api/v1/utils/health-check/
+            port: 8000
+          startup:
+            enabled: true
+            type: HTTP
+            path: /api/v1/utils/health-check/
+            port: 8000
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: "1"
+            memory: 1Gi
+    initContainers:
+      prestart:
+        image:
+          repository: ghcr.io/andrewthetechie/womens-fantasy-sports/backend
+          tag: 054a6c29135852b4e0556c09306a53bd82f45f31
+          pullPolicy: IfNotPresent
+        command:
+          - bash
+          - scripts/prestart.sh
+        env:
+          ENVIRONMENT: staging
+          DOMAIN: wfs.herrington.services
+          FRONTEND_HOST: https://wfs.herrington.services
+          BACKEND_CORS_ORIGINS: https://wfs.herrington.services
+          POSTGRES_SERVER: wfs-db
+          POSTGRES_PORT: "5432"
+          POSTGRES_DB: wfs
+          PROTECTED_DB_NAME: womens-fantasy-sports-production
+          LIVE_SCORING_ENABLED: "false"
+          RECONCILIATION_DELAY_HOURS: "24"
+          POST_FINAL_LOOKBACK_HOURS: "72"
+          HOCKEYTECH_SEASON_ID_OVERRIDE: "8"
+          HOCKEYTECH_TARGET_SEASON: 2026-27
+          OTEL_SERVICE_NAME: wfs-backend
+          POSTGRES_USER:
+            valueFrom:
+              secretKeyRef:
+                name: wfs.wfs-db.credentials.postgresql.acid.zalan.do
+                key: username
+          POSTGRES_PASSWORD:
+            valueFrom:
+              secretKeyRef:
+                name: wfs.wfs-db.credentials.postgresql.acid.zalan.do
+                key: password
+        envFrom:
+          - secretRef:
+              name: wfs-secrets
+
+  frontend:
+    strategy: RollingUpdate
+    replicas: 0
+    containers:
+      app:
+        image:
+          repository: ghcr.io/andrewthetechie/womens-fantasy-sports/frontend
+          tag: homelab-054a6c29135852b4e0556c09306a53bd82f45f31
+          pullPolicy: IfNotPresent
+        probes:
+          liveness:
+            enabled: true
+            type: HTTP
+            path: /
+            port: 80
+          readiness:
+            enabled: true
+            type: HTTP
+            path: /
+            port: 80
+          startup:
+            enabled: true
+            type: HTTP
+            path: /
+            port: 80
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 256Mi
+
+  worker:
+    strategy: RollingUpdate
+    replicas: 1
+    containers:
+      app:
+        image:
+          repository: ghcr.io/andrewthetechie/womens-fantasy-sports/backend
+          tag: 054a6c29135852b4e0556c09306a53bd82f45f31-worker
+          pullPolicy: IfNotPresent
+        env:
+          ENVIRONMENT: staging
+          POSTGRES_SERVER: wfs-db
+          POSTGRES_PORT: "5432"
+          POSTGRES_DB: wfs
+          PROTECTED_DB_NAME: womens-fantasy-sports-production
+          RECONCILIATION_DELAY_HOURS: "24"
+          POST_FINAL_LOOKBACK_HOURS: "72"
+          HOCKEYTECH_SEASON_ID_OVERRIDE: "8"
+          HOCKEYTECH_TARGET_SEASON: 2026-27
+          POSTGRES_USER:
+            valueFrom:
+              secretKeyRef:
+                name: wfs.wfs-db.credentials.postgresql.acid.zalan.do
+                key: username
+          POSTGRES_PASSWORD:
+            valueFrom:
+              secretKeyRef:
+                name: wfs.wfs-db.credentials.postgresql.acid.zalan.do
+                key: password
+        envFrom:
+          - secretRef:
+              name: wfs-secrets
+        probes:
+          liveness:
+            enabled: false
+          readiness:
+            enabled: false
+          startup:
+            enabled: false
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: "1"
+            memory: 1Gi
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 0
+    initContainers:
+      prestart:
+        image:
+          repository: ghcr.io/andrewthetechie/womens-fantasy-sports/backend
+          tag: 054a6c29135852b4e0556c09306a53bd82f45f31
+          pullPolicy: IfNotPresent
+        command:
+          - bash
+          - scripts/prestart.sh
+        env:
+          ENVIRONMENT: staging
+          POSTGRES_SERVER: wfs-db
+          POSTGRES_PORT: "5432"
+          POSTGRES_DB: wfs
+          PROTECTED_DB_NAME: womens-fantasy-sports-production
+          RECONCILIATION_DELAY_HOURS: "24"
+          POST_FINAL_LOOKBACK_HOURS: "72"
+          HOCKEYTECH_SEASON_ID_OVERRIDE: "8"
+          HOCKEYTECH_TARGET_SEASON: 2026-27
+          POSTGRES_USER:
+            valueFrom:
+              secretKeyRef:
+                name: wfs.wfs-db.credentials.postgresql.acid.zalan.do
+                key: username
+          POSTGRES_PASSWORD:
+            valueFrom:
+              secretKeyRef:
+                name: wfs.wfs-db.credentials.postgresql.acid.zalan.do
+                key: password
+        envFrom:
+          - secretRef:
+              name: wfs-secrets
+
+  adminer:
+    strategy: RollingUpdate
+    replicas: 1
+    containers:
+      app:
+        image:
+          repository: adminer
+          tag: "4.8.1"
+          pullPolicy: IfNotPresent
+        env:
+          ADMINER_DESIGN: pepa-linha-dark
+        probes:
+          liveness:
+            enabled: true
+            type: HTTP
+            path: /
+            port: 8080
+          readiness:
+            enabled: true
+            type: HTTP
+            path: /
+            port: 8080
+          startup:
+            enabled: true
+            type: HTTP
+            path: /
+            port: 8080
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 256Mi
+
+service:
+  backend:
+    controller: backend
+    ports:
+      http:
+        port: 8000
+  frontend:
+    controller: frontend
+    ports:
+      http:
+        port: 80
+  adminer:
+    controller: adminer
+    ports:
+      http:
+        port: 8080
+
+ingress:
+  frontend:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/enabled: "false"
+    hosts:
+      - host: wfs.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: frontend
+              port: http
+    tls:
+      - secretName: wfs-frontend-tls
+        hosts:
+          - wfs.herrington.services
+  backend:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/enabled: "false"
+    hosts:
+      - host: api.wfs.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: backend
+              port: http
+    tls:
+      - secretName: wfs-backend-tls
+        hosts:
+          - api.wfs.herrington.services
+  adminer:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/enabled: "false"
+      nginx.ingress.kubernetes.io/auth-type: basic
+      nginx.ingress.kubernetes.io/auth-secret: wfs-adminer-basic-auth
+      nginx.ingress.kubernetes.io/auth-realm: "Authentication Required"
+    hosts:
+      - host: admin.wfs.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: adminer
+              port: http
+    tls:
+      - secretName: wfs-adminer-tls
+        hosts:
+          - admin.wfs.herrington.services
