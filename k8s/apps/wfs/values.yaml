@@ -19,6 +19,8 @@ controllers:
         command:
           - fastapi
           - run
+          - --host
+          - 0.0.0.0
           - --workers
           - "4"
         env:
