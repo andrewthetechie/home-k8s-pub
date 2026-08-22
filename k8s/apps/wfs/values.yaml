@@ -5,14 +5,6 @@
 defaultPodOptions:
   imagePullSecrets:
     - name: wfs-ghcr-pull-secret
-  # WORKAROUND: the cross-node Cilium VXLAN path (e.g. peaches<->drummer)
-  # intermittently drops packets on established DB connections, wedging
-  # psycopg mid-query (same-node is 0.3s, cross-node stalls permanently).
-  # Pin WFS pods to the same node as wfs-db-0 (drummer) so DB traffic stays
-  # on the local path like the worker. Remove once the Cilium 1.16 upgrade
-  # (docs/plans/2026-08-14-cilium-upgrade.md) fixes the overlay path.
-  nodeSelector:
-    kubernetes.io/hostname: drummer
 
 controllers:
   backend:
