@@ -81,22 +81,44 @@ rm /tmp/wfs-adminer.htpasswd
 ### 3) `wfs-ghcr-pull-secret`
 
 The current sealed secret was built from the active `gh auth token`. GitHub
-OAuth tokens expire, so create a dedicated **fine-grained PAT** with only
-`read:packages` and seal it:
+OAuth tokens expire, so create a dedicated **classic PAT** with only the
+`read:packages` scope and seal it:
+
+> **Do NOT make the GHCR packages public**, and do **NOT** use a fine-grained
+> PAT. The `womens-fantasy-sports` app and its images stay private.
+> Fine-grained PATs are **not** supported for GHCR `docker login`/`docker
+> pull` — GHCR requires a **classic** PAT. `read:packages` is a classic-PAT
+> scope.
+>
+> This pull secret is used together with the Spegel image cache and works
+> with it: Spegel is a best-effort layer cache, not the authenticating
+> registry. When Spegel does not have the image cached, containerd falls
+> back to upstream GHCR and authenticates with these credentials (matched to
+> the `ghcr.io` host). Worst case is always a direct pull from GHCR.
+> Single-tenant homelab, so Spegel's private-image distribution is not a
+> concern here.
 
 ```bash
 kubectl create secret docker-registry wfs-ghcr-pull-secret \
   --docker-server=ghcr.io \
   --docker-username=andrewthetechie \
-  --docker-password="<PAT>" \
+  --docker-password="<CLASSIC_PAT_with_read:packages>" \
   -n wfs --dry-run=client -o yaml | \
   kubeseal --cert ~/.kube/sealed-pub-cert.pem --format yaml > \
   nauvoo-v2/manifests/apps/wfs/sealedsecret-wfs-ghcr-pull-secret.yaml
 ```
 
-Alternative: make the `womens-fantasy-sports` GHCR packages public in the
-GitHub package settings, then delete the `imagePullSecrets` reference in
-`values.yaml`.
+The `wfs-ghcr-pull-secret` remains referenced via `defaultPodOptions.imagePullSecrets` in `values.yaml`. A classic PAT is long-lived; rotate it on a schedule (e.g. annually).
+
+> **Spegel mirror fixed (root-cause, 2026-08):** the previous setup had a dead
+> hostPort mirror target (`:30020`, connection refused) that made containerd
+> abort resolution and report `dial tcp ...:30020: connect: connection
+> refused` for every first-time ghcr pull. That dead target was removed from
+> Spegel (`home-k8s` commit, Spegel app freshly-synced); the live NodePort
+> service (`:30021`) is now the sole mirror target and containerd falls
+> through to GHCR. With the wrong credential you now get a clean `403
+> Forbidden` from GHCR (the token lacks `read:packages`) instead of a mirror
+> transport error — so a pull reaching `403` = just fix the token below.
 
 ### 4) Auth0 application configuration
 
