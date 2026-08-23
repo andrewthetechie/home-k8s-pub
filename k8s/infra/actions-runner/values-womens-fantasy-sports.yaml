@@ -1,7 +1,7 @@
 githubConfigUrl: https://github.com/andrewthetechie/womens-fantasy-sports
 githubConfigSecret: arc-github-app
 
-maxRunners: 6
+maxRunners: 8
 
 runnerScaleSetName: womens-fantasy-sports
 
