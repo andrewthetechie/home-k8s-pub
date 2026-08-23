@@ -13,7 +13,6 @@ defaultPodOptions:
   # (docs/plans/2026-08-14-cilium-upgrade.md).
   nodeSelector:
     kubernetes.io/hostname: drummer
-
 controllers:
   backend:
     strategy: RollingUpdate
@@ -22,7 +21,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/andrewthetechie/womens-fantasy-sports/backend
-          tag: d59a312d8fade634ccf35fe0fe9173b7a5415353
+          tag: 2a09a494c46c3cf2efbe16da87730bb651c94d7a
           pullPolicy: IfNotPresent
         command:
           - fastapi
@@ -87,7 +86,7 @@ controllers:
       prestart:
         image:
           repository: ghcr.io/andrewthetechie/womens-fantasy-sports/backend
-          tag: d59a312d8fade634ccf35fe0fe9173b7a5415353
+          tag: 2a09a494c46c3cf2efbe16da87730bb651c94d7a
           pullPolicy: IfNotPresent
         command:
           - bash
@@ -121,7 +120,6 @@ controllers:
         envFrom:
           - secretRef:
               name: wfs-secrets
-
   frontend:
     strategy: RollingUpdate
     replicas: 1
@@ -129,7 +127,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/andrewthetechie/womens-fantasy-sports/frontend
-          tag: d59a312d8fade634ccf35fe0fe9173b7a5415353
+          tag: 2a09a494c46c3cf2efbe16da87730bb651c94d7a
           pullPolicy: IfNotPresent
         probes:
           liveness:
@@ -154,7 +152,6 @@ controllers:
           limits:
             cpu: 500m
             memory: 256Mi
-
   worker:
     strategy: RollingUpdate
     replicas: 1
@@ -162,7 +159,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/andrewthetechie/womens-fantasy-sports/backend
-          tag: d59a312d8fade634ccf35fe0fe9173b7a5415353-worker
+          tag: 2a09a494c46c3cf2efbe16da87730bb651c94d7a-worker
           pullPolicy: IfNotPresent
         env:
           ENVIRONMENT: staging
@@ -209,7 +206,7 @@ controllers:
       prestart:
         image:
           repository: ghcr.io/andrewthetechie/womens-fantasy-sports/backend
-          tag: d59a312d8fade634ccf35fe0fe9173b7a5415353
+          tag: 2a09a494c46c3cf2efbe16da87730bb651c94d7a
           pullPolicy: IfNotPresent
         command:
           - bash
@@ -238,7 +235,6 @@ controllers:
         envFrom:
           - secretRef:
               name: wfs-secrets
-
   adminer:
     strategy: RollingUpdate
     replicas: 1
@@ -273,7 +269,6 @@ controllers:
           limits:
             cpu: 500m
             memory: 256Mi
-
 service:
   backend:
     controller: backend
@@ -290,7 +285,6 @@ service:
     ports:
       http:
         port: 8080
-
 ingress:
   frontend:
     enabled: true
