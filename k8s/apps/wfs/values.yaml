@@ -5,6 +5,14 @@
 defaultPodOptions:
   imagePullSecrets:
     - name: wfs-ghcr-pull-secret
+  # WORKAROUND: the cross-node Cilium VXLAN path (e.g. peaches<->drummer)
+  # intermittently drops packets on established DB connections, wedging
+  # psycopg mid-query (same-node is fast, cross-node stalls permanently).
+  # Pin WFS pods to the same node as wfs-db-0 (drummer) so DB traffic stays
+  # on the local path. Remove once the Cilium upgrade fixes the overlay path
+  # (docs/plans/2026-08-14-cilium-upgrade.md).
+  nodeSelector:
+    kubernetes.io/hostname: drummer
 
 controllers:
   backend:
@@ -14,7 +22,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/andrewthetechie/womens-fantasy-sports/backend
-          tag: 8fae13ad99d0d4caf29f88f7242d63f499db28d6
+          tag: d59a312d8fade634ccf35fe0fe9173b7a5415353
           pullPolicy: IfNotPresent
         command:
           - fastapi
@@ -79,7 +87,7 @@ controllers:
       prestart:
         image:
           repository: ghcr.io/andrewthetechie/womens-fantasy-sports/backend
-          tag: 8fae13ad99d0d4caf29f88f7242d63f499db28d6
+          tag: d59a312d8fade634ccf35fe0fe9173b7a5415353
           pullPolicy: IfNotPresent
         command:
           - bash
@@ -154,7 +162,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/andrewthetechie/womens-fantasy-sports/backend
-          tag: 8fae13ad99d0d4caf29f88f7242d63f499db28d6-worker
+          tag: d59a312d8fade634ccf35fe0fe9173b7a5415353-worker
           pullPolicy: IfNotPresent
         env:
           ENVIRONMENT: staging
@@ -201,7 +209,7 @@ controllers:
       prestart:
         image:
           repository: ghcr.io/andrewthetechie/womens-fantasy-sports/backend
-          tag: 8fae13ad99d0d4caf29f88f7242d63f499db28d6
+          tag: d59a312d8fade634ccf35fe0fe9173b7a5415353
           pullPolicy: IfNotPresent
         command:
           - bash
