@@ -16,7 +16,6 @@ defaultPodOptions:
   # Remove once the Cilium upgrade lands.
   nodeSelector:
     kubernetes.io/hostname: amos
-
 persistence:
   uploads:
     enabled: true
@@ -60,7 +59,6 @@ persistence:
           - path: /etc/otelcol-contrib/config.yaml
             subPath: config.yaml
             readOnly: true
-
 controllers:
   backend:
     strategy: RollingUpdate
@@ -69,7 +67,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/andrewthetechie/lawncare-saas-backend
-          tag: main-e95394348b266229efceae8cfdd78723f46694a7
+          tag: main-5c8ff54a9ee3f55b503f45647e76f587054c13f5
           pullPolicy: IfNotPresent
         env:
           ENVIRONMENT: staging
@@ -121,7 +119,7 @@ controllers:
       migrate:
         image:
           repository: ghcr.io/andrewthetechie/lawncare-saas-backend
-          tag: main-e95394348b266229efceae8cfdd78723f46694a7
+          tag: main-5c8ff54a9ee3f55b503f45647e76f587054c13f5
           pullPolicy: IfNotPresent
         command:
           - sh
@@ -148,7 +146,6 @@ controllers:
           limits:
             cpu: "1"
             memory: 1Gi
-
   caddy:
     strategy: RollingUpdate
     replicas: 1
@@ -156,7 +153,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/andrewthetechie/lawncare-saas-caddy
-          tag: main-e95394348b266229efceae8cfdd78723f46694a7
+          tag: main-5c8ff54a9ee3f55b503f45647e76f587054c13f5
           pullPolicy: IfNotPresent
         probes:
           liveness:
@@ -181,7 +178,6 @@ controllers:
           limits:
             cpu: 500m
             memory: 256Mi
-
   adminer:
     strategy: RollingUpdate
     replicas: 1
@@ -216,7 +212,6 @@ controllers:
           limits:
             cpu: 500m
             memory: 256Mi
-
   collector:
     strategy: RollingUpdate
     replicas: 1
@@ -252,7 +247,6 @@ controllers:
           limits:
             cpu: 250m
             memory: 200Mi
-
   cron:
     enabled: true
     type: cronjob
@@ -286,7 +280,6 @@ controllers:
           limits:
             cpu: 100m
             memory: 64Mi
-
 service:
   backend:
     controller: backend
@@ -308,7 +301,6 @@ service:
     ports:
       otlp:
         port: 4318
-
 ingress:
   app:
     enabled: true
