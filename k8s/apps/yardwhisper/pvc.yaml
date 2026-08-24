@@ -5,8 +5,8 @@ metadata:
   namespace: yardwhisper
 spec:
   accessModes:
-    - ReadWriteMany
-  storageClassName: freenas-nfs-ssd-csi
+    - ReadWriteOnce
+  storageClassName: freenas-iscsi-ssd-csi
   resources:
     requests:
       storage: 10Gi
@@ -18,8 +18,8 @@ metadata:
   namespace: yardwhisper
 spec:
   accessModes:
-    - ReadWriteMany
-  storageClassName: freenas-nfs-ssd-csi
+    - ReadWriteOnce
+  storageClassName: freenas-iscsi-ssd-csi
   resources:
     requests:
       storage: 5Gi
