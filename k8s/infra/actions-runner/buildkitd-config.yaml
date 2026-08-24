@@ -27,3 +27,6 @@ data:
 
     [registry."registry-local.registry-cache.svc.cluster.local:5000"]
       http = true
+
+    [registry."registry-images.registry-cache.svc.cluster.local:5000"]
+      http = true

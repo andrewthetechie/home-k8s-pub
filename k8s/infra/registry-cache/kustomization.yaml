@@ -18,3 +18,8 @@ resources:
   - registry-ghcr-wipe.yaml
   - registry-mcr-wipe.yaml
   - registry-local-wipe.yaml
+  - storage-images.yaml
+  - registry-images.yaml
+  - ingress-images.yaml
+  - registry-images-gc-config.yaml
+  - registry-images-gc.yaml

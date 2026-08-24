@@ -1,0 +1,12 @@
+# Durable deployment-image store. 100Gi: one GC cycle's accumulation plus the
+# live working set for two apps; expandable via the CSI if needed.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: registry-images
+  namespace: registry-cache
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: freenas-iscsi-csi
+  resources:
+    requests: { storage: 100Gi }

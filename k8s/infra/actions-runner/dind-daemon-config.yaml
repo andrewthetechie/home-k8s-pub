@@ -10,7 +10,8 @@ data:
         "registry-local.registry-cache.svc.cluster.local:5000",
         "registry-dockerhub.registry-cache.svc.cluster.local:5000",
         "registry-ghcr.registry-cache.svc.cluster.local:5000",
-        "registry-mcr.registry-cache.svc.cluster.local:5000"
+        "registry-mcr.registry-cache.svc.cluster.local:5000",
+        "registry-images.registry-cache.svc.cluster.local:5000"
       ],
       "registry-mirrors": [
         "http://registry-dockerhub.registry-cache.svc.cluster.local:5000"

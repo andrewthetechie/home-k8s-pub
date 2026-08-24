@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: registry-images
+  namespace: registry-cache
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate          # RWO iSCSI volume; never run two pods
+  selector:
+    matchLabels: { app: registry-images }
+  template:
+    metadata:
+      labels: { app: registry-images }
+    spec:
+      containers:
+        - name: registry
+          image: registry:2.8.3
+          ports:
+            - containerPort: 5000
+          env:
+            - name: REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY
+              value: /var/lib/registry
+            - name: REGISTRY_STORAGE_DELETE_ENABLED
+              value: "true"   # producers delete stale tags via the API
+            # Present-but-false so the GC CronJob flips maintenance mode
+            # with `kubectl set env`; do not remove.
+            - name: REGISTRY_STORAGE_MAINTENANCE_READONLY_ENABLED
+              value: "false"
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/registry
+          readinessProbe:
+            httpGet: { path: /v2/, port: 5000 }
+          livenessProbe:
+            httpGet: { path: /v2/, port: 5000 }
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: registry-images
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: registry-images
+  namespace: registry-cache
+spec:
+  selector: { app: registry-images }
+  ports:
+    - port: 5000
+      targetPort: 5000

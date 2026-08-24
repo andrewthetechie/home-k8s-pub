@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: registry-images
+  namespace: registry-cache
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    # NGINX Inc controller: nginx.ingress.kubernetes.io/* is silently ignored.
+    nginx.org/client-max-body-size: "0"    # default 1m -> 413 on layer pushes
+    nginx.org/proxy-read-timeout: "600s"   # default 60s; gha-cache-server precedent
+    nginx.org/proxy-send-timeout: "600s"
+spec:
+  tls:
+    - hosts: [registry.herrington.services]
+      secretName: registry-images-tls
+  rules:
+    - host: registry.herrington.services
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: registry-images
+                port: { number: 5000 }

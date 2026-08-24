@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: registry-images-gc
+  namespace: registry-cache
+data:
+  # Minimal config for `registry garbage-collect`; only the storage driver
+  # location matters.
+  gc-config.yml: |
+    version: 0.1
+    storage:
+      filesystem:
+        rootdirectory: /var/lib/registry
+  # Executor: runs GC against the PVC from the registry pod's node
+  # (podAffinity — RWO mounts alongside the live, read-only registry).
+  # -m deletes untagged manifest revisions so re-pushed tags' old blobs are
+  # reclaimed. Never run without the registry in read-only maintenance mode.
+  registry-images-gc-exec.yaml: |
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: registry-images-gc-exec
+      namespace: registry-cache
+    spec:
+      ttlSecondsAfterFinished: 600
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: Never
+          affinity:
+            podAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector:
+                    matchLabels:
+                      app: registry-images
+                  topologyKey: kubernetes.io/hostname
+                  namespaces: [registry-cache]
+          containers:
+            - name: gc
+              image: registry:2.8.3
+              command: ["registry", "garbage-collect", "-m", "/gc-config/gc-config.yml"]
+              volumeMounts:
+                - name: data
+                  mountPath: /var/lib/registry
+                - name: gc-config
+                  mountPath: /gc-config
+          volumes:
+            - name: data
+              persistentVolumeClaim:
+                claimName: registry-images
+            - name: gc-config
+              configMap:
+                name: registry-images-gc

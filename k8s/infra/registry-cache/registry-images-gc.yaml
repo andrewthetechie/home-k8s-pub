@@ -1,0 +1,52 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: registry-images-gc
+  namespace: registry-cache
+spec:
+  schedule: "30 6 * * 0"
+  timeZone: "America/Chicago"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: registry-wipe
+          containers:
+            - name: gc-orchestrator
+              image: alpine/k8s:1.28.1
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -euo pipefail
+                  NS=registry-cache
+                  D=registry-images
+
+                  reopen() {
+                    kubectl -n "$NS" set env deploy/"$D" REGISTRY_STORAGE_MAINTENANCE_READONLY_ENABLED=false
+                    kubectl -n "$NS" rollout status deploy/"$D" --timeout=300s
+                    kubectl -n "$NS" delete job "$D-gc-exec" --ignore-not-found --wait=false >/dev/null 2>&1 || true
+                  }
+                  # Never leave the registry read-only, whatever happens below.
+                  trap reopen EXIT
+
+                  # Phase 1: quiesce. Pulls keep working; pushes get 405.
+                  kubectl -n "$NS" set env deploy/"$D" REGISTRY_STORAGE_MAINTENANCE_READONLY_ENABLED=true
+                  kubectl -n "$NS" rollout status deploy/"$D" --timeout=300s
+
+                  # Phase 2: reclaim orphaned blobs.
+                  kubectl -n "$NS" delete job "$D-gc-exec" --ignore-not-found --wait=false >/dev/null 2>&1 || true
+                  kubectl -n "$NS" apply -f /gc/registry-images-gc-exec.yaml
+                  kubectl -n "$NS" wait --for=condition=complete job/"$D"-gc-exec --timeout=1800s
+
+                  # Phase 3 (via trap): re-open read-write. The rollout also
+                  # flushes the in-memory blob descriptor cache.
+              volumeMounts:
+                - name: gc
+                  mountPath: /gc
+          volumes:
+            - name: gc
+              configMap:
+                name: registry-images-gc
