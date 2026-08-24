@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: yardwhisper-collector-config
+  namespace: yardwhisper
+data:
+  # Ported from infra/roles/yardwhisper/templates/otel-collector-config.yaml.j2.
+  # DENY-BY-DEFAULT span-attribute allowlist (ADR 0024) — the single chokepoint
+  # that enforces the deny-by-default span-data policy. Fails CLOSED.
+  # The exporter auth header, which was computed at Ansible render time, is here
+  # resolved at runtime from GRAFANA_OTLP_AUTH_HEADER (sealed secret); only the
+  # endpoint URL and auth header are env-vars, the allowlists are fixed.
+  # WIDENING RAIL: any change to allowed_keys/keep_keys requires ALL of
+  # (1) this file, (2) tests/test_otel_collector_scrub.py, (3) docs/adr/0024.
+  config.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          http:
+            endpoint: 0.0.0.0:4318
+
+    processors:
+      redaction:
+        allow_all_keys: false
+        allowed_keys:
+          - http.route
+          - http.request.method
+          - http.response.status_code
+          - account_id
+          - customer_id
+          - server.address
+          - frames
+          - app.platform
+          - route.template
+          - build_id
+          - service.name
+          - service.version
+          - service.build_id
+          - telemetry.sdk.name
+          - telemetry.sdk.language
+          - telemetry.sdk.version
+        summary: debug
+
+      transform:
+        error_mode: ignore
+        trace_statements:
+          - context: span
+            statements:
+              - delete_matching_keys(attributes, ".*token.*")
+              - delete_matching_keys(attributes, ".*api_key.*")
+              - delete_matching_keys(attributes, ".*secret.*")
+          - context: resource
+            statements:
+              - keep_keys(attributes, ["service.name", "service.version", "service.build_id", "telemetry.sdk.name", "telemetry.sdk.language", "telemetry.sdk.version"])
+          - context: spanevent
+            statements:
+              - keep_keys(attributes, ["exception.type"])
+
+    exporters:
+      otlphttp:
+        endpoint: ${env:GRAFANA_OTLP_ENDPOINT}
+        headers:
+          Authorization: ${env:GRAFANA_OTLP_AUTH_HEADER}
+
+    service:
+      pipelines:
+        traces:
+          receivers:
+            - otlp
+          processors:
+            - redaction
+            - transform
+          exporters:
+            - otlphttp

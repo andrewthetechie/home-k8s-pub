@@ -1,0 +1,385 @@
+# app-template values for the Yard Whisper (lawncare-saas) homelab deployment.
+# Mirrors the WFS deployment pattern. Serves the operator SPA, admin SPA,
+# marketing site, and /api via the caddy image behind ingress; plain HTTP on
+# :80, TLS terminated by cert-manager.
+# Image tags are bumped by the lawncare-saas deploy-homelab workflow on every
+# merge to main (see lawncare-saas/.github/workflows/deploy-homelab.yml).
+defaultPodOptions:
+  imagePullSecrets:
+    - name: yardwhisper-ghcr-pull-secret
+  # WORKAROUND: the cross-node Cilium VXLAN path intermittently drops packets
+  # on established DB connections, wedging asyncpg mid-query (see wfs values
+  # and docs/plans/2026-08-14-cilium-upgrade.md). Pin yardwhisper pods to the
+  # same node as yardwhisper-db-0 so DB traffic stays on the local path. This
+  # selector MUST match the node hosting yardwhisper-db-0 — verify with
+  # `kubectl get pod yardwhisper-db-0 -n yardwhisper -o wide` after first sync.
+  # Remove once the Cilium upgrade lands.
+  nodeSelector:
+    kubernetes.io/hostname: drummer
+
+persistence:
+  uploads:
+    enabled: true
+    type: persistentVolumeClaim
+    existingClaim: yardwhisper-uploads
+    advancedMounts:
+      backend:
+        app:
+          - path: /app/uploads
+            readOnly: false
+      caddy:
+        app:
+          - path: /srv/uploads
+            readOnly: true
+  quarantine:
+    enabled: true
+    type: persistentVolumeClaim
+    existingClaim: yardwhisper-quarantine
+    advancedMounts:
+      backend:
+        app:
+          - path: /app/quarantine
+            readOnly: false
+  caddyfile:
+    enabled: true
+    type: configMap
+    name: yardwhisper-caddyfile
+    advancedMounts:
+      caddy:
+        app:
+          - path: /etc/caddy/Caddyfile
+            subPath: Caddyfile
+            readOnly: true
+  collectorconfig:
+    enabled: true
+    type: configMap
+    name: yardwhisper-collector-config
+    advancedMounts:
+      collector:
+        app:
+          - path: /etc/otelcol-contrib/config.yaml
+            subPath: config.yaml
+            readOnly: true
+
+controllers:
+  backend:
+    strategy: RollingUpdate
+    replicas: 1
+    containers:
+      app:
+        image:
+          repository: ghcr.io/andrewthetechie/lawncare-saas-backend
+          tag: main-e95394348b266229efceae8cfdd78723f46694a7
+          pullPolicy: IfNotPresent
+        env:
+          ENVIRONMENT: staging
+          DEV_AUTH_BYPASS: "false"
+          STORAGE_BACKEND: local
+          STORAGE_PATH: /app/uploads
+          NOTIFIER_BACKEND: logging
+          SMS_BACKEND: logging
+          EMAIL_FROM: 'Yard Whisper <notifications@yardwhisper.com>'
+          APP_BASE_URL: https://app.yardwhisper.herrington.services
+          APP_PUBLIC_BASE_URL: https://yardwhisper.herrington.services
+          OTEL_EXPORTER_OTLP_ENDPOINT: http://yardwhisper-collector:4318
+          # DATABASE_URL/ADMIN_DATABASE_URL and the DB-role passwords are sealed
+          # as literal DSNs in yardwhisper-secrets (app-template sorts env
+          # alphabetically, so k8s dependent-env $(VAR) expansion is unreliable
+          # here). The app role DSN is sealed because APP_DB_PASSWORD is ours.
+        envFrom:
+          - secretRef:
+              name: yardwhisper-secrets
+        probes:
+          liveness:
+            enabled: true
+            type: HTTP
+            path: /health
+            port: 8000
+          readiness:
+            enabled: true
+            type: HTTP
+            path: /health
+            port: 8000
+          startup:
+            enabled: true
+            type: HTTP
+            path: /health
+            port: 8000
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: "1"
+            memory: 1Gi
+    initContainers:
+      migrate:
+        image:
+          repository: ghcr.io/andrewthetechie/lawncare-saas-backend
+          tag: main-e95394348b266229efceae8cfdd78723f46694a7
+          pullPolicy: IfNotPresent
+        command:
+          - sh
+          - -ec
+          - 'export DATABASE_URL="postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@yardwhisper-db:5432/lawncare" && alembic upgrade head && python -m backend.bootstrap_app_role && python -m backend.bootstrap_admin_role'
+        env:
+          POSTGRES_USER:
+            valueFrom:
+              secretKeyRef:
+                name: operator.yardwhisper-db.credentials.postgresql.acid.zalan.do
+                key: username
+          POSTGRES_PASSWORD:
+            valueFrom:
+              secretKeyRef:
+                name: operator.yardwhisper-db.credentials.postgresql.acid.zalan.do
+                key: password
+        envFrom:
+          - secretRef:
+              name: yardwhisper-secrets
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: "1"
+            memory: 1Gi
+
+  caddy:
+    strategy: RollingUpdate
+    replicas: 1
+    containers:
+      app:
+        image:
+          repository: ghcr.io/andrewthetechie/lawncare-saas-caddy
+          tag: main-e95394348b266229efceae8cfdd78723f46694a7
+          pullPolicy: IfNotPresent
+        probes:
+          liveness:
+            enabled: true
+            type: HTTP
+            path: /
+            port: 80
+          readiness:
+            enabled: true
+            type: HTTP
+            path: /
+            port: 80
+          startup:
+            enabled: true
+            type: HTTP
+            path: /
+            port: 80
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 256Mi
+
+  adminer:
+    strategy: RollingUpdate
+    replicas: 1
+    containers:
+      app:
+        image:
+          repository: adminer
+          tag: "4.8.1"
+          pullPolicy: IfNotPresent
+        env:
+          ADMINER_DESIGN: pepa-linha-dark
+        probes:
+          liveness:
+            enabled: true
+            type: HTTP
+            path: /
+            port: 8080
+          readiness:
+            enabled: true
+            type: HTTP
+            path: /
+            port: 8080
+          startup:
+            enabled: true
+            type: HTTP
+            path: /
+            port: 8080
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 256Mi
+
+  collector:
+    strategy: RollingUpdate
+    replicas: 1
+    containers:
+      app:
+        image:
+          repository: otel/opentelemetry-collector-contrib
+          tag: "0.120.0"
+          pullPolicy: IfNotPresent
+        command:
+          - otelcol-contrib
+          - --config=/etc/otelcol-contrib/config.yaml
+        envFrom:
+          - secretRef:
+              name: yardwhisper-collector-secrets
+        probes:
+          liveness:
+            enabled: true
+            type: TCP
+            port: 4318
+          readiness:
+            enabled: true
+            type: TCP
+            port: 4318
+          startup:
+            enabled: true
+            type: TCP
+            port: 4318
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            cpu: 250m
+            memory: 200Mi
+
+  cron:
+    enabled: true
+    type: cronjob
+    cronjob:
+      schedule: "*/5 * * * *"
+      concurrencyPolicy: Forbid
+      successfulJobsHistory: 1
+      failedJobsHistory: 3
+    containers:
+      app:
+        image:
+          repository: alpine/curl
+          tag: latest
+          pullPolicy: IfNotPresent
+        command:
+          - /bin/sh
+          - -ec
+          - |-
+            curl -sf -X POST -H "X-Cron-Secret: $CRON_SECRET" http://yardwhisper-backend:8000/internal/cron/tick || true
+            curl -sf -X POST -H "X-Cron-Secret: $CRON_SECRET" http://yardwhisper-backend:8000/internal/cron/email-quota-check || true
+        env:
+          CRON_SECRET:
+            valueFrom:
+              secretKeyRef:
+                name: yardwhisper-secrets
+                key: CRON_SECRET
+        resources:
+          requests:
+            cpu: 10m
+            memory: 16Mi
+          limits:
+            cpu: 100m
+            memory: 64Mi
+
+service:
+  backend:
+    controller: backend
+    ports:
+      http:
+        port: 8000
+  caddy:
+    controller: caddy
+    ports:
+      http:
+        port: 80
+  adminer:
+    controller: adminer
+    ports:
+      http:
+        port: 8080
+  collector:
+    controller: collector
+    ports:
+      otlp:
+        port: 4318
+
+ingress:
+  app:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/enabled: "false"
+    hosts:
+      - host: app.yardwhisper.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: caddy
+              port: http
+    tls:
+      - secretName: yardwhisper-app-tls
+        hosts:
+          - app.yardwhisper.herrington.services
+  apex:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/enabled: "false"
+    hosts:
+      - host: yardwhisper.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: caddy
+              port: http
+      - host: www.yardwhisper.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: caddy
+              port: http
+    tls:
+      - secretName: yardwhisper-apex-tls
+        hosts:
+          - yardwhisper.herrington.services
+          - www.yardwhisper.herrington.services
+  admin:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/enabled: "false"
+    hosts:
+      - host: admin.yardwhisper.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: caddy
+              port: http
+    tls:
+      - secretName: yardwhisper-admin-tls
+        hosts:
+          - admin.yardwhisper.herrington.services
+  adminer:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/enabled: "false"
+      nginx.ingress.kubernetes.io/auth-type: basic
+      nginx.ingress.kubernetes.io/auth-secret: yardwhisper-adminer-basic-auth
+      nginx.ingress.kubernetes.io/auth-realm: "Authentication Required"
+    hosts:
+      - host: db.yardwhisper.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: adminer
+              port: http
+    tls:
+      - secretName: yardwhisper-db-admin-tls
+        hosts:
+          - db.yardwhisper.herrington.services

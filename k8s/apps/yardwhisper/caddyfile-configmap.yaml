@@ -1,0 +1,141 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: yardwhisper-caddyfile
+  namespace: yardwhisper
+data:
+  # Port of the repo Caddyfile for the homelab.
+  # TLS is terminated by nginx-ingress + cert-manager, so Caddy serves plain
+  # HTTP on :80 (http:// site addresses, no global ACME block). Upstream is the
+  # app-template backend service yardwhisper-backend:8000.
+  # Keep routing semantics byte-identical to upstream: /internal/* -> 403,
+  # body caps, /uploads sandbox headers, SPA @notfile OG-tag doc route.
+  Caddyfile: |
+    http://app.yardwhisper.herrington.services {
+      # /op/* — public operator pages live on the apex host; reject here.
+      handle /op/* {
+        respond 404
+      }
+
+      # /health — public health check, no auth required
+      handle /health* {
+        reverse_proxy * yardwhisper-backend:8000
+      }
+
+      # /uploads — local volume, no auth required (sandboxing headers)
+      handle_path /uploads/* {
+        header Content-Security-Policy "sandbox"
+        header X-Content-Type-Options "nosniff"
+        header Content-Disposition "attachment"
+        root * /srv/uploads
+        file_server
+      }
+
+      # /public, /invoices — public API routes (no auth required)
+      handle {
+        @public_api_paths path /public* /invoices*
+        reverse_proxy @public_api_paths yardwhisper-backend:8000
+      }
+
+      # /api — proxied to backend (JWT-authenticated), proxy-level body cap
+      handle {
+        @api_paths path /api*
+        request_body @api_paths {
+          max_size 10485760
+        }
+        reverse_proxy @api_paths yardwhisper-backend:8000
+      }
+
+      # /internal/* — must not be internet-accessible
+      handle /internal/* {
+        respond 403
+      }
+
+      # SPA document routes — backend injects <head> OG tags on non-file paths
+      handle {
+        root * /srv/html
+        @notfile not file
+        reverse_proxy @notfile yardwhisper-backend:8000
+        file_server
+      }
+    }
+
+    http://yardwhisper.herrington.services {
+      # /op/ (no slug) — redirect to marketing home
+      handle /op/ {
+        redir https://yardwhisper.herrington.services 302
+      }
+
+      # /op/* — SPA document routes (backend injects OG tags)
+      handle /op/* {
+        reverse_proxy yardwhisper-backend:8000
+      }
+
+      # /assets/* — SPA static JS/CSS
+      handle /assets/* {
+        root * /srv/html
+        file_server
+      }
+
+      # /uploads — uploaded media (sandboxing headers)
+      handle_path /uploads/* {
+        header Content-Security-Policy "sandbox"
+        header X-Content-Type-Options "nosniff"
+        header Content-Disposition "attachment"
+        root * /srv/uploads
+        file_server
+      }
+
+      # SPA public assets (og-default.png, favicon, icons, PWA images)
+      handle {
+        @spa_public_assets path /og-default.png /favicon.svg /icons.svg /pwa-192x192.png /pwa-512x512.png
+        root @spa_public_assets /srv/html
+        file_server @spa_public_assets
+      }
+
+      # /public*, /api*, /invoices*, /og* — proxied to backend (no CORS needed)
+      handle {
+        @backend_paths path /public* /api* /invoices* /og*
+        @api_only path /api*
+        request_body @api_only {
+          max_size 10485760
+        }
+        reverse_proxy @backend_paths yardwhisper-backend:8000
+      }
+
+      # Everything else — static marketing site
+      handle {
+        root * /srv/marketing
+        encode gzip
+        file_server
+      }
+
+      handle_errors {
+        rewrite * /{http.error.status_code}.html
+        file_server
+      }
+    }
+
+    http://www.yardwhisper.herrington.services {
+      redir https://yardwhisper.herrington.services{uri} 301
+    }
+
+    http://admin.yardwhisper.herrington.services {
+      header X-Robots-Tag "noindex"
+
+      # /admin* — admin API proxied same-origin to backend
+      handle {
+        @api path /admin*
+        request_body @api {
+          max_size 10485760
+        }
+        reverse_proxy @api yardwhisper-backend:8000
+      }
+
+      # SPA fallback — non-file paths rewrite to /index.html
+      handle {
+        root * /srv/admin
+        try_files {path} /index.html
+        file_server
+      }
+    }

@@ -1,0 +1,30 @@
+apiVersion: acid.zalan.do/v1
+kind: postgresql
+metadata:
+  name: yardwhisper-db
+  namespace: yardwhisper
+  labels:
+    team: yardwhisper
+    app.kubernetes.io/instance: yardwhisper
+    app.kubernetes.io/name: lawncare-saas
+spec:
+  teamId: yardwhisper
+  postgresql:
+    version: "17"
+  numberOfInstances: 1
+  enableMasterLoadBalancer: false
+  enableConnectionPooler: false
+  users:
+    operator: []
+  databases:
+    lawncare: operator
+  volume:
+    size: 10Gi
+    storageClass: freenas-iscsi-ssd-csi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
