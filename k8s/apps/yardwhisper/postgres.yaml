@@ -15,7 +15,8 @@ spec:
   enableMasterLoadBalancer: false
   enableConnectionPooler: false
   users:
-    operator: []
+    operator:
+      - superuser
   databases:
     lawncare: operator
   volume:
