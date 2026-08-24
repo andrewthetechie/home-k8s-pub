@@ -81,7 +81,12 @@ controllers:
           EMAIL_FROM: 'Yard Whisper <notifications@yardwhisper.com>'
           APP_BASE_URL: https://app.yardwhisper.herrington.services
           APP_PUBLIC_BASE_URL: https://yardwhisper.herrington.services
-          OTEL_EXPORTER_OTLP_ENDPOINT: http://yardwhisper-collector:4318
+          # Backend passes OTEL_EXPORTER_OTLP_ENDPOINT verbatim to OTLPSpanExporter(endpoint=...),
+          # which bypasses the SDK's _append_trace_path('/v1/traces') fallback (that only applies
+          # to the env-var default). otel-contrib:0.120.0 otlpreceiver serves only /v1/traces
+          # (root=404), so the full path must be explicit here. VPS collector accepted the bare
+          # root URL; the homelab one does not.
+          OTEL_EXPORTER_OTLP_ENDPOINT: http://yardwhisper-collector:4318/v1/traces
           # DATABASE_URL/ADMIN_DATABASE_URL and the DB-role passwords are sealed
           # as literal DSNs in yardwhisper-secrets (app-template sorts env
           # alphabetically, so k8s dependent-env $(VAR) expansion is unreliable
