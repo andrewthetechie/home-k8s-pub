@@ -15,7 +15,7 @@ defaultPodOptions:
   # `kubectl get pod yardwhisper-db-0 -n yardwhisper -o wide` after first sync.
   # Remove once the Cilium upgrade lands.
   nodeSelector:
-    kubernetes.io/hostname: drummer
+    kubernetes.io/hostname: amos
 
 persistence:
   uploads:
@@ -222,7 +222,7 @@ controllers:
           tag: "0.120.0"
           pullPolicy: IfNotPresent
         command:
-          - otelcol-contrib
+          - /otelcol-contrib
           - --config=/etc/otelcol-contrib/config.yaml
         envFrom:
           - secretRef:
