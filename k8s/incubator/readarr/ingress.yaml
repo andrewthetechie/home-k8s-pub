@@ -1,0 +1,41 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: readarr
+  namespace: piracy
+  labels:
+    app.kubernetes.io/instance: readarr
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: readarr
+    app.kubernetes.io/version: v0.1.0.715
+    helm.sh/chart: readarr-6.4.2
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    gethomepage.dev/description: Books PVR
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/group: Piracy
+    gethomepage.dev/icon: readarr
+    gethomepage.dev/name: Readarr
+    gethomepage.dev/weight: "3"
+    nginx.ingress.kubernetes.io/proxy-body-size: 50m
+    nginx.org/client-max-body-size: 50m
+    uptimekuma.io/monitor: "true"
+    uptimekuma.io/name: Readarr
+    uptimekuma.io/type: http
+    uptimekuma.io/interval: "120"
+spec:
+  rules:
+    - host: readarr.herrington.services
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: readarr
+                port:
+                  number: 8787
+  tls:
+    - hosts:
+        - readarr.herrington.services
+      secretName: readarr-tls

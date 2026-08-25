@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: readarr
+  namespace: piracy
+  labels:
+    app.kubernetes.io/instance: readarr
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: readarr
+    app.kubernetes.io/version: v0.1.0.715
+    helm.sh/chart: readarr-6.4.2
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: readarr
+      app.kubernetes.io/name: readarr
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: readarr
+        app.kubernetes.io/name: readarr
+    spec:
+      automountServiceAccountToken: true
+      containers:
+        - name: readarr
+          image: linuxserver/readarr:0.4.18-nightly
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: TZ
+              value: America/Chicago
+          ports:
+            - name: http
+              containerPort: 8787
+              protocol: TCP
+          livenessProbe:
+            exec:
+              command:
+                - /usr/bin/env
+                - bash
+                - -c
+                - curl --fail localhost:8787/api/v1/system/status?apiKey=`IFS=\> && while read -d \< E C; do if [[ $E = "ApiKey" ]]; then echo $C; fi; done < /config/config.xml`
+            failureThreshold: 5
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: 8787
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 10
+            timeoutSeconds: 1
+          startupProbe:
+            tcpSocket:
+              port: 8787
+            failureThreshold: 30
+            initialDelaySeconds: 0
+            periodSeconds: 5
+            timeoutSeconds: 1
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: media
+              mountPath: /books
+            - name: audiobooks
+              mountPath: /audiobooks
+            - name: downloads
+              mountPath: /home/andrewthetechie/downloads
+      serviceAccountName: default
+      enableServiceLinks: true
+      dnsPolicy: ClusterFirst
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: readarr-config
+        - name: media
+          nfs:
+            server: duarte.herrington.services
+            path: /mnt/Media/Books
+        - name: audiobooks
+          nfs:
+            server: duarte.herrington.services
+            path: /mnt/Media/Audio Books
+        - name: downloads
+          nfs:
+            server: duarte.herrington.services
+            path: /mnt/Media/downloaded

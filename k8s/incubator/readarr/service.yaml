@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: readarr
+  namespace: piracy
+  labels:
+    app.kubernetes.io/instance: readarr
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: readarr
+    app.kubernetes.io/version: v0.1.0.715
+    helm.sh/chart: readarr-6.4.2
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8787
+      protocol: TCP
+      targetPort: http
+  selector:
+    app.kubernetes.io/instance: readarr
+    app.kubernetes.io/name: readarr

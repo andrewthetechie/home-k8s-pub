@@ -1,0 +1,41 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: lidarr
+  namespace: piracy
+  labels:
+    app.kubernetes.io/instance: lidarr
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: lidarr
+    app.kubernetes.io/version: v1.0.0.2255
+    helm.sh/chart: lidarr-14.2.2
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    gethomepage.dev/description: Music Downloads
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/group: Piracy
+    gethomepage.dev/icon: lidarr
+    gethomepage.dev/name: Lidarr
+    gethomepage.dev/weight: "3"
+    nginx.ingress.kubernetes.io/proxy-body-size: 50m
+    nginx.org/client-max-body-size: 50m
+    uptimekuma.io/monitor: "true"
+    uptimekuma.io/name: Lidarr
+    uptimekuma.io/type: http
+    uptimekuma.io/interval: "120"
+spec:
+  rules:
+    - host: lidarr.herrington.services
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: lidarr
+                port:
+                  number: 8686
+  tls:
+    - hosts:
+        - lidarr.herrington.services
+      secretName: lidarr-tls

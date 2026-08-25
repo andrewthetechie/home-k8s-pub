@@ -88,47 +88,6 @@ helmCharts:
             - secretName: sonarr-tls
               hosts:
                 - sonarr.herrington.services
-  - name: lidarr
-    releaseName: lidarr
-    namespace: piracy
-    version: 14.2.2
-    repo: https://k8s-at-home.com/charts/
-    valuesInline:
-      image:
-        repository: linuxserver/lidarr
-        tag: 3.1.1-nightly
-      env:
-        TZ: "America/Chicago"
-      persistence:
-        config:
-          enabled: true
-          mountPath: /config
-      ingress:
-        main:
-          enabled: true
-          annotations:
-            cert-manager.io/cluster-issuer: letsencrypt-prod
-            gethomepage.dev/description: Music Downloads
-            gethomepage.dev/enabled: "true"
-            gethomepage.dev/group: Piracy
-            gethomepage.dev/icon: lidarr
-            gethomepage.dev/name: Lidarr
-            gethomepage.dev/weight: "3"
-            uptimekuma.io/monitor: "true"
-            uptimekuma.io/name: "Lidarr"
-            uptimekuma.io/type: "http"
-            uptimekuma.io/interval: "120"
-            nginx.ingress.kubernetes.io/proxy-body-size: "50m"
-            nginx.org/client-max-body-size: "50m"
-          hosts:
-            - host: lidarr.herrington.services
-              paths:
-                - path: /
-                  pathType: Prefix
-          tls:
-            - secretName: lidarr-tls
-              hosts:
-                - lidarr.herrington.services
   - name: prowlarr
     releaseName: prowlarr
     namespace: piracy
@@ -181,19 +140,11 @@ patches:
     path: patches/nfs-mount-sonarr.yaml
   - target:
       kind: Deployment
-      name: lidarr
-    path: patches/nfs-mount-lidarr.yaml
-  - target:
-      kind: Deployment
       name: radarr
     path: patches/nfs-mount-downloaded.yaml
   - target:
       kind: Deployment
       name: sonarr
-    path: patches/nfs-mount-downloaded.yaml
-  - target:
-      kind: Deployment
-      name: lidarr
     path: patches/nfs-mount-downloaded.yaml
   - target:
       kind: PersistentVolumeClaim
@@ -202,10 +153,6 @@ patches:
   - target:
       kind: PersistentVolumeClaim
       name: radarr-config
-    path: patches/pvc-ssd.yaml
-  - target:
-      kind: PersistentVolumeClaim
-      name: lidarr-config
     path: patches/pvc-ssd.yaml
   - target:
       kind: PersistentVolumeClaim

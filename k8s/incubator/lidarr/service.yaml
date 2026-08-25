@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: lidarr
+  namespace: piracy
+  labels:
+    app.kubernetes.io/instance: lidarr
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: lidarr
+    app.kubernetes.io/version: v1.0.0.2255
+    helm.sh/chart: lidarr-14.2.2
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8686
+      protocol: TCP
+      targetPort: http
+  selector:
+    app.kubernetes.io/instance: lidarr
+    app.kubernetes.io/name: lidarr
