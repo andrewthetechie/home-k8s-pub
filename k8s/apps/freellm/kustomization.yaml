@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: freellm
+
+resources:
+  - namespace.yaml
+  - sealed-freellm-secrets.yaml
+
+helmCharts:
+  - name: app-template
+    releaseName: freellm
+    namespace: freellm
+    version: 4.6.2
+    repo: https://bjw-s-labs.github.io/helm-charts
+    valuesFile: values.yaml

@@ -1,0 +1,59 @@
+controllers:
+  freellm:
+    strategy: RollingUpdate
+    containers:
+      app:
+        image:
+          repository: ghcr.io/tashfeenahmed/freellmapi
+          tag: v0.9.0
+          pullPolicy: IfNotPresent
+        envFrom:
+          - secretRef:
+              name: freellm-secrets
+        probes:
+          liveness:
+            enabled: true
+            type: HTTP
+            path: /api/ping
+          readiness:
+            enabled: true
+            type: HTTP
+            path: /api/ping
+          startup:
+            enabled: true
+            type: HTTP
+            path: /api/ping
+
+service:
+  freellm:
+    controller: freellm
+    ports:
+      http:
+        port: 3001
+
+ingress:
+  freellm:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/enabled: "false"
+    hosts:
+      - host: freellm.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: freellm
+              port: http
+    tls:
+      - secretName: freellm
+        hosts:
+          - freellm.herrington.services
+
+persistence:
+  data:
+    type: persistentVolumeClaim
+    accessMode: ReadWriteOnce
+    size: 1Gi
+    globalMounts:
+      - path: /app/server/data

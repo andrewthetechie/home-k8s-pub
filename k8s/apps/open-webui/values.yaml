@@ -1,0 +1,94 @@
+# Open WebUI Helm chart values — chart 16.1.0 / app 0.11.1
+# https://github.com/open-webui/helm-charts
+# https://docs.openwebui.com/
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/open-webui/open-webui
+  tag: "0.11.1"
+  pullPolicy: IfNotPresent
+
+# Single replica + persistence -> StatefulSet (chart auto-select; explicit for clarity)
+workload:
+  kind: StatefulSet
+
+# External tools subcharts all disabled — no bundled ollama/pipelines/tika/terminals
+ollama:
+  enabled: false
+ollamaUrls: []
+pipelines:
+  enabled: false
+tika:
+  enabled: false
+terminals:
+  enabled: false
+
+# Single replica -> use built-in in-memory websocket manager, skip bundled Redis
+websocket:
+  enabled: true
+  manager: ""
+  redis:
+    enabled: false
+
+persistence:
+  enabled: true
+  size: 2Gi
+  accessModes:
+    - ReadWriteOnce
+  storageClass: freenas-iscsi-ssd-csi
+
+enableOpenaiApi: true
+# 4 OpenAI-compatible connections; keys are in the open-webui-secrets sealed secret
+# (openaiApiKeysExistingSecretKey = OPENAI_API_KEYS), semicolon-separated in the SAME order:
+#   1. spark     -> key "local" (llama-server ignores it)
+#   2. opencode  -> opencode-go plan key
+#   3. kimi      -> kimi-coding plan key
+#   4. freellm   -> custom OpenAI API key
+openaiBaseApiUrls:
+  - "http://10.10.0.30:8888/v1"      # spark (deepseek-v4 flash)
+  - "https://opencode.ai/zen/go/v1"  # opencode-go
+  - "https://api.kimi.com/coding/v1" # kimi-coding
+  - "https://freellm.herrington.services/v1" # freellm (custom OpenAI API)
+openaiApiKeysExistingSecret: open-webui-secrets
+openaiApiKeysExistingSecretKey: OPENAI_API_KEYS
+
+# NOTE: WEBUI_URL (derived from ingress) and ENABLE_OLLAMA_API (False, since no
+# Ollama) are emitted by the chart itself - do NOT redefine them here or the
+# StatefulSet env gets duplicate keys and server-side apply rejects it.
+commonEnvVars:
+  - name: TZ
+    value: "America/Chicago"
+  - name: DEFAULT_MODELS
+    value: "deepseek-v4-flash-0731"
+  - name: WEBUI_SECRET_KEY
+    valueFrom:
+      secretKeyRef:
+        name: open-webui-secrets
+        key: WEBUI_SECRET_KEY
+
+# NOTE: Native MCP (streamable-HTTP) servers are configured via the Admin UI
+# (Settings -> External Tools -> + -> MCP Streamable HTTP), NOT env vars.
+# TOOL_SERVER_CONNECTIONS only ever registers OpenAPI/MCPO tool servers
+# (open_webui.utils.tools.get_tool_servers_data filters to type == 'openapi');
+# a `type: mcp` entry is parsed by the schema but ignored at runtime.
+# See README.md for the one-time Home Assistant MCP setup step.
+
+ingress:
+  enabled: true
+  class: nginx
+  host: open-webui.herrington.services
+  tls: true
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    # WebSocket support for the chat UI
+    nginx.org/websocket-services: open-webui
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    # Homepage (home.herrington.services) discovery
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/group: LLM
+    gethomepage.dev/name: Open WebUI
+    gethomepage.dev/icon: mdi-chat-outline
+    gethomepage.dev/description: Chat UI for spark/opencode/kimi models
+    gethomepage.dev/weight: "1"
