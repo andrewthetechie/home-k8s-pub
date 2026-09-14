@@ -58,15 +58,20 @@ spec:
         # by the kube-apiserver (and defaulted once the Service exists); none are
         # set in the manifest, so ArgoCD would flag a LoadBalancer Service as
         # perpetually OutOfSync. Ignore all server-managed fields.
+        # LoadBalancer Service fields that the kube-apiserver auto-populates and
+        # that aren't set in the manifest (nodePorts, clusterIP, family policy,
+        # session affinity, etc.). Ignoring them via jsonPointers is the standard
+        # fix for perpetual OutOfSync on ingress/loadbalancer Services.
         - group: ""
           kind: Service
-          jqPathExpressions:
-            - '.spec.ports[]?.nodePort'
-            - '.spec.healthCheckNodePort'
-            - '.spec.clusterIP'
-            - '.spec.clusterIPs[]?'
-            - '.spec.ipFamilies[]?'
-            - '.spec.ipFamilyPolicy'
-            - '.spec.internalTrafficPolicy'
-            - '.spec.sessionAffinity'
-            - '.spec.allocateLoadBalancerNodePorts'
+          jsonPointers:
+            - /spec/ports/0/nodePort
+            - /spec/ports/1/nodePort
+            - /spec/healthCheckNodePort
+            - /spec/clusterIP
+            - /spec/clusterIPs
+            - /spec/ipFamilies
+            - /spec/ipFamilyPolicy
+            - /spec/internalTrafficPolicy
+            - /spec/sessionAffinity
+            - /spec/allocateLoadBalancerNodePorts
