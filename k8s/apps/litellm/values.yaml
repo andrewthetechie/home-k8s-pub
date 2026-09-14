@@ -62,6 +62,13 @@ ingress:
   className: nginx
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
+    # Raise the ingress proxy timeouts from the NGINX IC default of 60s to
+    # match LiteLLM's deployed-model timeout (600s). Otherwise nginx returns a
+    # 504 when LiteLLM hasn't produced the first response byte within 60s,
+    # while LiteLLM itself would still be working the request (it allows 600s).
+    # See INCIDENT-2026-09-14-504.md.
+    nginx.org/proxy-read-timeout: "600"
+    nginx.org/proxy-send-timeout: "600"
   hosts:
     - host: litellm.herrington.services
       paths:

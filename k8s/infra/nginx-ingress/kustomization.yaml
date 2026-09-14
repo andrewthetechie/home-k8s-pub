@@ -17,3 +17,15 @@ helmCharts:
         kind: daemonset
         setAsDefaultIngress: true
         enableSnippets: true
+        config:
+          entries:
+            # NOTE: these three were previously applied out-of-band on the live
+            # ConfigMap (repo was OutOfSync). Hoisting them here makes them
+            # declared gitops state so a sync no longer wipes them.
+            client-max-body-size: 20m
+            error-log-level: debug
+            # Extend the access log with timing so 504s are correlatable from
+            # the access log alone. rt = time-to-final-response, urt = time to
+            # first/last upstream response byte(s), ua = upstream addr that
+            # served. The built-in 'main' format omits all of these.
+            log-format: '$remote_addr - $remote_user [$time_local] "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent" "$http_x_forwarded_for" rt=$request_time urt=$upstream_response_time ua=$upstream_addr'
