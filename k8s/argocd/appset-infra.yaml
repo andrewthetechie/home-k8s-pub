@@ -54,11 +54,19 @@ spec:
           kind: StatefulSet
           jqPathExpressions:
             - '.spec.volumeClaimTemplates[]?'
-        # nodePorts are auto-allocated by the kube-apiserver and healthCheckNodePort
-        # is auto-added when externalTrafficPolicy=Local; neither is set in the
-        # manifest, so ArgoCD would flag the Service as perpetually OutOfSync.
+        # nodePort / healthCheckNodePort / clusterIP / etc. are auto-allocated
+        # by the kube-apiserver (and defaulted once the Service exists); none are
+        # set in the manifest, so ArgoCD would flag a LoadBalancer Service as
+        # perpetually OutOfSync. Ignore all server-managed fields.
         - group: ""
           kind: Service
           jqPathExpressions:
             - '.spec.ports[].nodePort'
             - '.spec.healthCheckNodePort'
+            - '.spec.clusterIP'
+            - '.spec.clusterIPs[]'
+            - '.spec.ipFamilies[]'
+            - '.spec.ipFamilyPolicy'
+            - '.spec.internalTrafficPolicy'
+            - '.spec.sessionAffinity'
+            - '.spec.allocateLoadBalancerNodePorts'
