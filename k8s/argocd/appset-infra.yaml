@@ -61,11 +61,11 @@ spec:
         - group: ""
           kind: Service
           jqPathExpressions:
-            - '.spec.ports[].nodePort'
+            - '.spec.ports[]?.nodePort'
             - '.spec.healthCheckNodePort'
             - '.spec.clusterIP'
-            - '.spec.clusterIPs[]'
-            - '.spec.ipFamilies[]'
+            - '.spec.clusterIPs[]?'
+            - '.spec.ipFamilies[]?'
             - '.spec.ipFamilyPolicy'
             - '.spec.internalTrafficPolicy'
             - '.spec.sessionAffinity'
