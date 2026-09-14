@@ -46,3 +46,9 @@ spec:
           kind: StatefulSet
           jqPathExpressions:
             - '.spec.volumeClaimTemplates[]?'
+        # SealedSecret controller strips creationTimestamp:null from
+        # spec.template.metadata; ignoring it prevents perpetual OutOfSync.
+        - group: bitnami.com
+          kind: SealedSecret
+          jqPathExpressions:
+            - '.spec.template.metadata.creationTimestamp'
