@@ -50,6 +50,9 @@ migrationJob:
 
 proxy_config:
   model_list: []
+  router_settings:
+    fallbacks:
+      - high-reasoning: ["kimi-k3"]
   general_settings:
     master_key: os.environ/PROXY_MASTER_KEY
 
