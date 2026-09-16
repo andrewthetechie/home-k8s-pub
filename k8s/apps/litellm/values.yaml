@@ -50,6 +50,13 @@ migrationJob:
 
 proxy_config:
   model_list: []
+  # Structured JSON logs (one JSON object per line, each carrying the
+  # request_id) so a request that gets cut off by nginx/the client mid-stream
+  # is still traceable to a specific request_id in the pod logs, and can be
+  # correlated with the uvicorn access lines and the LiteLLM_SpendLogs row.
+  # See INCIDENT-2026-09-14-504.md (stalling glm-5.3 upstream requests).
+  litellm_settings:
+    json_logs: true
   general_settings:
     master_key: os.environ/PROXY_MASTER_KEY
 
