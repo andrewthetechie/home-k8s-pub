@@ -4,6 +4,7 @@ namespace: flakeradar
 
 resources:
   - namespace.yaml
+  - postgres.yaml
   - sealed-flakeradar-secrets.yaml
 
 helmCharts:

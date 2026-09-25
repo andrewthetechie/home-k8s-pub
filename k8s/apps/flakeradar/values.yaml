@@ -4,16 +4,38 @@ controllers:
     containers:
       app:
         image:
-          repository: ghcr.io/andrewthetechie/home-k8s-pub/flakeradar
-          tag: f129c284ce7a64f9efc31e881664485313b9fdbd@sha256:6e4a26f035e68f6ca978e72b2c7fef4d6dd803a9f0bf6c3743c0f7de8a9d4687
+          repository: ghcr.io/andrewthetechie/flakeradar
+          tag: sha-78e011b
           pullPolicy: IfNotPresent
+        # Build the PostgreSQL DSN at runtime from the postgres-operator
+        # credentials secret. app-template cannot concatenate two secret refs
+        # into a single env var, so we compose FLAKERADAR_DATABASE_URL here and
+        # exec the image's default uvicorn command. The app image runs Alembic
+        # migrations itself on startup (advisory-locked across workers).
+        command:
+          - /bin/sh
+          - -ec
+          - 'export FLAKERADAR_DATABASE_URL="postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@flakeradar-db:5432/flakeradar" && exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2'
         env:
-          FLAKERADAR_DATABASE_URL: "sqlite:////srv/backend/data/flakeradar.db"
           FLAKERADAR_API_TOKEN:
             valueFrom:
               secretKeyRef:
                 name: flakeradar-secrets
                 key: FLAKERADAR_API_TOKEN
+          FLAKERADAR_FLAKE_THRESHOLD: "0.30"
+          FLAKERADAR_SCORE_WINDOW: "50"
+          FLAKERADAR_SCORE_DECAY: "0.85"
+          FLAKERADAR_CORS_ORIGINS: https://flakes.herrington.services
+          POSTGRES_USER:
+            valueFrom:
+              secretKeyRef:
+                name: flakeradar.flakeradar-db.credentials.postgresql.acid.zalan.do
+                key: username
+          POSTGRES_PASSWORD:
+            valueFrom:
+              secretKeyRef:
+                name: flakeradar.flakeradar-db.credentials.postgresql.acid.zalan.do
+                key: password
         probes:
           liveness:
             enabled: true
@@ -35,14 +57,6 @@ controllers:
             memory: 256Mi
           limits:
             memory: 512Mi
-
-persistence:
-  data:
-    type: persistentVolumeClaim
-    accessMode: ReadWriteOnce
-    size: 1Gi
-    globalMounts:
-      - path: /srv/backend/data
 
 service:
   flakeradar:

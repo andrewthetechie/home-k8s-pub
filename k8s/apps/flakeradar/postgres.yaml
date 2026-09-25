@@ -1,0 +1,30 @@
+apiVersion: acid.zalan.do/v1
+kind: postgresql
+metadata:
+  name: flakeradar-db
+  namespace: flakeradar
+  labels:
+    team: flakeradar
+    app.kubernetes.io/instance: flakeradar
+    app.kubernetes.io/name: flakeradar
+spec:
+  teamId: flakeradar
+  postgresql:
+    version: "17"
+  numberOfInstances: 1
+  enableMasterLoadBalancer: false
+  enableConnectionPooler: false
+  users:
+    flakeradar: []
+  databases:
+    flakeradar: flakeradar
+  volume:
+    size: 10Gi
+    storageClass: freenas-iscsi-ssd-csi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
