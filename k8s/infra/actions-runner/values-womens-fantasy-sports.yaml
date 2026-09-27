@@ -20,6 +20,16 @@ controllerServiceAccount:
 
 template:
   spec:
+    # Keep CI off the control planes: their system SSDs also hold etcd, and
+    # runner disk load (dind image loads, builds) pushed etcd fsync to seconds,
+    # causing leader elections and API timeouts cluster-wide (2026-09-27).
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: node-role.kubernetes.io/control-plane
+                  operator: DoesNotExist
     # Spread this scale set's runner pods across nodes. A CI fan-out (e.g. 4
     # playwright shards) landing on one node saturates its disk/CPU with
     # concurrent multi-GB `docker load`/untar, stretching the "Load images"
