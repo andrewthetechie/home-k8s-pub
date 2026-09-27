@@ -11,6 +11,12 @@ spec:
   teamId: flakeradar
   postgresql:
     version: "17"
+    parameters:
+      idle_in_transaction_session_timeout: "300000"
+      # Enable and configure TCP keepalive settings (values in seconds)
+      tcp_keepalives_idle: "60"       # Time between the last data packet sent and the first keepalive probe
+      tcp_keepalives_interval: "10"   # Time between consecutive keepalive probes if no response
+      tcp_keepalives_count: "6"       # Number of unacknowledged probes b
   numberOfInstances: 1
   enableMasterLoadBalancer: false
   enableConnectionPooler: false
