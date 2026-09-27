@@ -4,8 +4,17 @@ metadata:
   name: dind-daemon-config
   namespace: arc-runners
 data:
+  # mtu / default-network-opts: pod MTU is 1420 (Cilium, sized for KubeSpan);
+  # inner Docker networks must fit inside it: 1420 - 50 = 1370. "mtu" covers
+  # the default bridge, default-network-opts covers compose-created networks.
   daemon.json: |
     {
+      "mtu": 1370,
+      "default-network-opts": {
+        "bridge": {
+          "com.docker.network.driver.mtu": "1370"
+        }
+      },
       "insecure-registries": [
         "registry-local.registry-cache.svc.cluster.local:5000",
         "registry-dockerhub.registry-cache.svc.cluster.local:5000",
