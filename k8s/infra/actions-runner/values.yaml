@@ -7,9 +7,14 @@ runnerScaleSetName: lawncare-saas
 
 # DinD gives each runner pod its own Docker daemon, required for jobs that
 # build images or use docker/docker-compose steps.
-containerMode:
-  type: "dind"
-
+#
+# The chart's containerMode: dind hardcodes the dind container and silently
+# drops any user-supplied container named "dind", so there is no way to mount
+# /etc/docker/daemon.json into it. We therefore leave containerMode unset and
+# hand-roll the dind sidecar below (init-dind-externals, the work/dind-sock/
+# dind-externals emptyDirs, DOCKER_HOST on the runner, and the dind container
+# itself with dind-daemon-config mounted) so dockerd picks up the LAN registry
+# mirror, the insecure registries, and MTU 1370.
 
 # Explicitly reference the controller SA so the chart can create RoleBindings
 # when the controller is in a different namespace (arc-systems).
@@ -39,10 +44,30 @@ template:
         labelSelector:
           matchLabels:
             actions.github.com/scale-set-name: lawncare-saas
+    # Replicates the chart's containerMode: dind init container: copy the
+    # runner image's /home/runner/externals into the dind-externals emptyDir
+    # that the dind container mounts at /home/runner/externals.
+    initContainers:
+      - name: init-dind-externals
+        image: ghcr.io/falcondev-oss/actions-runner:latest
+        command: ["cp"]
+        args: ["-r", "/home/runner/externals/.", "/home/runner/tmpDir/"]
+        volumeMounts:
+          - name: dind-externals
+            mountPath: /home/runner/tmpDir
     volumes:
+      - name: work
+        emptyDir: {}
+      - name: dind-sock
+        emptyDir: {}
+      - name: dind-externals
+        emptyDir: {}
       - name: buildkitd-config
         configMap:
           name: buildkitd-config
+      - name: dind-daemon-config
+        configMap:
+          name: dind-daemon-config
     containers:
       - name: runner
         # falcondev fork of the actions runner: reads CUSTOM_ACTIONS_RESULTS_URL
@@ -57,6 +82,39 @@ template:
             value: tcp://127.0.0.1:1234
           - name: CUSTOM_ACTIONS_RESULTS_URL
             value: "https://actions-cache.herrington.services/"
+          - name: DOCKER_HOST
+            value: unix:///var/run/docker.sock
+          - name: RUNNER_WAIT_FOR_DOCKER_IN_SECONDS
+            value: "120"
+        volumeMounts:
+          - name: work
+            mountPath: /home/runner/_work
+          - name: dind-sock
+            mountPath: /var/run
+      # Hand-rolled dind (the chart's is hardcoded and can't mount daemon.json).
+      # Mounts dind-daemon-config at /etc/docker/daemon.json so dockerd trusts
+      # registry-local over plain HTTP and mirrors docker.io to registry-dockerhub.
+      - name: dind
+        image: docker:dind
+        args:
+          - dockerd
+          - --host=unix:///var/run/docker.sock
+          - --group=$(DOCKER_GROUP_GID)
+        env:
+          - name: DOCKER_GROUP_GID
+            value: "123"
+        securityContext:
+          privileged: true
+        volumeMounts:
+          - name: work
+            mountPath: /home/runner/_work
+          - name: dind-sock
+            mountPath: /var/run
+          - name: dind-externals
+            mountPath: /home/runner/externals
+          - name: dind-daemon-config
+            mountPath: /etc/docker/daemon.json
+            subPath: daemon.json
       - name: buildkitd
         image: moby/buildkit@sha256:28a898719c18a33f4e8000685287fa36fd0dd9560c6440227d3a732d79bb41d8  # v0.32.2
         args:
