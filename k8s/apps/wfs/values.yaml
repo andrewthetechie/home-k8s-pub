@@ -35,6 +35,7 @@ controllers:
           PROJECT_NAME: Women's Fantasy Sports
           DOMAIN: wfs.herrington.services
           FRONTEND_HOST: https://wfs.herrington.services
+          BACKEND_HOST: https://api.wfs.herrington.services
           BACKEND_CORS_ORIGINS: https://wfs.herrington.services
           POSTGRES_SERVER: wfs-db
           POSTGRES_PORT: "5432"
@@ -96,6 +97,7 @@ controllers:
           PROJECT_NAME: Women's Fantasy Sports
           DOMAIN: wfs.herrington.services
           FRONTEND_HOST: https://wfs.herrington.services
+          BACKEND_HOST: https://api.wfs.herrington.services
           BACKEND_CORS_ORIGINS: https://wfs.herrington.services
           POSTGRES_SERVER: wfs-db
           POSTGRES_PORT: "5432"
@@ -164,6 +166,8 @@ controllers:
         env:
           ENVIRONMENT: staging
           PROJECT_NAME: Women's Fantasy Sports
+          FRONTEND_HOST: https://wfs.herrington.services
+          BACKEND_HOST: https://api.wfs.herrington.services
           POSTGRES_SERVER: wfs-db
           POSTGRES_PORT: "5432"
           POSTGRES_DB: wfs
@@ -214,6 +218,8 @@ controllers:
         env:
           ENVIRONMENT: staging
           PROJECT_NAME: Women's Fantasy Sports
+          FRONTEND_HOST: https://wfs.herrington.services
+          BACKEND_HOST: https://api.wfs.herrington.services
           POSTGRES_SERVER: wfs-db
           POSTGRES_PORT: "5432"
           POSTGRES_DB: wfs
