@@ -21,7 +21,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/andrewthetechie/womens-fantasy-sports/backend
-          tag: 3b7e95bf0aa51ffd8651dce68ac3d1df89c5fba5
+          tag: 0f70045dcc66ec8251af14a64104698e41ca933a
           pullPolicy: IfNotPresent
         command:
           - fastapi
@@ -87,7 +87,7 @@ controllers:
       prestart:
         image:
           repository: ghcr.io/andrewthetechie/womens-fantasy-sports/backend
-          tag: 3b7e95bf0aa51ffd8651dce68ac3d1df89c5fba5
+          tag: 0f70045dcc66ec8251af14a64104698e41ca933a
           pullPolicy: IfNotPresent
         command:
           - bash
@@ -129,7 +129,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/andrewthetechie/womens-fantasy-sports/frontend
-          tag: 3b7e95bf0aa51ffd8651dce68ac3d1df89c5fba5
+          tag: 0f70045dcc66ec8251af14a64104698e41ca933a
           pullPolicy: IfNotPresent
         probes:
           liveness:
@@ -161,7 +161,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/andrewthetechie/womens-fantasy-sports/backend
-          tag: 3b7e95bf0aa51ffd8651dce68ac3d1df89c5fba5-worker
+          tag: 0f70045dcc66ec8251af14a64104698e41ca933a-worker
           pullPolicy: IfNotPresent
         env:
           ENVIRONMENT: staging
@@ -210,7 +210,7 @@ controllers:
       prestart:
         image:
           repository: ghcr.io/andrewthetechie/womens-fantasy-sports/backend
-          tag: 3b7e95bf0aa51ffd8651dce68ac3d1df89c5fba5
+          tag: 0f70045dcc66ec8251af14a64104698e41ca933a
           pullPolicy: IfNotPresent
         command:
           - bash
