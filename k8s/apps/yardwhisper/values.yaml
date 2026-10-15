@@ -63,6 +63,12 @@ controllers:
   backend:
     strategy: RollingUpdate
     replicas: 1
+    # The app runs as uid 1001 (appuser) but the uploads/quarantine PVCs are
+    # root-owned; fsGroup makes them group-writable so per-account mkdir works.
+    pod:
+      securityContext:
+        fsGroup: 1001
+        fsGroupChangePolicy: OnRootMismatch
     containers:
       app:
         image:
