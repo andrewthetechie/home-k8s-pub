@@ -73,7 +73,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/andrewthetechie/lawncare-saas-backend
-          tag: main-b2bfa82c4a122d94d4fc35f1fc07242988077e10
+          tag: main-52d2472d83a998df0af57d08a2f934af565d4186
           pullPolicy: IfNotPresent
         env:
           ENVIRONMENT: staging
@@ -125,7 +125,7 @@ controllers:
       migrate:
         image:
           repository: ghcr.io/andrewthetechie/lawncare-saas-backend
-          tag: main-b2bfa82c4a122d94d4fc35f1fc07242988077e10
+          tag: main-52d2472d83a998df0af57d08a2f934af565d4186
           pullPolicy: IfNotPresent
         command:
           - sh
@@ -159,7 +159,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/andrewthetechie/lawncare-saas-caddy
-          tag: main-b2bfa82c4a122d94d4fc35f1fc07242988077e10
+          tag: main-52d2472d83a998df0af57d08a2f934af565d4186
           pullPolicy: IfNotPresent
         probes:
           liveness:
