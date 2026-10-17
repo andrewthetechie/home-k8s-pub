@@ -5,7 +5,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/andrewthetechie/flakeradar
-          tag: sha-3c0065e
+          tag: sha-7f16b88
           pullPolicy: IfNotPresent
         # Build the PostgreSQL DSN at runtime from the postgres-operator
         # credentials secret. app-template cannot concatenate two secret refs
