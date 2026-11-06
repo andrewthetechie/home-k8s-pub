@@ -11,5 +11,7 @@ helmCharts:
     releaseName: arc-controller
     namespace: arc-systems
     # Check https://github.com/actions/actions-runner-controller/releases for latest
-    version: 0.14.2
+    # 0.14.2 -> 0.15.0: fixes AutoscalingRunnerSet permanently stuck in Outdated phase
+    # (actions/actions-runner-controller#4596, #4595), fixed by PRs #4644 and #4660.
+    version: 0.15.1
     includeCRDs: true
