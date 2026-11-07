@@ -3,7 +3,7 @@ githubConfigSecret: arc-github-app
 
 maxRunners: 4
 
-runnerScaleSetName: writers-app
+runnerScaleSetName: writers-app-v2
 
 # DinD gives each runner pod its own Docker daemon, required for jobs that
 # build images or use docker/docker-compose steps.
@@ -43,7 +43,7 @@ template:
         whenUnsatisfiable: ScheduleAnyway
         labelSelector:
           matchLabels:
-            actions.github.com/scale-set-name: writers-app
+            actions.github.com/scale-set-name: writers-app-v2
     # Replicates the chart's containerMode: dind init container: copy the
     # runner image's /home/runner/externals into the dind-externals emptyDir
     # that the dind container mounts at /home/runner/externals.
