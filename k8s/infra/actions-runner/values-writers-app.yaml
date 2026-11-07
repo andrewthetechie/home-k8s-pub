@@ -3,7 +3,7 @@ githubConfigSecret: arc-github-app
 
 maxRunners: 4
 
-runnerScaleSetName: writers-app-v2
+runnerScaleSetName: writers-app
 
 # DinD gives each runner pod its own Docker daemon, required for jobs that
 # build images or use docker/docker-compose steps.
@@ -43,13 +43,13 @@ template:
         whenUnsatisfiable: ScheduleAnyway
         labelSelector:
           matchLabels:
-            actions.github.com/scale-set-name: writers-app-v2
+            actions.github.com/scale-set-name: writers-app
     # Replicates the chart's containerMode: dind init container: copy the
     # runner image's /home/runner/externals into the dind-externals emptyDir
     # that the dind container mounts at /home/runner/externals.
     initContainers:
       - name: init-dind-externals
-        image: ghcr.io/falcondev-oss/actions-runner:latest
+        image: ghcr.io/falcondev-oss/actions-runner:2.338.2
         command: ["cp"]
         args: ["-r", "/home/runner/externals/.", "/home/runner/tmpDir/"]
         volumeMounts:
@@ -73,9 +73,12 @@ template:
         # falcondev fork of the actions runner: reads CUSTOM_ACTIONS_RESULTS_URL
         # so the pod can point actions/cache at the self-hosted cache server
         # (the stock runner ignores ACTIONS_RESULTS_URL — GitHub injects its own).
-        # :latest deliberately, not a digest pin: GitHub rejects outdated runners,
-        # and this fork is the critical currency risk of the whole cache project.
-        image: ghcr.io/falcondev-oss/actions-runner:latest
+        # Pinned to a current agent version. GitHub deprecates old runner
+        # versions and the broker rejects them ("version X is deprecated and
+        # cannot receive messages"), which parks the whole scale set in ARC's
+        # sticky Outdated phase. :latest proved unreliable (nodes served a stale
+        # cached tag). Bump this tag deliberately when you upgrade the fork.
+        image: ghcr.io/falcondev-oss/actions-runner:2.338.2
         command: ["/home/runner/run.sh"]
         env:
           - name: BUILDKIT_HOST
