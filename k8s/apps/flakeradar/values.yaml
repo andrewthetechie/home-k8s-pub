@@ -1,8 +1,16 @@
 controllers:
   flakeradar:
     # Cutover from the 0.1.x Python server: stop the old deployment first
-    # (docs/cutover-rust.md step 2), so Recreate rather than RollingUpdate.
-    strategy: Recreate
+    # (docs/cutover-rust.md step 2). Recreate would say that directly, but the
+    # live Deployment already carries API-defaulted rollingUpdate fields that
+    # Argo's server-side apply cannot remove, and Recreate + rollingUpdate is
+    # rejected. Zero surge and one unavailable is the same stop-then-start
+    # behaviour: the old pod goes away before the new one is created.
+    # "0" is quoted because the chart skips falsy values.
+    strategy: RollingUpdate
+    rollingUpdate:
+      surge: "0"
+      unavailable: 1
     containers:
       app:
         image:
