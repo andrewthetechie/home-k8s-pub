@@ -23,7 +23,10 @@ spec:
   users:
     flakeradar: []
   databases:
-    flakeradar: flakeradar
+    # 0.2 (the Rust binary) creates its own schema and refuses a database the
+    # 0.1.x Python server made, so it gets a fresh one. The old flakeradar
+    # database holds no data worth keeping; docs/cutover-rust.md step 4.
+    flakeradar_rust: flakeradar
   volume:
     size: 10Gi
     storageClass: freenas-iscsi-ssd-csi

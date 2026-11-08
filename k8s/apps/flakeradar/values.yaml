@@ -1,22 +1,41 @@
 controllers:
   flakeradar:
-    strategy: RollingUpdate
+    # Cutover from the 0.1.x Python server: stop the old deployment first
+    # (docs/cutover-rust.md step 2), so Recreate rather than RollingUpdate.
+    strategy: Recreate
     containers:
       app:
         image:
           repository: ghcr.io/andrewthetechie/flakeradar
-          tag: sha-7f16b88
+          tag: sha-6ecd2e7
           pullPolicy: IfNotPresent
-        # Build the PostgreSQL DSN at runtime from the postgres-operator
-        # credentials secret. app-template cannot concatenate two secret refs
-        # into a single env var, so we compose FLAKERADAR_DATABASE_URL here and
-        # exec the image's default uvicorn command. The app image runs Alembic
-        # migrations itself on startup (advisory-locked across workers).
-        command:
-          - /bin/sh
-          - -ec
-          - 'export FLAKERADAR_DATABASE_URL="postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@flakeradar-db:5432/flakeradar" && exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2'
+        # FlakeRadar 0.2 is the Rust rewrite: one binary, distroless image, no
+        # shell and no uvicorn, so the DSN has to reach it as a plain env var.
+        # Kubernetes expands $(VAR) in an env value from variables defined
+        # earlier in the same list, and app-template's dependsOn orders them,
+        # so the postgres-operator credentials are spliced into the URL at
+        # container start without duplicating the password anywhere.
+        #
+        # The database is flakeradar_rust, not flakeradar: 0.2 refuses to start
+        # on a database the Python server created (it has an alembic_version
+        # table) and creates its whole schema on first start instead. No data
+        # is carried over, so the old database is dropped.
         env:
+          DB_USER:
+            valueFrom:
+              secretKeyRef:
+                name: flakeradar.flakeradar-db.credentials.postgresql.acid.zalan.do
+                key: username
+          DB_PASSWORD:
+            valueFrom:
+              secretKeyRef:
+                name: flakeradar.flakeradar-db.credentials.postgresql.acid.zalan.do
+                key: password
+          FLAKERADAR_DATABASE_URL:
+            value: postgresql://$(DB_USER):$(DB_PASSWORD)@flakeradar-db:5432/flakeradar_rust
+            dependsOn:
+              - DB_USER
+              - DB_PASSWORD
           FLAKERADAR_API_TOKEN:
             valueFrom:
               secretKeyRef:
@@ -26,16 +45,10 @@ controllers:
           FLAKERADAR_SCORE_WINDOW: "50"
           FLAKERADAR_SCORE_DECAY: "0.85"
           FLAKERADAR_CORS_ORIGINS: https://flakes.herrington.services
-          POSTGRES_USER:
-            valueFrom:
-              secretKeyRef:
-                name: flakeradar.flakeradar-db.credentials.postgresql.acid.zalan.do
-                key: username
-          POSTGRES_PASSWORD:
-            valueFrom:
-              secretKeyRef:
-                name: flakeradar.flakeradar-db.credentials.postgresql.acid.zalan.do
-                key: password
+          # FLAKERADAR_GITHUB_TOKEN is deliberately unset: on a fresh database
+          # the filing gate would open issues on almost no evidence, so issue
+          # automation stays off until scores rebuild (~1 week of CI runs).
+          # docs/cutover-rust.md step 5 and step 9.
         probes:
           liveness:
             enabled: true
@@ -49,7 +62,7 @@ controllers:
             custom: true
             spec:
               httpGet:
-                path: /api/health
+                path: /api/health/ready
                 port: 8000
         resources:
           requests:
