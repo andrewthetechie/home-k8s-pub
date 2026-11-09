@@ -1,0 +1,56 @@
+githubConfigUrl: https://github.com/andrewthetechie/space-game
+githubConfigSecret: arc-github-app
+
+maxRunners: 4
+
+runnerScaleSetName: space-game
+
+# Rust + Bevy game. CI compiles and tests only; it builds no images, so unlike
+# writers-app there is no dind or buildkitd sidecar and nothing runs
+# privileged. Offscreen rendering uses Mesa's software Vulkan driver, which the
+# workflow installs with apt.
+
+# Explicitly reference the controller SA so the chart can create RoleBindings
+# when the controller is in a different namespace (arc-systems).
+# SA name follows the pattern: {controllerReleaseName}-gha-rs-controller (chart truncates the name)
+controllerServiceAccount:
+  namespace: arc-systems
+  name: arc-controller-gha-rs-controller
+
+template:
+  spec:
+    # Keep CI off the control planes: their system SSDs also hold etcd, and
+    # runner disk load pushed etcd fsync to seconds, causing leader elections
+    # and API timeouts cluster-wide (2026-09-27).
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: node-role.kubernetes.io/control-plane
+                  operator: DoesNotExist
+    # Spread this scale set's runner pods across nodes; four concurrent Bevy
+    # builds on one node saturate its CPU.
+    topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            actions.github.com/scale-set-name: space-game
+    volumes:
+      - name: work
+        emptyDir: {}
+    containers:
+      - name: runner
+        # falcondev fork of the actions runner: reads CUSTOM_ACTIONS_RESULTS_URL
+        # so the pod can point actions/cache at the self-hosted cache server.
+        # Same pinned tag as the other scale sets; bump them together.
+        image: ghcr.io/falcondev-oss/actions-runner:2.338.2
+        command: ["/home/runner/run.sh"]
+        env:
+          - name: CUSTOM_ACTIONS_RESULTS_URL
+            value: "https://actions-cache.herrington.services/"
+        volumeMounts:
+          - name: work
+            mountPath: /home/runner/_work

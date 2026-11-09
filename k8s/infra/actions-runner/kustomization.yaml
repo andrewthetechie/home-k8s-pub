@@ -31,3 +31,9 @@ helmCharts:
     namespace: arc-runners
     version: 0.15.1
     valuesFile: values-writers-app.yaml
+  - name: gha-runner-scale-set
+    repo: oci://ghcr.io/actions/actions-runner-controller-charts
+    releaseName: arc-space-game
+    namespace: arc-runners
+    version: 0.15.1
+    valuesFile: values-space-game.yaml
