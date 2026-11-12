@@ -1,0 +1,17 @@
+# Derived signals the dashboard needs but no engine exposes directly.
+#
+# inference:busy is 0/1 per box: was at least one request running at that moment.
+# It exists so "busy %" and "hours busy" can be computed from the *recorded*
+# samples — share of samples, and the integral of the 0/1 series — instead of
+# multiplying a share by the panel's time range. That multiplication is wrong
+# whenever the series covers less than the whole range: on the first day it
+# reported 1.7 weeks busy for a box that had been up for half an hour.
+#
+# Kept out of rules/strix-infer.yaml and rules/tensorfold.yaml on purpose: those
+# two files are the inference:* contract and produce contract series only.
+groups:
+  - name: derived
+    interval: 30s
+    rules:
+      - record: inference:busy
+        expr: inference:requests_running > bool 0

@@ -32,6 +32,7 @@ configMapGenerator:
     files:
       - rules/strix-infer.yaml
       - rules/tensorfold.yaml
+      - rules/derived.yaml
 
   # Picked up by Grafana's dashboard sidecar (label) into the Inference folder
   # (annotation), per D7.
@@ -108,7 +109,8 @@ helmCharts:
           rule:
             - /config/strix-infer.yaml
             - /config/tensorfold.yaml
-          evaluationInterval: 5s
+            - /config/derived.yaml
+          evaluationInterval: 30s
           # Re-read the rule files when the ConfigMap changes.
           configCheckInterval: 30s
         resources:

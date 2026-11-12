@@ -177,14 +177,14 @@
             "type": "prometheus",
             "uid": "victoriametrics"
           },
-          "expr": "100 * share_gt_over_time(inference:requests_running{box=~\"$box\", node=~\"$node\"}[$__range], 0)",
+          "expr": "100 * avg_over_time(inference:busy{box=~\"$box\", node=~\"$node\"}[$__range])",
           "refId": "A",
           "instant": true,
           "range": false,
           "legendFormat": "{{box}}"
         }
       ],
-      "description": "Share of the month with at least one request running (D11).",
+      "description": "Share of the recorded samples with at least one request running (D11), from inference:busy.",
       "timeFrom": "now/M"
     },
     {
@@ -240,14 +240,14 @@
             "type": "prometheus",
             "uid": "victoriametrics"
           },
-          "expr": "share_gt_over_time(inference:requests_running{box=~\"$box\", node=~\"$node\"}[$__range], 0) * $__range_s / 3600",
+          "expr": "integrate(inference:busy{box=~\"$box\", node=~\"$node\"}[$__range]) / 3600",
           "refId": "A",
           "instant": true,
           "range": false,
           "legendFormat": "{{box}}"
         }
       ],
-      "description": "Hours with at least one request running, from the 15s recorded samples.",
+      "description": "Hours with at least one request running, from the integral of the recorded 0/1 inference:busy series. Independent of the panel range, so a half-hour of history reads as half an hour.",
       "timeFrom": "now/M"
     },
     {
@@ -503,403 +503,6 @@
       "timeFrom": "now/M"
     },
     {
-      "id": 8,
-      "type": "row",
-      "title": "Last month",
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 6
-      },
-      "panels": []
-    },
-    {
-      "id": 9,
-      "type": "stat",
-      "title": "Busy %",
-      "gridPos": {
-        "h": 5,
-        "w": 4,
-        "x": 0,
-        "y": 7
-      },
-      "datasource": {
-        "type": "prometheus",
-        "uid": "victoriametrics"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "percent",
-          "decimals": 1,
-          "color": {
-            "mode": "thresholds"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "text",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "values": true,
-          "fields": ""
-        },
-        "colorMode": "value",
-        "graphMode": "none",
-        "textMode": "value_and_name",
-        "justifyMode": "auto",
-        "orientation": "horizontal"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "expr": "100 * share_gt_over_time(inference:requests_running{box=~\"$box\", node=~\"$node\"}[$__range], 0)",
-          "refId": "A",
-          "instant": true,
-          "range": false,
-          "legendFormat": "{{box}}"
-        }
-      ],
-      "description": "Share of the month with at least one request running (D11).",
-      "timeFrom": "now-1M/M",
-      "timeTo": "now/M"
-    },
-    {
-      "id": 10,
-      "type": "stat",
-      "title": "Hours busy",
-      "gridPos": {
-        "h": 5,
-        "w": 4,
-        "x": 4,
-        "y": 7
-      },
-      "datasource": {
-        "type": "prometheus",
-        "uid": "victoriametrics"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "h",
-          "decimals": 1,
-          "color": {
-            "mode": "thresholds"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "text",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "values": true,
-          "fields": ""
-        },
-        "colorMode": "value",
-        "graphMode": "none",
-        "textMode": "value_and_name",
-        "justifyMode": "auto",
-        "orientation": "horizontal"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "expr": "share_gt_over_time(inference:requests_running{box=~\"$box\", node=~\"$node\"}[$__range], 0) * $__range_s / 3600",
-          "refId": "A",
-          "instant": true,
-          "range": false,
-          "legendFormat": "{{box}}"
-        }
-      ],
-      "description": "Hours with at least one request running, from the 15s recorded samples.",
-      "timeFrom": "now-1M/M",
-      "timeTo": "now/M"
-    },
-    {
-      "id": 11,
-      "type": "stat",
-      "title": "Decode tok/s",
-      "gridPos": {
-        "h": 5,
-        "w": 4,
-        "x": 8,
-        "y": 7
-      },
-      "datasource": {
-        "type": "prometheus",
-        "uid": "victoriametrics"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "none",
-          "decimals": 1,
-          "color": {
-            "mode": "thresholds"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "text",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "values": true,
-          "fields": ""
-        },
-        "colorMode": "value",
-        "graphMode": "none",
-        "textMode": "value_and_name",
-        "justifyMode": "auto",
-        "orientation": "horizontal"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "expr": "increase(inference:generated_tokens_total{box=~\"$box\", node=~\"$node\"}[$__range]) / (increase(inference:decode_seconds_total{box=~\"$box\", node=~\"$node\"}[$__range]) > 0)",
-          "refId": "A",
-          "instant": true,
-          "range": false,
-          "legendFormat": "{{box}}"
-        }
-      ],
-      "description": "Per-request, token-weighted: tokens generated / seconds spent decoding (D12).",
-      "timeFrom": "now-1M/M",
-      "timeTo": "now/M"
-    },
-    {
-      "id": 12,
-      "type": "stat",
-      "title": "Prefill tok/s",
-      "gridPos": {
-        "h": 5,
-        "w": 4,
-        "x": 12,
-        "y": 7
-      },
-      "datasource": {
-        "type": "prometheus",
-        "uid": "victoriametrics"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "none",
-          "decimals": 1,
-          "color": {
-            "mode": "thresholds"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "text",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "values": true,
-          "fields": ""
-        },
-        "colorMode": "value",
-        "graphMode": "none",
-        "textMode": "value_and_name",
-        "justifyMode": "auto",
-        "orientation": "horizontal"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "expr": "increase(inference:prefill_tokens_total{box=~\"$box\", node=~\"$node\"}[$__range]) / (increase(inference:prefill_seconds_total{box=~\"$box\", node=~\"$node\"}[$__range]) > 0)",
-          "refId": "A",
-          "instant": true,
-          "range": false,
-          "legendFormat": "{{box}}"
-        }
-      ],
-      "description": "Per-request, token-weighted: prefill tokens / seconds spent prefilling (D12).",
-      "timeFrom": "now-1M/M",
-      "timeTo": "now/M"
-    },
-    {
-      "id": 13,
-      "type": "stat",
-      "title": "Tokens generated",
-      "gridPos": {
-        "h": 5,
-        "w": 4,
-        "x": 16,
-        "y": 7
-      },
-      "datasource": {
-        "type": "prometheus",
-        "uid": "victoriametrics"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "decimals": 0,
-          "color": {
-            "mode": "thresholds"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "text",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "values": true,
-          "fields": ""
-        },
-        "colorMode": "value",
-        "graphMode": "none",
-        "textMode": "value_and_name",
-        "justifyMode": "auto",
-        "orientation": "horizontal"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "expr": "sum by (box) (increase(inference:generated_tokens_total{box=~\"$box\", node=~\"$node\"}[$__range]))",
-          "refId": "A",
-          "instant": true,
-          "range": false,
-          "legendFormat": "{{box}}"
-        }
-      ],
-      "description": "Decode tokens generated in the range.",
-      "timeFrom": "now-1M/M",
-      "timeTo": "now/M"
-    },
-    {
-      "id": 14,
-      "type": "stat",
-      "title": "Energy (kWh)",
-      "gridPos": {
-        "h": 5,
-        "w": 4,
-        "x": 20,
-        "y": 7
-      },
-      "datasource": {
-        "type": "prometheus",
-        "uid": "victoriametrics"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "kwatth",
-          "decimals": 2,
-          "color": {
-            "mode": "thresholds"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "text",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "values": true,
-          "fields": ""
-        },
-        "colorMode": "value",
-        "graphMode": "none",
-        "textMode": "value_and_name",
-        "justifyMode": "auto",
-        "orientation": "horizontal"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "expr": "sum by (box) (integrate(node_hwmon_power_average_watt{job=\"node\", box=~\"$box\", node=~\"$node\"}[$__range]) or integrate(nvidia_smi_power_draw_watts{job=\"gpu-nvidia\", box=~\"$box\", node=~\"$node\"}[$__range])) / 3.6e6",
-          "refId": "A",
-          "instant": true,
-          "range": false,
-          "legendFormat": "{{box}}"
-        }
-      ],
-      "description": "GPU/APU package power integrated over the range: W*s / 3.6e6 = kWh. Not wall power. strix is amdgpu PPT from hwmon (one power sensor per box); sparks are nvidia-smi draw. VictoriaMetrics integrate() handles gaps.",
-      "timeFrom": "now-1M/M",
-      "timeTo": "now/M"
-    },
-    {
       "id": 15,
       "type": "row",
       "title": "Usage",
@@ -959,14 +562,14 @@
             "type": "prometheus",
             "uid": "victoriametrics"
           },
-          "expr": "100 * share_gt_over_time(inference:requests_running{box=~\"$box\", node=~\"$node\"}[$__interval], 0)",
+          "expr": "100 * avg_over_time(inference:busy{box=~\"$box\", node=~\"$node\"}[$__interval])",
           "refId": "A",
           "instant": false,
           "range": true,
           "legendFormat": "{{node}}"
         }
       ],
-      "description": "Share of time with at least one request running (D11)."
+      "description": "Share of time with at least one request running (D11), averaged per graph interval."
     },
     {
       "id": 17,
