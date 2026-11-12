@@ -1,0 +1,77 @@
+# tensorfold → the `inference:*` contract (docs/plans/2026-11-12-inference-metrics.md).
+#
+# Recording rules evaluated by vmalert every 5s (the engine scrape interval, so
+# the gauges keep 5s resolution). Each series carries exactly
+# `box` and `node` (plus `outcome` on requests_total).
+#
+# Only rank 0 (spark-1) exposes engine metrics; it reports the pair, so `sparks`
+# is one box here. Histogram `*_seconds_sum` counters only advance when a request
+# finishes, so a long request lands in one step: use [5m] or wider in graphs.
+groups:
+  - name: tensorfold
+    interval: 5s
+    rules:
+      - record: inference:generated_tokens_total
+        expr: sum by (box, node) (tensorfold:generation_tokens_total)
+
+      - record: inference:decode_seconds_total
+        expr: sum by (box, node) (tensorfold:request_decode_seconds_sum)
+
+      # prompt_tokens_total counts cached tokens too; the difference is what was
+      # actually computed. Both counters are monotonic, so the difference is a
+      # counter and increase()/resets() work on it.
+      - record: inference:prefill_tokens_total
+        expr: |
+          sum by (box, node) (tensorfold:prompt_tokens_total)
+            -
+          sum by (box, node) (tensorfold:prompt_tokens_cached_total)
+
+      - record: inference:prefill_seconds_total
+        expr: sum by (box, node) (tensorfold:request_prefill_seconds_sum)
+
+      - record: inference:prompt_tokens_total
+        expr: sum by (box, node) (tensorfold:prompt_tokens_total)
+
+      - record: inference:prompt_tokens_cached_total
+        expr: sum by (box, node) (tensorfold:prompt_tokens_cached_total)
+
+      # Three outcomes from three sources, as the plan's table specifies. The
+      # engine has no single requests-by-outcome counter.
+      - record: inference:requests_total
+        expr: |
+          label_replace(
+            sum by (box, node) (tensorfold:request_latency_seconds_count),
+            "outcome", "ok", "box", ".*")
+      - record: inference:requests_total
+        expr: |
+          label_replace(
+            sum by (box, node) (tensorfold:client_disconnections_total),
+            "outcome", "cancelled", "box", ".*")
+      - record: inference:requests_total
+        expr: |
+          label_replace(
+            sum by (box, node) (tensorfold:pair_failed),
+            "outcome", "error", "box", ".*")
+
+      - record: inference:requests_running
+        expr: max by (box, node) (tensorfold:requests_running)
+
+      - record: inference:requests_waiting
+        expr: max by (box, node) (tensorfold:requests_waiting)
+
+      # The engine exposes no slot gauge. 4 is the lane count from the container's
+      # own command line on spark-1: `--parallel 4` (docker inspect .Config.Cmd),
+      # confirmed by /health `max_batch_size: 4`. Recheck if that flag changes.
+      # The multiplication by 0 borrows the box/node labels from a live gauge.
+      - record: inference:slots
+        expr: (max by (box, node) (tensorfold:requests_running) * 0) + 4
+
+      - record: inference:mtp_acceptance_ratio
+        expr: |
+          sum by (box, node) (rate(tensorfold:mtp_accepted_total[5m]))
+            /
+          sum by (box, node) (rate(tensorfold:mtp_drafted_total[5m]))
+
+      # One series per stream/pool; the plan takes the max across them.
+      - record: inference:kv_usage_ratio
+        expr: max by (box, node) (tensorfold:kv_cache_usage_ratio)

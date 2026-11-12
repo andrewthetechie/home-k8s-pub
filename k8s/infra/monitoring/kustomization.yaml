@@ -1,0 +1,211 @@
+# Inference metrics stack: VictoriaMetrics (store + scrape), vmalert (recording
+# rules) and Grafana (dashboards + Discord alerting), in the shared `monitoring`
+# namespace.
+#
+# Plan and decisions: docs/plans/2026-11-12-inference-metrics.md
+#   D1 single-node VM with built-in scraping, D2 180d retention, D3 iSCSI only,
+#   D5 recording rules only, D6 Grafana with anonymous Viewer, D7 everything as
+#   code, D9 box/node labels, D17 pinned versions.
+#
+# Argo CD renders this with `kustomize build --enable-helm`; a push to master
+# deploys it.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: monitoring
+
+resources:
+  - namespace.yaml
+  - scrape-config.yaml
+  - sealed-grafana-admin.yaml
+  - sealed-grafana-discord-webhook.yaml
+
+# Stable names: the chart values and the vmalert -rule paths refer to them by
+# name, so no hash suffix.
+generatorOptions:
+  disableNameSuffixHash: true
+
+configMapGenerator:
+  # Mounted at /config by the victoria-metrics-alert chart; vmalert reads both
+  # files as -rule.
+  - name: vmalert-rules
+    files:
+      - rules/strix-infer.yaml
+      - rules/tensorfold.yaml
+
+  # Picked up by Grafana's dashboard sidecar (label) into the Inference folder
+  # (annotation), per D7.
+  - name: grafana-dashboards
+    files:
+      - dashboards/inference.json
+      - dashboards/strix-infer-detail.json
+      - dashboards/tensorfold-detail.json
+    options:
+      labels:
+        grafana_dashboard: "1"
+      annotations:
+        grafana_folder: Inference
+
+  # Mounted over /etc/grafana/provisioning/alerting: contact point, notification
+  # policy and the five rules (D16).
+  - name: grafana-alerting
+    files:
+      - alerting/contact-points.yaml
+      - alerting/policies.yaml
+      - alerting/rules.yaml
+
+helmCharts:
+  # D1 + D2 + D3: VictoriaMetrics single-node, scraping the boxes itself.
+  - name: victoria-metrics-single
+    releaseName: vm
+    namespace: monitoring
+    version: 0.51.0
+    repo: https://victoriametrics.github.io/helm-charts/
+    valuesInline:
+      server:
+        fullnameOverride: vmsingle
+        retentionPeriod: 180d
+        # Re-read scrape.yml when the ConfigMap changes, so a git edit applies
+        # without a pod restart.
+        extraArgs:
+          envflag.enable: true
+          envflag.prefix: VM_
+          loggerFormat: json
+          promscrape.configCheckInterval: 30s
+        scrape:
+          enabled: true
+          configMap: vm-scrape
+        persistentVolume:
+          enabled: true
+          storageClassName: freenas-iscsi-ssd-csi
+          size: 50Gi
+        resources:
+          requests:
+            cpu: 100m
+            memory: 512Mi
+          limits:
+            memory: 4Gi
+
+  # D5: recording rules only, writing back into VM. No alertmanager, no notifier.
+  - name: victoria-metrics-alert
+    releaseName: vm
+    namespace: monitoring
+    version: 0.53.0
+    repo: https://victoriametrics.github.io/helm-charts/
+    valuesInline:
+      alertmanager:
+        enabled: false
+      server:
+        fullnameOverride: vmalert
+        configMap: vmalert-rules
+        datasource:
+          url: http://vmsingle:8428
+        remoteWrite:
+          url: http://vmsingle:8428
+        remoteRead:
+          url: http://vmsingle:8428
+        extraArgs:
+          rule:
+            - /config/strix-infer.yaml
+            - /config/tensorfold.yaml
+          evaluationInterval: 5s
+          # Re-read the rule files when the ConfigMap changes.
+          configCheckInterval: 30s
+        resources:
+          requests:
+            cpu: 20m
+            memory: 64Mi
+          limits:
+            memory: 256Mi
+
+  # D6 + D7: Grafana with anonymous Viewer, sqlite on a 2Gi iSCSI PVC and the
+  # VM datasource as code.
+  - name: grafana
+    releaseName: grafana
+    namespace: monitoring
+    version: 14.4.1
+    repo: https://grafana-community.github.io/helm-charts
+    valuesInline:
+      admin:
+        existingSecret: grafana-admin
+      # Alerting provisioning is read only at startup: restart Grafana when the
+      # alerting ConfigMap changes (stakater reloader, infra/reloader).
+      # podAnnotations, not annotations: reloader reads the pod template, and the
+      # chart's `annotations` lands on the object metadata of every resource.
+      podAnnotations:
+        configmap.reloader.stakater.com/reload: grafana-alerting
+      grafana.ini:
+        server:
+          root_url: https://grafana.herrington.services
+        analytics:
+          reporting_enabled: false
+          check_for_updates: false
+        auth.anonymous:
+          enabled: true
+          org_name: Main Org.
+          org_role: Viewer
+      # The Discord webhook reaches the container as an env var, never as a file
+      # in git; the contact point refers to it as $__env{DISCORD_WEBHOOK_URL}.
+      envValueFrom:
+        DISCORD_WEBHOOK_URL:
+          secretKeyRef:
+            name: grafana-discord-webhook
+            key: url
+      datasources:
+        datasources.yaml:
+          apiVersion: 1
+          datasources:
+            - name: VictoriaMetrics
+              uid: victoriametrics
+              type: prometheus
+              access: proxy
+              url: http://vmsingle:8428
+              isDefault: true
+              jsonData:
+                httpMethod: POST
+                timeInterval: 5s
+      extraConfigmapMounts:
+        - name: grafana-alerting
+          mountPath: /etc/grafana/provisioning/alerting
+          configMap: grafana-alerting
+          readOnly: true
+      sidecar:
+        dashboards:
+          enabled: true
+          label: grafana_dashboard
+          folderAnnotation: grafana_folder
+          searchNamespace: monitoring
+      # No helm test pod in a GitOps sync.
+      testFramework:
+        enabled: false
+      persistence:
+        enabled: true
+        storageClassName: freenas-iscsi-ssd-csi
+        size: 2Gi
+      # One replica on a RWO volume: recreate, never roll.
+      deploymentStrategy:
+        type: Recreate
+      resources:
+        requests:
+          cpu: 50m
+          memory: 128Mi
+        limits:
+          memory: 512Mi
+      ingress:
+        enabled: true
+        ingressClassName: nginx
+        annotations:
+          cert-manager.io/cluster-issuer: letsencrypt-prod
+          gethomepage.dev/enabled: "true"
+          gethomepage.dev/name: Grafana
+          gethomepage.dev/group: Monitoring
+          gethomepage.dev/icon: grafana
+          gethomepage.dev/description: Inference metrics and dashboards
+        hosts:
+          - grafana.herrington.services
+        path: /
+        pathType: Prefix
+        tls:
+          - secretName: grafana-tls
+            hosts:
+              - grafana.herrington.services

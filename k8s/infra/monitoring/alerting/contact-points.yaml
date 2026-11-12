@@ -1,0 +1,22 @@
+# Grafana alerting → Discord, through fabro's webhook (D16).
+#
+# Mounted at /etc/grafana/provisioning/alerting. The URL is not in this file: it
+# is sealed into the `grafana-discord-webhook` Secret and reaches Grafana as the
+# DISCORD_WEBHOOK_URL env var, which $__env{...} expands at provisioning time.
+apiVersion: 1
+
+contactPoints:
+  - orgId: 1
+    name: discord-fabro
+    receivers:
+      - uid: discord-fabro-inference
+        type: discord
+        disableResolveMessage: false
+        settings:
+          url: $__env{DISCORD_WEBHOOK_URL}
+          use_discord_username: false
+          title: '{{ if eq .Status "firing" }}[FIRING]{{ else }}[RESOLVED]{{ end }} inference: {{ .CommonLabels.alertname }}'
+          message: |
+            box=`{{ .CommonLabels.box }}` node=`{{ .CommonLabels.node }}`
+            {{ range .Alerts }}{{ .Annotations.summary }}{{ if .Annotations.description }} — {{ .Annotations.description }}{{ end }}
+            {{ end }}

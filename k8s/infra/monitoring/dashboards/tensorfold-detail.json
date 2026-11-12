@@ -1,0 +1,763 @@
+{
+  "uid": "tensorfold-detail",
+  "title": "tensorfold detail",
+  "tags": [
+    "inference",
+    "tensorfold"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "graphTooltip": 1,
+  "refresh": "1m",
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "templating": {
+    "list": [
+      {
+        "name": "box",
+        "label": "box",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "refId": "StandardVariableQuery",
+          "query": "label_values(inference:generated_tokens_total, box)"
+        }
+      },
+      {
+        "name": "node",
+        "label": "node",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "refId": "StandardVariableQuery",
+          "query": "label_values(up{job=\"node\", box=~\"$box\"}, node)"
+        }
+      }
+    ]
+  },
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "name": "Engine restarts",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "enable": true,
+        "iconColor": "red",
+        "target": {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "resets(inference:generated_tokens_total[1m]) > 0",
+          "refId": "Anno",
+          "instant": true
+        },
+        "titleFormat": "engine restart",
+        "textFormat": "{{box}} {{node}}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Rank pair state",
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "tensorfold:pair_broken{job=\"engine-tensorfold\"}",
+          "refId": "A",
+          "instant": false,
+          "range": true,
+          "legendFormat": "broken"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "tensorfold:pair_stalled{job=\"engine-tensorfold\"}",
+          "refId": "B",
+          "instant": false,
+          "range": true,
+          "legendFormat": "stalled"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "tensorfold:pair_stall_ms{job=\"engine-tensorfold\"}",
+          "refId": "C",
+          "instant": false,
+          "range": true,
+          "legendFormat": "stall ms"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "tensorfold:pair_busy_ms{job=\"engine-tensorfold\"}",
+          "refId": "D",
+          "instant": false,
+          "range": true,
+          "legendFormat": "busy ms"
+        }
+      ],
+      "description": "broken/stalled are 0/1 gauges; the ms gauges are the engine thread's view."
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Spill: stored vs cap",
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "tensorfold:spill_stored_bytes{job=\"engine-tensorfold\"}",
+          "refId": "A",
+          "instant": false,
+          "range": true,
+          "legendFormat": "rank {{rank}} stored"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "tensorfold:spill_cap_bytes{job=\"engine-tensorfold\"}",
+          "refId": "B",
+          "instant": false,
+          "range": true,
+          "legendFormat": "rank {{rank}} cap"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "tensorfold:spill_disk_free_bytes{job=\"engine-tensorfold\"}",
+          "refId": "C",
+          "instant": false,
+          "range": true,
+          "legendFormat": "rank {{rank}} disk free"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "tensorfold:spill_staging_bytes{job=\"engine-tensorfold\"}",
+          "refId": "D",
+          "instant": false,
+          "range": true,
+          "legendFormat": "rank {{rank}} staging"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Spill I/O",
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 7
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "rate(tensorfold:spill_written_bytes{job=\"engine-tensorfold\"}[$__rate_interval])",
+          "refId": "A",
+          "instant": false,
+          "range": true,
+          "legendFormat": "written B/s"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "rate(tensorfold:spill_read_bytes{job=\"engine-tensorfold\"}[$__rate_interval])",
+          "refId": "B",
+          "instant": false,
+          "range": true,
+          "legendFormat": "read B/s"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "rate(tensorfold:spill_writes_committed{job=\"engine-tensorfold\"}[$__rate_interval])",
+          "refId": "C",
+          "instant": false,
+          "range": true,
+          "legendFormat": "writes committed/s"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Spill errors",
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 7
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "rate(tensorfold:spill_crc_errors{job=\"engine-tensorfold\"}[$__rate_interval])",
+          "refId": "A",
+          "instant": false,
+          "range": true,
+          "legendFormat": "crc errors/s"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "rate(tensorfold:spill_size_errors{job=\"engine-tensorfold\"}[$__rate_interval])",
+          "refId": "B",
+          "instant": false,
+          "range": true,
+          "legendFormat": "size errors/s"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "rate(tensorfold:spill_writes_failed{job=\"engine-tensorfold\"}[$__rate_interval])",
+          "refId": "C",
+          "instant": false,
+          "range": true,
+          "legendFormat": "writes failed/s"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "rate(tensorfold:spill_no_space{job=\"engine-tensorfold\"}[$__rate_interval])",
+          "refId": "D",
+          "instant": false,
+          "range": true,
+          "legendFormat": "no space/s"
+        }
+      ],
+      "description": "Any non-zero here is worth a look: the spill dir is the KV safety net."
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "KV shard moves",
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 14
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "tensorfold:kv_shard_parts{job=\"engine-tensorfold\"}",
+          "refId": "A",
+          "instant": false,
+          "range": true,
+          "legendFormat": "parts"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "rate(tensorfold:kv_shard_moves{job=\"engine-tensorfold\"}[$__rate_interval])",
+          "refId": "B",
+          "instant": false,
+          "range": true,
+          "legendFormat": "moves/s"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "rate(tensorfold:kv_shard_moved_bytes{job=\"engine-tensorfold\"}[$__rate_interval])",
+          "refId": "C",
+          "instant": false,
+          "range": true,
+          "legendFormat": "moved B/s"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "rate(tensorfold:kv_shard_transfers_failed{job=\"engine-tensorfold\"}[$__rate_interval])",
+          "refId": "D",
+          "instant": false,
+          "range": true,
+          "legendFormat": "transfer failures/s"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "KV shard parts",
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 14
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "tensorfold:kv_shard_part_live_rows{job=\"engine-tensorfold\"}",
+          "refId": "A",
+          "instant": false,
+          "range": true,
+          "legendFormat": "{{part}} live rows"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "tensorfold:kv_shard_part_kept_rows{job=\"engine-tensorfold\"}",
+          "refId": "B",
+          "instant": false,
+          "range": true,
+          "legendFormat": "{{part}} kept rows"
+        }
+      ],
+      "description": "Per-partition row occupancy, the kv_shard_rank_* family the plan mentions."
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Request latencies",
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 21
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "histogram_quantile(0.5, sum by (le) (rate(tensorfold:request_latency_seconds_bucket{job=\"engine-tensorfold\"}[5m])))",
+          "refId": "A",
+          "instant": false,
+          "range": true,
+          "legendFormat": "latency p50"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(tensorfold:request_latency_seconds_bucket{job=\"engine-tensorfold\"}[5m])))",
+          "refId": "B",
+          "instant": false,
+          "range": true,
+          "legendFormat": "latency p95"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "histogram_quantile(0.5, sum by (le) (rate(tensorfold:request_decode_seconds_bucket{job=\"engine-tensorfold\"}[5m])))",
+          "refId": "C",
+          "instant": false,
+          "range": true,
+          "legendFormat": "decode p50"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "histogram_quantile(0.5, sum by (le) (rate(tensorfold:request_prefill_seconds_bucket{job=\"engine-tensorfold\"}[5m])))",
+          "refId": "D",
+          "instant": false,
+          "range": true,
+          "legendFormat": "prefill p50"
+        }
+      ],
+      "description": "Finished requests only, so 5m windows: a long request lands in one step."
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "MTP",
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 21
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "rate(tensorfold:mtp_drafted_total{job=\"engine-tensorfold\"}[$__rate_interval])",
+          "refId": "A",
+          "instant": false,
+          "range": true,
+          "legendFormat": "drafted/s"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "rate(tensorfold:mtp_accepted_total{job=\"engine-tensorfold\"}[$__rate_interval])",
+          "refId": "B",
+          "instant": false,
+          "range": true,
+          "legendFormat": "accepted/s"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "inference:mtp_acceptance_ratio{box=\"sparks\"}",
+          "refId": "C",
+          "instant": false,
+          "range": true,
+          "legendFormat": "acceptance (contract)"
+        }
+      ]
+    }
+  ]
+}

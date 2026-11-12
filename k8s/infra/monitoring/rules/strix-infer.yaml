@@ -1,0 +1,58 @@
+# strix-infer → the `inference:*` contract (docs/plans/2026-11-12-inference-metrics.md).
+#
+# These are recording rules, evaluated by vmalert every 5s (the engine scrape
+# interval, so the gauges keep 5s resolution) and written back to
+# VictoriaMetrics. Each series carries exactly `box` and `node` (plus `outcome`
+# on requests_total) and nothing else.
+#
+# Sources, and why the counter arithmetic is safe (settled 2026-11-12, see the
+# plan's "Settled facts"):
+#   strix_decode_seconds_total and strix_prefill_seconds_total add each finished
+#   request's own wall time, so increase(tokens)/increase(seconds) is an exact
+#   token-weighted per-request average even when both slots are busy. Do not
+#   divide by strix_slots.
+groups:
+  - name: strix-infer
+    interval: 5s
+    rules:
+      - record: inference:generated_tokens_total
+        expr: sum by (box, node) (strix_generated_tokens_total)
+
+      - record: inference:decode_seconds_total
+        expr: sum by (box, node) (strix_decode_seconds_total)
+
+      - record: inference:prefill_tokens_total
+        expr: sum by (box, node) (strix_prefill_tokens_total)
+
+      - record: inference:prefill_seconds_total
+        expr: sum by (box, node) (strix_prefill_seconds_total)
+
+      - record: inference:prompt_tokens_total
+        expr: sum by (box, node) (strix_prompt_tokens_total)
+
+      - record: inference:prompt_tokens_cached_total
+        expr: sum by (box, node) (strix_prompt_tokens_cached_total)
+
+      - record: inference:requests_total
+        expr: sum by (box, node, outcome) (strix_requests_total)
+
+      - record: inference:requests_running
+        expr: max by (box, node) (strix_busy)
+
+      - record: inference:requests_waiting
+        expr: max by (box, node) (strix_queue_depth)
+
+      # strix_slots is "conversations served at once (total-slots)".
+      - record: inference:slots
+        expr: max by (box, node) (strix_slots)
+
+      - record: inference:mtp_acceptance_ratio
+        expr: max by (box, node) (strix_mtp_acceptance_rate)
+
+      # live_tokens is held across all slots and context_length is the per-slot
+      # window, so this is the share of KV positions in use (0..1).
+      - record: inference:kv_usage_ratio
+        expr: |
+          sum by (box, node) (strix_live_tokens)
+            /
+          (sum by (box, node) (strix_context_length) * sum by (box, node) (strix_slots))

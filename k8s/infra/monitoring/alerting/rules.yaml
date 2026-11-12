@@ -1,0 +1,368 @@
+# The plan's five rules (D16).
+#
+# Each query is a filter (`== 0`, `> 90`, ...) that returns nothing while all is
+# well, so noDataState is OK: NoData would post a DatasourceNoData alert for
+# every healthy rule. A VictoriaMetrics outage still alerts through
+# execErrState: Error.
+#
+# node_exporter labels hwmon chips by PCI path, not driver name, so the amdgpu
+# sensor is picked by joining node_hwmon_chip_names{chip_name="amdgpu"}.
+#
+# Every rule is query → reduce → threshold, pins its datasource by uid, and names box/node in the notification.
+#
+# Thresholds:
+#   GPU hot  spark 88 °C  = nvidia-smi's driver limit (90 °C, read from the
+#                           temperature.gpu.tlimit margin) minus 2, because the
+#                           box runs at 78-80 °C under load
+#            strix 95 °C  = no documented AMD junction limit and no hwmon crit,
+#                           see "Questions for the reviewer" in the report
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: inference
+    folder: Inference
+    interval: 1m
+    rules:
+      - uid: inference-engine-down
+        title: Engine down
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: victoriametrics
+            model:
+              editorMode: code
+              expr: up{job=~"engine-.*"} == 0
+              instant: true
+              intervalMs: 15000
+              maxDataPoints: 1
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: []
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - B
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 15000
+              maxDataPoints: 1
+              reducer: last
+              refId: B
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: B
+              intervalMs: 15000
+              maxDataPoints: 1
+              refId: C
+              type: threshold
+        for: 5m
+        noDataState: OK
+        execErrState: Error
+        labels:
+          severity: critical
+        annotations:
+          summary: 'engine metrics unreachable for 5m'
+          description: '{{ $labels.job }} on {{ $labels.box }} ({{ $labels.node }}) is not answering its /metrics'
+        isPaused: false
+
+      - uid: inference-node-down
+        title: Node down
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: victoriametrics
+            model:
+              editorMode: code
+              expr: up{job="node"} == 0
+              instant: true
+              intervalMs: 15000
+              maxDataPoints: 1
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: []
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - B
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 15000
+              maxDataPoints: 1
+              reducer: last
+              refId: B
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: B
+              intervalMs: 15000
+              maxDataPoints: 1
+              refId: C
+              type: threshold
+        for: 5m
+        noDataState: OK
+        execErrState: Error
+        labels:
+          severity: critical
+        annotations:
+          summary: 'node_exporter unreachable for 5m'
+          description: 'node_exporter on {{ $labels.box }} ({{ $labels.node }}) is not answering :9100'
+        isPaused: false
+
+      - uid: inference-disk-filling
+        title: Disk nearly full
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: victoriametrics
+            model:
+              editorMode: code
+              # Any real filesystem above 90% used on an inference host.
+              expr: |
+                100 * (
+                  1 - node_filesystem_avail_bytes{job="node", fstype!~"tmpfs|ramfs|efivarfs"}
+                    / node_filesystem_size_bytes{job="node", fstype!~"tmpfs|ramfs|efivarfs"}
+                ) > 90
+              instant: true
+              intervalMs: 15000
+              maxDataPoints: 1
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: []
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - B
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 15000
+              maxDataPoints: 1
+              reducer: last
+              refId: B
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: B
+              intervalMs: 15000
+              maxDataPoints: 1
+              refId: C
+              type: threshold
+        for: 15m
+        noDataState: OK
+        execErrState: Error
+        labels:
+          severity: warning
+        annotations:
+          summary: 'a filesystem on {{ $labels.box }} ({{ $labels.node }}) is over 90% full'
+          description: '{{ $labels.mountpoint }} on {{ $labels.device }}'
+        isPaused: false
+
+      - uid: inference-gpu-hot
+        title: GPU hot
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: victoriametrics
+            model:
+              editorMode: code
+              # strix: amdgpu `edge` above 95 °C (no documented limit; open
+              # question). sparks: GB10 GPU above 88 °C (driver limit 90 °C).
+              expr: |
+                (node_hwmon_temp_celsius{job="node"} * on (instance, chip) group_left (chip_name) node_hwmon_chip_names{job="node", chip_name="amdgpu"}) > 95
+                  or
+                nvidia_smi_temperature_gpu{job="gpu-nvidia"} > 88
+              instant: true
+              intervalMs: 15000
+              maxDataPoints: 1
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: []
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - B
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 15000
+              maxDataPoints: 1
+              reducer: last
+              refId: B
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: B
+              intervalMs: 15000
+              maxDataPoints: 1
+              refId: C
+              type: threshold
+        for: 10m
+        noDataState: OK
+        execErrState: Error
+        labels:
+          severity: warning
+        annotations:
+          summary: 'GPU/APU temperature above its threshold for 10m on {{ $labels.box }} ({{ $labels.node }})'
+        isPaused: false
+
+      - uid: inference-spark-pair-broken
+        title: Spark pair broken
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: victoriametrics
+            model:
+              editorMode: code
+              expr: tensorfold:pair_broken{job="engine-tensorfold"} == 1
+              instant: true
+              intervalMs: 15000
+              maxDataPoints: 1
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: []
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - B
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 15000
+              maxDataPoints: 1
+              reducer: last
+              refId: B
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: B
+              intervalMs: 15000
+              maxDataPoints: 1
+              refId: C
+              type: threshold
+        for: 1m
+        noDataState: OK
+        execErrState: Error
+        labels:
+          severity: critical
+        annotations:
+          summary: 'the tensorfold rank pair is broken ({{ $labels.node }})'
+        isPaused: false

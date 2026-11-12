@@ -1,0 +1,96 @@
+# What VictoriaMetrics scrapes. Mounted at /scrapeconfig/scrape.yml by the
+# victoria-metrics-single chart (`-promscrape.config`).
+#
+# Every target carries `box` and `node` (D9):
+#   box  = the box as the plan's table names it: strix1, strix2, sparks
+#   node = the host: strix1, strix2, spark-1, spark2
+# The sparks are one `box` because a rank pair is one engine, and only rank 0
+# (spark-1) exposes engine metrics.
+#
+# Intervals (D8): engine 5s with a 4s timeout, node and GPU 15s.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vm-scrape
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: monitoring
+    app.kubernetes.io/component: scrape-config
+data:
+  scrape.yml: |
+    global:
+      scrape_interval: 15s
+      scrape_timeout: 10s
+
+    scrape_configs:
+      - job_name: engine-strix
+        scrape_interval: 5s
+        scrape_timeout: 4s
+        static_configs:
+          - targets: ["10.10.0.29:5300"]
+            labels:
+              box: strix1
+              node: strix1
+          - targets: ["10.10.0.56:5300"]
+            labels:
+              box: strix2
+              node: strix2
+
+      - job_name: engine-tensorfold
+        scrape_interval: 5s
+        scrape_timeout: 4s
+        static_configs:
+          - targets: ["10.10.0.30:8888"]
+            labels:
+              box: sparks
+              node: spark-1
+
+      - job_name: node
+        scrape_interval: 15s
+        scrape_timeout: 10s
+        static_configs:
+          - targets: ["10.10.0.29:9100"]
+            labels:
+              box: strix1
+              node: strix1
+          - targets: ["10.10.0.56:9100"]
+            labels:
+              box: strix2
+              node: strix2
+          - targets: ["10.10.0.30:9100"]
+            labels:
+              box: sparks
+              node: spark-1
+          - targets: ["10.10.0.55:9100"]
+            labels:
+              box: sparks
+              node: spark2
+
+      - job_name: gpu-nvidia
+        scrape_interval: 15s
+        scrape_timeout: 10s
+        static_configs:
+          - targets: ["10.10.0.30:9835"]
+            labels:
+              box: sparks
+              node: spark-1
+          - targets: ["10.10.0.55:9835"]
+            labels:
+              box: sparks
+              node: spark2
+
+      # Self-scrape, so a broken stack is visible in its own data. The vmalert
+      # chart passes --httpListenAddr=:8880 (its "legacy" name), so scrape 8880.
+      - job_name: vmalert
+        static_configs:
+          - targets: ["vmalert:8880"]
+            labels:
+              box: monitoring
+              node: monitoring
+
+      - job_name: victoriametrics
+        static_configs:
+          - targets: ["127.0.0.1:8428"]
+            labels:
+              box: monitoring
+              node: monitoring

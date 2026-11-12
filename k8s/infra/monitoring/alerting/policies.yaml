@@ -1,0 +1,12 @@
+# One policy, one receiver: everything goes to the fabro Discord channel.
+apiVersion: 1
+
+policies:
+  - orgId: 1
+    receiver: discord-fabro
+    group_by:
+      - alertname
+      - box
+    group_wait: 30s
+    group_interval: 5m
+    repeat_interval: 4h

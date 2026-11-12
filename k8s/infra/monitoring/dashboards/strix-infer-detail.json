@@ -1,0 +1,706 @@
+{
+  "uid": "strix-infer-detail",
+  "title": "strix-infer detail",
+  "tags": [
+    "inference",
+    "strix-infer"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "graphTooltip": 1,
+  "refresh": "1m",
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "templating": {
+    "list": [
+      {
+        "name": "box",
+        "label": "box",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "refId": "StandardVariableQuery",
+          "query": "label_values(inference:generated_tokens_total, box)"
+        }
+      },
+      {
+        "name": "node",
+        "label": "node",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "refId": "StandardVariableQuery",
+          "query": "label_values(up{job=\"node\", box=~\"$box\"}, node)"
+        }
+      }
+    ]
+  },
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "name": "Engine restarts",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "enable": true,
+        "iconColor": "red",
+        "target": {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "resets(inference:generated_tokens_total[1m]) > 0",
+          "refId": "Anno",
+          "instant": true
+        },
+        "titleFormat": "engine restart",
+        "textFormat": "{{box}} {{node}}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "MTP acceptance and rollbacks",
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "strix_mtp_acceptance_rate{box=~\"$box\", node=~\"$node\"}",
+          "refId": "A",
+          "instant": false,
+          "range": true,
+          "legendFormat": "{{node}} acceptance"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "rate(strix_mtp_rollbacks_total{box=~\"$box\", node=~\"$node\"}[$__rate_interval])",
+          "refId": "B",
+          "instant": false,
+          "range": true,
+          "legendFormat": "{{node}} rollbacks/s"
+        }
+      ],
+      "description": "strix_mtp_acceptance_rate is the gauge; rollbacks show drafts thrown away."
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "MTP drafted vs accepted tokens",
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "rate(strix_mtp_drafted_tokens_total{box=~\"$box\", node=~\"$node\"}[$__rate_interval])",
+          "refId": "A",
+          "instant": false,
+          "range": true,
+          "legendFormat": "{{node}} drafted/s"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "rate(strix_mtp_accepted_tokens_total{box=~\"$box\", node=~\"$node\"}[$__rate_interval])",
+          "refId": "B",
+          "instant": false,
+          "range": true,
+          "legendFormat": "{{node}} accepted/s"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Prompt-cache hits by tier",
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 7
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "rate(strix_prompt_cache_ram_hits_total{box=~\"$box\", node=~\"$node\"}[$__rate_interval])",
+          "refId": "A",
+          "instant": false,
+          "range": true,
+          "legendFormat": "{{node}} ram/s"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "rate(strix_prompt_cache_disk_hits_total{box=~\"$box\", node=~\"$node\"}[$__rate_interval])",
+          "refId": "B",
+          "instant": false,
+          "range": true,
+          "legendFormat": "{{node}} disk/s"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "rate(strix_prompt_cache_point_hits_total{box=~\"$box\", node=~\"$node\"}[$__rate_interval])",
+          "refId": "C",
+          "instant": false,
+          "range": true,
+          "legendFormat": "{{node}} point/s"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Prompt-cache size",
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 7
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "strix_prompt_cache_entries{box=~\"$box\", node=~\"$node\"}",
+          "refId": "A",
+          "instant": false,
+          "range": true,
+          "legendFormat": "{{node}} entries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "strix_prompt_cache_ram_entries{box=~\"$box\", node=~\"$node\"}",
+          "refId": "B",
+          "instant": false,
+          "range": true,
+          "legendFormat": "{{node}} ram entries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "strix_prompt_cache_bytes{box=~\"$box\", node=~\"$node\"}",
+          "refId": "C",
+          "instant": false,
+          "range": true,
+          "legendFormat": "{{node}} bytes"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "strix_prompt_cache_ram_bytes{box=~\"$box\", node=~\"$node\"}",
+          "refId": "D",
+          "instant": false,
+          "range": true,
+          "legendFormat": "{{node}} ram bytes"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "KV generations",
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 14
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "strix_kv_generation_used{box=~\"$box\", node=~\"$node\"}",
+          "refId": "A",
+          "instant": false,
+          "range": true,
+          "legendFormat": "{{node}} used"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "strix_kv_generation_capacity{box=~\"$box\", node=~\"$node\"}",
+          "refId": "B",
+          "instant": false,
+          "range": true,
+          "legendFormat": "{{node}} capacity"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "rate(strix_kv_renewals_total{box=~\"$box\", node=~\"$node\"}[$__rate_interval])",
+          "refId": "C",
+          "instant": false,
+          "range": true,
+          "legendFormat": "{{node}} renewals/s"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "strix_kv_renew_failures_total{box=~\"$box\", node=~\"$node\"}",
+          "refId": "D",
+          "instant": false,
+          "range": true,
+          "legendFormat": "{{node}} renew failures"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Engine's own decode rate vs the contract",
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 14
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "strix_last_decode_tokens_per_second{box=~\"$box\", node=~\"$node\"}",
+          "refId": "A",
+          "instant": false,
+          "range": true,
+          "legendFormat": "{{node}} last request"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "increase(inference:generated_tokens_total{box=~\"$box\", node=~\"$node\"}[5m]) / increase(inference:decode_seconds_total{box=~\"$box\", node=~\"$node\"}[5m])",
+          "refId": "B",
+          "instant": false,
+          "range": true,
+          "legendFormat": "{{node}} token-weighted 5m"
+        }
+      ],
+      "description": "If these agree, the per-request time accounting is behaving."
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Prefill and PLE waits",
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 21
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "rate(strix_ple_wait_seconds_total{box=~\"$box\", node=~\"$node\"}[$__rate_interval])",
+          "refId": "A",
+          "instant": false,
+          "range": true,
+          "legendFormat": "{{node}} ple wait s/s"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "strix_ple_wait_max_seconds{box=~\"$box\", node=~\"$node\"}",
+          "refId": "B",
+          "instant": false,
+          "range": true,
+          "legendFormat": "{{node}} ple wait max"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "rate(strix_ple_gather_seconds_total{box=~\"$box\", node=~\"$node\"}[$__rate_interval])",
+          "refId": "C",
+          "instant": false,
+          "range": true,
+          "legendFormat": "{{node}} gather s/s"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Throughput split by cache outcome",
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 21
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "rate(strix_prompt_tokens_total{box=~\"$box\", node=~\"$node\"}[$__rate_interval])",
+          "refId": "A",
+          "instant": false,
+          "range": true,
+          "legendFormat": "{{node}} prompt tok/s"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "rate(strix_prompt_tokens_cached_total{box=~\"$box\", node=~\"$node\"}[$__rate_interval])",
+          "refId": "B",
+          "instant": false,
+          "range": true,
+          "legendFormat": "{{node}} cached tok/s"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "rate(strix_prefill_tokens_total{box=~\"$box\", node=~\"$node\"}[$__rate_interval])",
+          "refId": "C",
+          "instant": false,
+          "range": true,
+          "legendFormat": "{{node}} computed tok/s"
+        }
+      ]
+    }
+  ]
+}
