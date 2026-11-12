@@ -1,7 +1,7 @@
 # strix-infer → the `inference:*` contract (docs/plans/2026-11-12-inference-metrics.md).
 #
-# These are recording rules, evaluated by vmalert every 5s (the engine scrape
-# interval, so the gauges keep 5s resolution) and written back to
+# These are recording rules, evaluated by vmalert every 30s (the engine scrape
+# interval, so the recorded gauges cost 36 samples/30s and keep the scrape's resolution) and written back to
 # VictoriaMetrics. Each series carries exactly `box` and `node` (plus `outcome`
 # on requests_total) and nothing else.
 #
@@ -13,7 +13,7 @@
 #   divide by strix_slots.
 groups:
   - name: strix-infer
-    interval: 5s
+    interval: 30s
     rules:
       - record: inference:generated_tokens_total
         expr: sum by (box, node) (strix_generated_tokens_total)

@@ -9,7 +9,7 @@
 # finishes, so a long request lands in one step: use [5m] or wider in graphs.
 groups:
   - name: tensorfold
-    interval: 5s
+    interval: 30s
     rules:
       - record: inference:generated_tokens_total
         expr: sum by (box, node) (tensorfold:generation_tokens_total)

@@ -7,7 +7,12 @@
 # The sparks are one `box` because a rank pair is one engine, and only rank 0
 # (spark-1) exposes engine metrics.
 #
-# Intervals (D8): engine 5s with a 4s timeout, node and GPU 15s.
+# Intervals (D8): engine 30s, node and GPU 15s. The engine interval is 30s rather
+# than the original 5s to keep 180 days of samples inside a 50Gi PVC: the three
+# engine targets are ~530 series, so 5s cost ~106 samples/s against a ~706/s
+# total (the four node_exporter targets are ~434/s on their own). 30s cuts the
+# engine share to ~26/s and the vmalert recording rules to 30s with it. Busy %
+# and hours busy lose nothing that matters at 30s resolution.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -24,8 +29,8 @@ data:
 
     scrape_configs:
       - job_name: engine-strix
-        scrape_interval: 5s
-        scrape_timeout: 4s
+        scrape_interval: 30s
+        scrape_timeout: 10s
         static_configs:
           - targets: ["10.10.0.29:5300"]
             labels:
@@ -37,8 +42,8 @@ data:
               node: strix2
 
       - job_name: engine-tensorfold
-        scrape_interval: 5s
-        scrape_timeout: 4s
+        scrape_interval: 30s
+        scrape_timeout: 10s
         static_configs:
           - targets: ["10.10.0.30:8888"]
             labels:

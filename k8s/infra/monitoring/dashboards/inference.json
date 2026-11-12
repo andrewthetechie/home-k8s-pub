@@ -179,8 +179,8 @@
           },
           "expr": "100 * share_gt_over_time(inference:requests_running{box=~\"$box\", node=~\"$node\"}[$__range], 0)",
           "refId": "A",
-          "instant": false,
-          "range": true,
+          "instant": true,
+          "range": false,
           "legendFormat": "{{box}}"
         }
       ],
@@ -242,8 +242,8 @@
           },
           "expr": "share_gt_over_time(inference:requests_running{box=~\"$box\", node=~\"$node\"}[$__range], 0) * $__range_s / 3600",
           "refId": "A",
-          "instant": false,
-          "range": true,
+          "instant": true,
+          "range": false,
           "legendFormat": "{{box}}"
         }
       ],
@@ -305,8 +305,8 @@
           },
           "expr": "increase(inference:generated_tokens_total{box=~\"$box\", node=~\"$node\"}[$__range]) / (increase(inference:decode_seconds_total{box=~\"$box\", node=~\"$node\"}[$__range]) > 0)",
           "refId": "A",
-          "instant": false,
-          "range": true,
+          "instant": true,
+          "range": false,
           "legendFormat": "{{box}}"
         }
       ],
@@ -368,8 +368,8 @@
           },
           "expr": "increase(inference:prefill_tokens_total{box=~\"$box\", node=~\"$node\"}[$__range]) / (increase(inference:prefill_seconds_total{box=~\"$box\", node=~\"$node\"}[$__range]) > 0)",
           "refId": "A",
-          "instant": false,
-          "range": true,
+          "instant": true,
+          "range": false,
           "legendFormat": "{{box}}"
         }
       ],
@@ -431,8 +431,8 @@
           },
           "expr": "sum by (box) (increase(inference:generated_tokens_total{box=~\"$box\", node=~\"$node\"}[$__range]))",
           "refId": "A",
-          "instant": false,
-          "range": true,
+          "instant": true,
+          "range": false,
           "legendFormat": "{{box}}"
         }
       ],
@@ -492,14 +492,14 @@
             "type": "prometheus",
             "uid": "victoriametrics"
           },
-          "expr": "sum by (box) (sum_over_time((((node_hwmon_power_average_watt{job=\"node\", box=~\"$box\", node=~\"$node\"} * on (instance, chip) group_left (chip_name) node_hwmon_chip_names{job=\"node\", chip_name=\"amdgpu\"}) or nvidia_smi_power_draw_watts{job=\"gpu-nvidia\", box=~\"$box\", node=~\"$node\"}))[$__range:15s])) * 15 / 3.6e6",
+          "expr": "sum by (box) (integrate(node_hwmon_power_average_watt{job=\"node\", box=~\"$box\", node=~\"$node\"}[$__range]) or integrate(nvidia_smi_power_draw_watts{job=\"gpu-nvidia\", box=~\"$box\", node=~\"$node\"}[$__range])) / 3.6e6",
           "refId": "A",
-          "instant": false,
-          "range": true,
+          "instant": true,
+          "range": false,
           "legendFormat": "{{box}}"
         }
       ],
-      "description": "GPU/APU package power integrated over the range. Not wall power.",
+      "description": "GPU/APU package power integrated over the range: W*s / 3.6e6 = kWh. Not wall power. strix is amdgpu PPT from hwmon (one power sensor per box); sparks are nvidia-smi draw. VictoriaMetrics integrate() handles gaps.",
       "timeFrom": "now/M"
     },
     {
@@ -570,8 +570,8 @@
           },
           "expr": "100 * share_gt_over_time(inference:requests_running{box=~\"$box\", node=~\"$node\"}[$__range], 0)",
           "refId": "A",
-          "instant": false,
-          "range": true,
+          "instant": true,
+          "range": false,
           "legendFormat": "{{box}}"
         }
       ],
@@ -634,8 +634,8 @@
           },
           "expr": "share_gt_over_time(inference:requests_running{box=~\"$box\", node=~\"$node\"}[$__range], 0) * $__range_s / 3600",
           "refId": "A",
-          "instant": false,
-          "range": true,
+          "instant": true,
+          "range": false,
           "legendFormat": "{{box}}"
         }
       ],
@@ -698,8 +698,8 @@
           },
           "expr": "increase(inference:generated_tokens_total{box=~\"$box\", node=~\"$node\"}[$__range]) / (increase(inference:decode_seconds_total{box=~\"$box\", node=~\"$node\"}[$__range]) > 0)",
           "refId": "A",
-          "instant": false,
-          "range": true,
+          "instant": true,
+          "range": false,
           "legendFormat": "{{box}}"
         }
       ],
@@ -762,8 +762,8 @@
           },
           "expr": "increase(inference:prefill_tokens_total{box=~\"$box\", node=~\"$node\"}[$__range]) / (increase(inference:prefill_seconds_total{box=~\"$box\", node=~\"$node\"}[$__range]) > 0)",
           "refId": "A",
-          "instant": false,
-          "range": true,
+          "instant": true,
+          "range": false,
           "legendFormat": "{{box}}"
         }
       ],
@@ -826,8 +826,8 @@
           },
           "expr": "sum by (box) (increase(inference:generated_tokens_total{box=~\"$box\", node=~\"$node\"}[$__range]))",
           "refId": "A",
-          "instant": false,
-          "range": true,
+          "instant": true,
+          "range": false,
           "legendFormat": "{{box}}"
         }
       ],
@@ -888,14 +888,14 @@
             "type": "prometheus",
             "uid": "victoriametrics"
           },
-          "expr": "sum by (box) (sum_over_time((((node_hwmon_power_average_watt{job=\"node\", box=~\"$box\", node=~\"$node\"} * on (instance, chip) group_left (chip_name) node_hwmon_chip_names{job=\"node\", chip_name=\"amdgpu\"}) or nvidia_smi_power_draw_watts{job=\"gpu-nvidia\", box=~\"$box\", node=~\"$node\"}))[$__range:15s])) * 15 / 3.6e6",
+          "expr": "sum by (box) (integrate(node_hwmon_power_average_watt{job=\"node\", box=~\"$box\", node=~\"$node\"}[$__range]) or integrate(nvidia_smi_power_draw_watts{job=\"gpu-nvidia\", box=~\"$box\", node=~\"$node\"}[$__range])) / 3.6e6",
           "refId": "A",
-          "instant": false,
-          "range": true,
+          "instant": true,
+          "range": false,
           "legendFormat": "{{box}}"
         }
       ],
-      "description": "GPU/APU package power integrated over the range. Not wall power.",
+      "description": "GPU/APU package power integrated over the range: W*s / 3.6e6 = kWh. Not wall power. strix is amdgpu PPT from hwmon (one power sensor per box); sparks are nvidia-smi draw. VictoriaMetrics integrate() handles gaps.",
       "timeFrom": "now-1M/M",
       "timeTo": "now/M"
     },
@@ -1147,8 +1147,8 @@
           },
           "expr": "increase(inference:generated_tokens_total{box=~\"$box\", node=~\"$node\"}[$__range]) / (increase(inference:decode_seconds_total{box=~\"$box\", node=~\"$node\"}[$__range]) > 0)",
           "refId": "A",
-          "instant": false,
-          "range": true,
+          "instant": true,
+          "range": false,
           "legendFormat": "{{box}}"
         }
       ],
@@ -1209,8 +1209,8 @@
           },
           "expr": "increase(inference:prefill_tokens_total{box=~\"$box\", node=~\"$node\"}[$__range]) / (increase(inference:prefill_seconds_total{box=~\"$box\", node=~\"$node\"}[$__range]) > 0)",
           "refId": "A",
-          "instant": false,
-          "range": true,
+          "instant": true,
+          "range": false,
           "legendFormat": "{{box}}"
         }
       ],
