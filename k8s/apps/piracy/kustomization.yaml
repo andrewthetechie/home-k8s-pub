@@ -156,5 +156,9 @@ patches:
     path: patches/pvc-ssd.yaml
   - target:
       kind: PersistentVolumeClaim
+      name: radarr-config
+    path: patches/pvc-size.yaml
+  - target:
+      kind: PersistentVolumeClaim
       name: prowlarr-config
     path: patches/pvc-ssd.yaml
