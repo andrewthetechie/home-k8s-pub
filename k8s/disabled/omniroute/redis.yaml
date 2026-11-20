@@ -1,0 +1,71 @@
+---
+# Redis sidecar for OmniRoute's distributed rate limiter and shared cache.
+# Mirrors the redis service from the upstream docker-compose.yml (loopback-only
+# in compose since the app reaches it over the compose network; here the
+# Service is ClusterIP so nothing is exposed outside the cluster).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: omniroute-redis
+  namespace: omniroute
+  labels:
+    app: omniroute-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: omniroute-redis
+  template:
+    metadata:
+      labels:
+        app: omniroute-redis
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          imagePullPolicy: IfNotPresent
+          command:
+            - redis-server
+            - --save
+            - "60"
+            - "1"
+            - --loglevel
+            - warning
+          ports:
+            - name: redis
+              containerPort: 6379
+          readinessProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: omniroute-redis
+  namespace: omniroute
+  labels:
+    app: omniroute-redis
+spec:
+  selector:
+    app: omniroute-redis
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: redis

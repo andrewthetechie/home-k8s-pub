@@ -1,0 +1,108 @@
+controllers:
+  omniroute:
+    strategy: RollingUpdate
+    containers:
+      app:
+        image:
+          repository: diegosouzapw/omniroute
+          tag: 3.8.49
+          pullPolicy: IfNotPresent
+        env:
+          PORT: "20128"
+          DATA_DIR: /app/data
+          TZ: America/Chicago
+          # Public origin for OAuth callbacks / generated links.
+          NEXT_PUBLIC_BASE_URL: https://omniroute.herrington.services
+          # Internal server-to-server URL for scheduled jobs / self-fetches.
+          BASE_URL: http://omniroute:20128
+          AUTH_COOKIE_SECURE: "true"
+          REQUIRE_API_KEY: "true"
+          # Redis sidecar for the distributed rate limiter / shared cache.
+          REDIS_URL: redis://omniroute-redis:6379
+          # Secrets from the sealed secret (JWT_SECRET, API_KEY_SECRET,
+          # INITIAL_PASSWORD, OMNIROUTE_WS_BRIDGE_SECRET, STORAGE_ENCRYPTION_KEY)
+          JWT_SECRET:
+            valueFrom:
+              secretKeyRef:
+                name: omniroute-secrets
+                key: JWT_SECRET
+          API_KEY_SECRET:
+            valueFrom:
+              secretKeyRef:
+                name: omniroute-secrets
+                key: API_KEY_SECRET
+          INITIAL_PASSWORD:
+            valueFrom:
+              secretKeyRef:
+                name: omniroute-secrets
+                key: INITIAL_PASSWORD
+          OMNIROUTE_WS_BRIDGE_SECRET:
+            valueFrom:
+              secretKeyRef:
+                name: omniroute-secrets
+                key: OMNIROUTE_WS_BRIDGE_SECRET
+          STORAGE_ENCRYPTION_KEY:
+            valueFrom:
+              secretKeyRef:
+                name: omniroute-secrets
+                key: STORAGE_ENCRYPTION_KEY
+        probes:
+          liveness: &probe
+            enabled: true
+            type: HTTP
+            path: /api/monitoring/health
+          readiness: *probe
+          startup:
+            <<: *probe
+            spec:
+              failureThreshold: 30
+              periodSeconds: 5
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            memory: 2Gi
+
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+
+service:
+  omniroute:
+    controller: omniroute
+    ports:
+      http:
+        port: 20128
+
+ingress:
+  omniroute:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      gethomepage.dev/enabled: "false"
+    hosts:
+      - host: omniroute.herrington.services
+        paths:
+          - path: /
+            service:
+              identifier: omniroute
+              port: http
+    tls:
+      - secretName: omniroute-tls
+        hosts:
+          - omniroute.herrington.services
+
+persistence:
+  data:
+    type: persistentVolumeClaim
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    storageClass: freenas-iscsi-ssd-csi
+    globalMounts:
+      - path: /app/data
