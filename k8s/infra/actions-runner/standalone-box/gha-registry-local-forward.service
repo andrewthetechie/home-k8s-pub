@@ -1,0 +1,15 @@
+[Unit]
+Description=Forward registry-local (cluster NodePort 30500) to 10.10.0.31:5000 for runner dind
+Documentation=https://github.com/andrewthetechie/home-k8s/blob/master/nauvoo-v2/manifests/infra/actions-runner/STANDALONE-RUNNER-BOX.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+# amos = 10.10.0.20; any cluster node IP works (kube-proxy routes the NodePort
+# to registry-local wherever its pod runs). If that node dies, point at another.
+ExecStart=/usr/bin/socat TCP4-LISTEN:5000,bind=10.10.0.31,fork,reuseaddr TCP4:10.10.0.20:30500
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

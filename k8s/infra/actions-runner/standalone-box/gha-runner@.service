@@ -1,0 +1,16 @@
+[Unit]
+Description=Ephemeral GitHub Actions runner slot %i on box31
+Documentation=https://github.com/andrewthetechie/home-k8s/blob/master/nauvoo-v2/manifests/infra/actions-runner/STANDALONE-RUNNER-BOX.md
+After=network-online.target docker.service gha-registry-local-forward.service
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=exec
+ExecStart=/opt/gha-runner/run-slot.sh %i
+Restart=always
+RestartSec=10
+StartLimitIntervalSec=0
+
+[Install]
+WantedBy=multi-user.target

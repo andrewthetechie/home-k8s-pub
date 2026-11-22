@@ -1,0 +1,6 @@
+# Per-slot buildkitd for the standalone runner box. Only the cluster-internal
+# registry-local hostname is referenced by the workflows; it resolves (via
+# --add-host in run-slot.sh) to the box's socat forwarder -> registry-local
+# NodePort. Plain HTTP like the ARC buildkitd.toml.
+[registry."registry-local.registry-cache.svc.cluster.local:5000"]
+  http = true
