@@ -10,6 +10,7 @@ resources:
   - registry-ghcr.yaml
   - storage-local.yaml
   - registry-local.yaml
+  - registry-local-nodeport.yaml
   - storage-mcr.yaml
   - registry-mcr.yaml
   - registry-wipe-rbac.yaml
