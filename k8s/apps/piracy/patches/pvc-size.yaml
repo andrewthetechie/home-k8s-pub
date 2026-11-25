@@ -1,0 +1,7 @@
+# Radarr's 1Gi config PVC filled up (cached MediaCover + 100 debug logs
+# = ~957MB used, 0 bytes available), which made /config unwritable and
+# caused the container to crash with "AppFolder /config is not writable".
+# Bump the request so a fresh provision has headroom.
+- op: replace
+  path: /spec/resources/requests/storage
+  value: '5Gi'
