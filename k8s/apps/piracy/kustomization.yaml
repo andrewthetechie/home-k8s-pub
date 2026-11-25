@@ -14,7 +14,7 @@ helmCharts:
     valuesInline:
       image:
         repository: linuxserver/radarr
-        tag: 6.4.2-nightly
+        tag: version-7.0.3.10918
       env:
         TZ: "America/Chicago"
       persistence:
@@ -55,7 +55,7 @@ helmCharts:
     valuesInline:
       image:
         repository: linuxserver/sonarr
-        tag: 4.0.16
+        tag: version-4.0.20.3014
       env:
         TZ: "America/Chicago"
       persistence:
@@ -96,7 +96,7 @@ helmCharts:
     valuesInline:
       image:
         repository: linuxserver/prowlarr
-        tag: version-2.1.5.5216
+        tag: version-3.1.0.5799
       env:
         TZ: "America/Chicago"
       persistence:
